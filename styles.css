@@ -175,7 +175,7 @@ header h1 {
 
 .silo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
 }
 
@@ -202,8 +202,162 @@ header h1 {
   width: 100%;
   height: 200px;
   border-bottom: 1px solid var(--card-border);
-  background-color: rgba(0, 0, 0, 0.2); /* Slightly darker background for the 3D model to pop */
+  background-color: rgba(0, 0, 0, 0.2);
   position: relative;
+}
+
+/* ── Pure CSS Glass Silo ─────────────────────────────────────────────── */
+.glass-silo-container {
+  width: 100%;
+  height: 250px;
+  background-color: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 15px;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-silo-body {
+  width: 120px;
+  height: 160px;
+  position: relative;
+  border-radius: 60px 60px 5px 5px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 
+    inset -10px 0 20px rgba(0, 0, 0, 0.3),
+    inset 10px 0 20px rgba(255, 255, 255, 0.15),
+    0 10px 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(3px);
+  overflow: hidden;
+  z-index: 3;
+}
+
+.glass-silo-maize {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(90deg, #d97706 0%, #f59e0b 30%, #fbbf24 60%, #b45309 100%);
+  transition: height 1s ease-in-out;
+  box-shadow: inset 0 5px 15px rgba(0,0,0,0.4);
+  z-index: 1;
+}
+
+.glass-silo-maize::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px);
+  background-size: 5px 5px;
+}
+
+.glass-silo-reflection {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.1) 15%, transparent 30%, transparent 80%, rgba(255,255,255,0.2) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.glass-silo-legs-container {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  width: 110px;
+  height: 45px;
+  z-index: 2;
+}
+
+.glass-silo-leg {
+  position: absolute;
+  width: 10px;
+  height: 100%;
+  background: linear-gradient(90deg, #666, #444);
+  border-radius: 0 0 4px 4px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+}
+
+.glass-silo-leg.left { left: 10px; }
+.glass-silo-leg.right { right: 10px; }
+
+.glass-silo-fan {
+  position: absolute;
+  top: 5px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  border: 3px solid #444;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 5px 10px rgba(0,0,0,0.4);
+}
+
+.fan-blades {
+  width: 36px;
+  height: 36px;
+  position: relative;
+}
+
+.fan-blades.spin {
+  animation: spinFan 0.3s linear infinite;
+}
+
+@keyframes spinFan {
+  100% { transform: rotate(360deg); }
+}
+
+.fan-blade {
+  position: absolute;
+  background: #888;
+  border-radius: 2px;
+  transition: background-color 0.3s ease;
+}
+
+.fan-blades.fan-off .fan-blade {
+  background: #ef4444; /* Red color when off */
+  box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+}
+
+.fan-blade.h {
+  width: 36px;
+  height: 6px;
+  top: 15px;
+  left: 0;
+}
+
+.fan-blade.v {
+  width: 6px;
+  height: 36px;
+  top: 0;
+  left: 15px;
+}
+
+.fan-center {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #aaa;
+  border-radius: 50%;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  box-shadow: 0 0 3px rgba(0,0,0,0.5);
+  transition: background-color 0.3s ease;
+}
+
+.fan-blades.fan-off .fan-center {
+  background: #dc2626; /* Darker red center when off */
 }
 
 .silo-card::before {
@@ -748,4 +902,131 @@ header h1 {
 
 .modal-footer-actions .btn-danger {
   width: 100%;
+}
+
+/* ── Daily Report Table Styles ───────────────────────────────────────── */
+.table-container {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.table-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.table-responsive {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  border: 1px solid var(--card-border);
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.report-table th, .report-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.report-table th {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+.report-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.report-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.report-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.report-table td {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.report-table td .status-indicator {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+@media print {
+  .table-container {
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+  .report-table {
+    border: 1px solid #ccc;
+  }
+  .report-table th {
+    background-color: #f1f1f1;
+    color: black;
+    border-bottom: 2px solid #ccc;
+  }
+  .report-table td, .report-table th {
+    border: 1px solid #ccc;
+    color: black;
+  }
+  .table-header button {
+    display: none;
+  }
+}
+
+/* ── Maize Log Table Styles ──────────────────────────────────────────── */
+.maize-log-table th, .maize-log-table td {
+  text-align: center;
+  border: 1px solid var(--card-border);
+  min-width: 75px;
+}
+.maize-log-table th.frozen-col, .maize-log-table td.frozen-col {
+  position: sticky;
+  left: 0;
+  text-align: left;
+  min-width: 200px;
+  max-width: 200px;
+  z-index: 5;
+  background: var(--card-bg);
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+}
+.maize-log-table thead th.frozen-col {
+  z-index: 10 !important;
+}
+
+@media print {
+  .maize-log-table th.frozen-col, .maize-log-table td.frozen-col {
+    position: static;
+    box-shadow: none;
+    background: none !important;
+  }
+  .maize-log-table th, .maize-log-table td {
+    border: 1px solid #ccc !important;
+    color: black !important;
+  }
 }
