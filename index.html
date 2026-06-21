@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Mill Production Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Supabase Client JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="layout-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Menu</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" id="nav-dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#silo-status" class="nav-item" id="nav-silo-status">
+                    <span class="nav-icon">🏭</span>
+                    <span>Silo Status</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <main class="main-content">
+            <div class="container">
+                <header>
+                    <h1>Feed Mill Production Report</h1>
+                    <div class="header-actions">
+                        <button class="btn-supabase-status" id="btn-supabase-status" title="Configure Supabase Connection">
+                            <span id="supabase-status-dot"></span>
+                            <span id="supabase-status-text">Local Storage</span>
+                        </button>
+                        <div class="date-time">
+                            <div id="current-date">--/--/----</div>
+                            <div id="current-time">--:--</div>
+                        </div>
+                    </div>
+                </header>
+
+        <div id="view-dashboard" class="view-section">
+            <section class="summary-cards">
+                <div class="summary-card">
+                    <h3>Total Active Silos</h3>
+                    <div class="value" id="active-silos-count">0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Avg. Moisture Level</h3>
+                    <div class="value" id="avg-moisture">0%</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Run Time (Today)</h3>
+                    <div class="value" id="total-runtime">0h</div>
+                </div>
+            </section>
+        </div>
+
+        <div id="view-silo-status" class="view-section" style="display: none;">
+            <section class="silo-grid" id="silo-grid">
+                <!-- Silo cards will be generated dynamically by JavaScript -->
+            </section>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="window.print()">Export / Print Report</button>
+            <button class="btn btn-danger" id="btn-reset">Reset to Defaults</button>
+        </div>
+    </div>
+        </main>
+    </div>
+
+    <div id="save-toast"></div>
+
+    <!-- Supabase Configuration Modal -->
+    <div id="supabase-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Supabase Integration</h2>
+                <button id="modal-close" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">Connect your Feed Mill report to a Supabase database to persist silo metrics in real-time.</p>
+                
+                <div class="form-group">
+                    <label for="sb-url">Supabase Project URL</label>
+                    <input type="text" id="sb-url" placeholder="https://your-project.supabase.co" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="sb-key">Supabase Anon Key</label>
+                    <input type="password" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="btn-test-connection">Test Connection</button>
+                    <button class="btn btn-primary" id="btn-save-supabase">Save & Sync</button>
+                </div>
+                
+                <div id="connection-status-msg" class="status-msg"></div>
+
+                <div class="modal-divider"></div>
+
+                <div class="sql-instructions">
+                    <h3>Database Setup Instructions</h3>
+                    <p>Execute this SQL in your Supabase SQL Editor to create the tables:</p>
+                    <div class="sql-code-container">
+                        <pre><code id="sql-code">-- Create materials table
+create table if not exists public.materials (
+  name text primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Create silos table
+create table if not exists public.silos (
+  id integer primary key,
+  name text not null,
+  status text not null,
+  run_time numeric not null default 0,
+  current_moisture numeric not null default 0,
+  purchase_moisture numeric not null default 0,
+  fan_status text not null,
+  material_type text references public.materials(name) on update cascade on delete set null,
+  capacity numeric not null,
+  fill_level numeric not null,
+  current_fill_tons numeric not null,
+  filling_start text not null,
+  filling_end text not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Insert default materials
+insert into public.materials (name) 
+values ('Maize'), ('Rice')
+on conflict (name) do nothing;</code></pre>
+                        <button class="btn btn-copy-sql" id="btn-copy-sql">Copy SQL</button>
+                    </div>
+                </div>
+
+                <div class="modal-footer-actions">
+                    <button class="btn btn-danger" id="btn-disconnect-supabase" style="display: none;">Disconnect Supabase (Use Local Storage)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="env.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

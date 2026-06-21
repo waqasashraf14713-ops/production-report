@@ -1,0 +1,6 @@
+# Local environment config (ignore credentials)
+env.js
+
+# Dependencies
+node_modules/
+.DS_Store
