@@ -129,6 +129,33 @@ document.addEventListener('DOMContentLoaded', () => {
         fan_off_time: silo.fanOffTime
     });
 
+    const mapLessExcessFromDb = (dbRow) => ({
+        id: dbRow.id,
+        date: dbRow.report_date,
+        shift: dbRow.shift,
+        officerName: dbRow.officer_name,
+        feedName: dbRow.feed_name,
+        batches: dbRow.batches,
+        productionBags: dbRow.production_bags,
+        waterAddition: dbRow.water_addition,
+        remarks: dbRow.remarks || '',
+        locked: dbRow.is_locked
+    });
+
+    const mapLessExcessToDb = (log) => ({
+        id: log.id,
+        report_date: log.date,
+        shift: log.shift,
+        officer_name: log.officerName,
+        feed_name: log.feedName,
+        batches: log.batches,
+        production_bags: log.productionBags,
+        water_addition: log.waterAddition,
+        remarks: log.remarks || '',
+        is_locked: log.locked
+    });
+
+
     // ─── Supabase Status UI ────────────────────────────────────────────────────
     const updateSbStatusUI = () => {
         const dot = document.getElementById('supabase-status-dot');
@@ -290,8 +317,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     silosData = defaultSilos;
                 }
 
+                // Fetch Less/Excess logs
+                const { data: dbLogs, error: logErr } = await sbClient.from('daily_less_excess_logs').select('*').order('id', { ascending: true });
+                if (logErr) throw logErr;
+                
+                if (dbLogs && dbLogs.length > 0) {
+                    lessExcessLogs = dbLogs.map(mapLessExcessFromDb);
+                } else {
+                    lessExcessLogs = JSON.parse(localStorage.getItem(LS_LESS_EXCESS_LOGS)) || [];
+                    if (lessExcessLogs.length > 0) {
+                        // Seed local data to Supabase
+                        await sbClient.from('daily_less_excess_logs').insert(lessExcessLogs.map(mapLessExcessToDb));
+                    }
+                }
+
                 maizeLogs = JSON.parse(localStorage.getItem(LS_MAIZE_LOGS)) || [];
-                lessExcessLogs = JSON.parse(localStorage.getItem(LS_LESS_EXCESS_LOGS)) || [];
 
                 enforceFixedCapacities();
                 // Sync to backup local storage
@@ -328,8 +368,18 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(LS_MAIZE_LOGS, JSON.stringify(maizeLogs));
     };
 
-    const saveLessExcessLogs = () => {
+    const saveLessExcessLogs = async () => {
         localStorage.setItem(LS_LESS_EXCESS_LOGS, JSON.stringify(lessExcessLogs));
+        if (isSbConnected && sbClient) {
+            try {
+                const { error } = await sbClient
+                    .from('daily_less_excess_logs')
+                    .upsert(lessExcessLogs.map(mapLessExcessToDb));
+                if (error) throw error;
+            } catch (err) {
+                console.error('Supabase save failed for less/excess logs:', err);
+            }
+        }
     };
 
     const saveData = async (modifiedSilo = null) => {
