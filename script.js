@@ -95,7 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
         fillLevel: parseInt(dbSilo.fill_level || 0),
         currentFillTons: parseFloat(dbSilo.current_fill_tons || 0),
         fillingStart: dbSilo.filling_start,
-        fillingEnd: dbSilo.filling_end
+        fillingEnd: dbSilo.filling_end,
+        fanOnTime: dbSilo.fan_on_time || '-',
+        fanOffTime: dbSilo.fan_off_time || '-'
     });
 
     const mapSiloToDb = (silo) => ({
@@ -111,7 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
         fill_level: silo.fillLevel,
         current_fill_tons: silo.currentFillTons,
         filling_start: silo.fillingStart,
-        filling_end: silo.fillingEnd
+        filling_end: silo.fillingEnd,
+        fan_on_time: silo.fanOnTime,
+        fan_off_time: silo.fanOffTime
     });
 
     // ─── Supabase Status UI ────────────────────────────────────────────────────
@@ -207,13 +211,25 @@ document.addEventListener('DOMContentLoaded', () => {
             )
             .subscribe();
     };
+    const ensureDefaultMaterials = () => {
+        const required = ['Fresh Maize', 'Old Maize', 'Dryer Maize'];
+        if (!availableMaterials || !Array.isArray(availableMaterials)) {
+            availableMaterials = [];
+        }
+        required.forEach(m => {
+            if (!availableMaterials.includes(m)) availableMaterials.push(m);
+        });
+    };
 
     // ─── Data Sync Functions ───────────────────────────────────────────────────
     const enforceFixedCapacities = () => {
         let changed = false;
         if (!silosData) return;
         silosData.forEach(silo => {
-            const expectedCap = (silo.id === 3 || silo.id === 6) ? 500 : 5000;
+            let expectedCap = 5000;
+            if (silo.id === 3 || silo.id === 6) expectedCap = 500;
+            else if (silo.id >= 9 && silo.id <= 12) expectedCap = 2500;
+
             if (silo.capacity !== expectedCap) {
                 silo.capacity = expectedCap;
                 if (silo.currentFillTons > expectedCap) {
@@ -237,8 +253,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (dbMats && dbMats.length > 0) {
                     availableMaterials = dbMats.map(m => m.name);
+                    ensureDefaultMaterials();
                 } else {
-                    // Seed materials table
+                    ensureDefaultMaterials();
                     await sbClient.from('materials').insert(availableMaterials.map(m => ({ name: m })));
                 }
 
@@ -248,9 +265,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (dbSilos && dbSilos.length > 0) {
                     silosData = dbSilos.map(mapSiloFromDb);
+                    if (silosData.length < 16) {
+                        const newSilos = generateSiloData(16).slice(silosData.length);
+                        const dbRows = newSilos.map(mapSiloToDb);
+                        await sbClient.from('silos').insert(dbRows);
+                        silosData = [...silosData, ...newSilos];
+                    }
                 } else {
                     // Seed default silos
-                    const defaultSilos = generateSiloData(8);
+                    const defaultSilos = generateSiloData(16);
                     const dbRows = defaultSilos.map(mapSiloToDb);
                     await sbClient.from('silos').insert(dbRows);
                     silosData = defaultSilos;
@@ -270,12 +293,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const loadFromLocalStorage = () => {
-        availableMaterials = JSON.parse(localStorage.getItem(LS_MATERIALS)) || ['Maize', 'Rice'];
+        availableMaterials = JSON.parse(localStorage.getItem(LS_MATERIALS));
+        ensureDefaultMaterials();
         silosData = JSON.parse(localStorage.getItem(LS_SILOS));
         if (!silosData) {
-            silosData = generateSiloData(8);
+            silosData = generateSiloData(16);
             localStorage.setItem(LS_SILOS, JSON.stringify(silosData));
             localStorage.setItem(LS_MATERIALS, JSON.stringify(availableMaterials));
+        } else if (silosData.length < 16) {
+            const newSilos = generateSiloData(16);
+            silosData = [...silosData, ...newSilos.slice(silosData.length)];
+            localStorage.setItem(LS_SILOS, JSON.stringify(silosData));
         }
         maizeLogs = JSON.parse(localStorage.getItem(LS_MAIZE_LOGS)) || [];
         enforceFixedCapacities();
@@ -334,7 +362,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { error: matErr } = await sbClient.from('materials').delete().neq('name', '');
                 if (matErr) throw matErr;
 
-                availableMaterials = ['Maize', 'Rice'];
+                availableMaterials = [];
+                ensureDefaultMaterials();
+                silosData = generateSiloData(16);
                 // This will trigger re-seeding inside loadAllData
                 await loadAllData();
                 renderSilos();
@@ -346,8 +376,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             localStorage.removeItem(LS_SILOS);
             localStorage.removeItem(LS_MATERIALS);
-            availableMaterials = ['Maize', 'Rice'];
-            silosData = generateSiloData(8);
+            availableMaterials = [];
+            ensureDefaultMaterials();
+            silosData = generateSiloData(16);
             saveData();
             renderSilos();
         }
@@ -372,6 +403,58 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('✓ Added new date log');
     });
 
+    const shareWhatsAppBtn = document.getElementById('btn-share-whatsapp');
+    if (shareWhatsAppBtn) {
+        shareWhatsAppBtn.addEventListener('click', () => {
+            if (!maizeLogs || maizeLogs.length === 0) {
+                alert('No daily logs available to share.');
+                return;
+            }
+            const lastLogs = maizeLogs.slice(-4);
+            let text = '*Feed Mill Maize Moisture Report (Last 4 Days)*\n\n';
+            
+            lastLogs.forEach(l => {
+                text += `*Date:* ${l.date}\n`;
+                text += `*Silo #:* ${l.siloNumber}\n`;
+                text += `*Purchase Moisture:* ${l.purchaseMoisture}%\n`;
+                text += `*Formula Moisture:* ${l.formulaMoisture}%\n`;
+                
+                // Helper to format array average locally so we don't rely strictly on DOM state
+                const calcAvgStr = (arr) => {
+                    const valid = arr.filter(x => typeof x === 'number' && !isNaN(x));
+                    if (valid.length === 0) return '';
+                    const sum = valid.reduce((a, b) => a + b, 0);
+                    return (sum / valid.length).toFixed(1) + '%';
+                };
+                const calcRawAvg = (arr) => {
+                    const valid = arr.filter(x => typeof x === 'number' && !isNaN(x));
+                    if (valid.length === 0) return null;
+                    const sum = valid.reduce((a, b) => a + b, 0);
+                    return parseFloat((sum / valid.length).toFixed(1));
+                };
+
+                const avgCR = calcAvgStr(l.cRoomUnGrind);
+                const avgLWU = calcAvgStr(l.labWetUnGrind);
+                const avgLWG = calcAvgStr(l.labWetGrind);
+                
+                text += `*Avg C.Room:* ${avgCR || '-'}\n`;
+                text += `*Avg Lab Wet (UnGrind):* ${avgLWU || '-'}\n`;
+                text += `*Avg Lab Wet (Grind):* ${avgLWG || '-'}\n`;
+
+                const rawAvg = calcRawAvg(l.cRoomUnGrind);
+                if (rawAvg !== null && typeof l.formulaMoisture === 'number') {
+                    const diff = (rawAvg - l.formulaMoisture).toFixed(1);
+                    const sign = diff > 0 ? '+' : '';
+                    text += `*Difference:* ${sign}${diff}%\n`;
+                }
+                text += `\n`;
+            });
+
+            const url = `https://wa.me/?text=${encodeURIComponent(text.trim())}`;
+            window.open(url, '_blank');
+        });
+    }
+
     // ─── Toast notification ────────────────────────────────────────────────────
     const showToast = (msg) => {
         const t = document.getElementById('save-toast');
@@ -391,7 +474,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const purchaseMoisture = parseFloat((currentMoisture + Math.random() * 3).toFixed(1));
             const fanStatus     = isRunning ? 'On' : 'Off';
             const material      = availableMaterials[Math.floor(Math.random() * availableMaterials.length)];
-            const capacity      = (i === 3 || i === 6) ? 500 : 5000;
+            let capacity = 5000;
+            if (i === 3 || i === 6) capacity = 500;
+            else if (i >= 9 && i <= 12) capacity = 2500;
+            
             const fillLevel     = Math.floor(10 + Math.random() * 80);
             const currentFillTons = Math.round((fillLevel / 100) * capacity);
             const now  = new Date();
@@ -412,7 +498,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 fillLevel,
                 currentFillTons,
                 fillingStart:     fmt(start),
-                fillingEnd:       Math.random() > 0.5 ? fmt(end) : 'In Progress'
+                fillingEnd:       Math.random() > 0.5 ? fmt(end) : 'In Progress',
+                fanOnTime:        isRunning ? fmt(start) : '-',
+                fanOffTime:       isRunning ? '-' : fmt(end)
             });
         }
         return silos;
@@ -688,6 +776,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><span class="editable-value" id="tbl-pmoist-${silo.id}" title="Click to edit">${silo.purchaseMoisture}</span>%</td>
                 <td><span class="editable-value" id="tbl-cmoist-${silo.id}" title="Click to edit" style="color:${getMoistureColor(silo.currentMoisture)}">${silo.currentMoisture}</span>%</td>
                 <td><span class="metric-value fan-toggle" id="tbl-fan-${silo.id}" title="Click to toggle" style="color:${silo.fanStatus==='On'?'var(--success-color)':'var(--text-secondary)'}">${silo.fanStatus}</span></td>
+                <td><span class="editable-value" id="tbl-fanon-${silo.id}" title="Click to edit">${silo.fanOnTime}</span></td>
+                <td><span class="editable-value" id="tbl-fanoff-${silo.id}" title="Click to edit">${silo.fanOffTime}</span></td>
                 <td><span class="editable-value" id="tbl-runtime-${silo.id}" title="Click to edit">${silo.runTime}</span> h</td>
             `;
             tbody.appendChild(tr);
@@ -726,6 +816,18 @@ document.addEventListener('DOMContentLoaded', () => {
             makeEditable(document.getElementById(`tbl-runtime-${silo.id}`), 'number', () => silo.runTime, (val, el) => {
                 const n = parseFloat(val);
                 if (!isNaN(n) && n >= 0) silo.runTime = n;
+                saveData(silo);
+                renderSilos();
+            });
+
+            makeEditable(document.getElementById(`tbl-fanon-${silo.id}`), 'text', () => silo.fanOnTime, (val, el) => {
+                silo.fanOnTime = val || silo.fanOnTime;
+                saveData(silo);
+                renderSilos();
+            });
+
+            makeEditable(document.getElementById(`tbl-fanoff-${silo.id}`), 'text', () => silo.fanOffTime, (val, el) => {
+                silo.fanOffTime = val || silo.fanOffTime;
                 saveData(silo);
                 renderSilos();
             });
@@ -780,28 +882,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const visibleLogs = maizeLogs.slice(-3);
+
         // Build transposed HTML
         let html = `
             <thead>
                 <tr>
                     <th class="frozen-col" style="background:var(--bg-color); z-index: 10;">Date</th>
-                    ${maizeLogs.map(l => `<th colspan="3"><span class="editable-value" id="ml-date-${l.id}" title="Click to edit">${l.date}</span></th>`).join('')}
+                    ${visibleLogs.map(l => `<th colspan="3"><span class="editable-value" id="ml-date-${l.id}" title="Click to edit">${l.date}</span></th>`).join('')}
                 </tr>
                 <tr>
                     <th class="frozen-col" style="background:var(--bg-color); z-index: 10;">Silo #</th>
-                    ${maizeLogs.map(l => `<th colspan="3" style="background:rgba(255,255,0,0.15); color:var(--text-primary);"><span class="editable-value" id="ml-silo-${l.id}" title="Click to edit">${l.siloNumber}</span></th>`).join('')}
+                    ${visibleLogs.map(l => `<th colspan="3" style="background:rgba(255,255,0,0.15); color:var(--text-primary);"><span class="editable-value" id="ml-silo-${l.id}" title="Click to edit">${l.siloNumber}</span></th>`).join('')}
                 </tr>
                 <tr>
                     <th class="frozen-col" style="background:var(--bg-color); z-index: 10;">Purchase Moisture</th>
-                    ${maizeLogs.map(l => `<th colspan="3"><span class="editable-value" id="ml-pur-${l.id}" title="Click to edit">${l.purchaseMoisture}</span>%</th>`).join('')}
+                    ${visibleLogs.map(l => `<th colspan="3"><span class="editable-value" id="ml-pur-${l.id}" title="Click to edit">${l.purchaseMoisture}</span>%</th>`).join('')}
                 </tr>
                 <tr>
                     <th class="frozen-col" style="background:var(--bg-color); z-index: 10;">Analyzer</th>
-                    ${maizeLogs.map(l => `<th>C.Room</th><th colspan="2">Lab Wet</th>`).join('')}
+                    ${visibleLogs.map(l => `<th>C.Room</th><th colspan="2">Lab Wet</th>`).join('')}
                 </tr>
                 <tr>
                     <th class="frozen-col" style="background:var(--bg-color); z-index: 10;"></th>
-                    ${maizeLogs.map(l => `<th>ungrind</th><th>un Grind</th><th>Grind</th>`).join('')}
+                    ${visibleLogs.map(l => `<th>ungrind</th><th>un Grind</th><th>Grind</th>`).join('')}
                 </tr>
             </thead>
             <tbody>
@@ -809,7 +913,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let i = 0; i < 6; i++) {
             html += `<tr><td class="frozen-col" style="background:var(--card-bg);"><strong>${i+1}${i===0?'st':i===1?'nd':i===2?'rd':'th'} Moisture</strong></td>`;
-            maizeLogs.forEach(l => {
+            visibleLogs.forEach(l => {
                 html += `
                     <td><span class="editable-value" id="ml-cru-${l.id}-${i}">${l.cRoomUnGrind[i] !== null ? l.cRoomUnGrind[i] + '%' : '-'}</span></td>
                     <td><span class="editable-value" id="ml-lwu-${l.id}-${i}">${l.labWetUnGrind[i] !== null ? l.labWetUnGrind[i] + '%' : '-'}</span></td>
@@ -822,7 +926,7 @@ document.addEventListener('DOMContentLoaded', () => {
         html += `
                 <tr style="border-top: 2px solid var(--card-border);">
                     <td class="frozen-col" style="background:var(--bg-color);"><strong>Running Avg. Moisture</strong></td>
-                    ${maizeLogs.map(l => `
+                    ${visibleLogs.map(l => `
                         <td><strong>${getAvgStr(l.cRoomUnGrind)}</strong></td>
                         <td><strong>${getAvgStr(l.labWetUnGrind)}</strong></td>
                         <td><strong>${getAvgStr(l.labWetGrind)}</strong></td>
@@ -830,15 +934,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>
                 <tr>
                     <td class="frozen-col" style="background:var(--card-bg);">Avg Consumed Moisture</td>
-                    ${maizeLogs.map(l => `<td colspan="3">${getAvgStr(l.cRoomUnGrind)}</td>`).join('')}
+                    ${visibleLogs.map(l => `<td colspan="3">${getAvgStr(l.cRoomUnGrind)}</td>`).join('')}
                 </tr>
                 <tr>
                     <td class="frozen-col" style="background:rgba(255,255,0,0.15); color:var(--text-primary);">Formula Moisture</td>
-                    ${maizeLogs.map(l => `<td colspan="3" style="background:rgba(255,255,0,0.15);"><span class="editable-value" id="ml-form-${l.id}">${l.formulaMoisture}</span>%</td>`).join('')}
+                    ${visibleLogs.map(l => `<td colspan="3" style="background:rgba(255,255,0,0.15);"><span class="editable-value" id="ml-form-${l.id}">${l.formulaMoisture}</span>%</td>`).join('')}
                 </tr>
                 <tr>
                     <td class="frozen-col" style="background:var(--card-bg);">Difference (Running - Formula)</td>
-                    ${maizeLogs.map(l => `<td colspan="3">${calcDiffHtml(l)}</td>`).join('')}
+                    ${visibleLogs.map(l => `<td colspan="3">${calcDiffHtml(l)}</td>`).join('')}
                 </tr>
             </tbody>
         `;
@@ -846,7 +950,7 @@ document.addEventListener('DOMContentLoaded', () => {
         table.innerHTML = html;
 
         // Bind Editables
-        maizeLogs.forEach(l => {
+        visibleLogs.forEach(l => {
             makeEditable(document.getElementById(`ml-date-${l.id}`), 'text', () => l.date, (val) => { l.date = val || l.date; saveMaizeLogs(); renderMaizeMoistureTable(); });
             makeEditable(document.getElementById(`ml-silo-${l.id}`), 'text', () => l.siloNumber, (val) => { l.siloNumber = val || l.siloNumber; saveMaizeLogs(); renderMaizeMoistureTable(); });
             makeEditable(document.getElementById(`ml-pur-${l.id}`), 'number', () => l.purchaseMoisture, (val) => { const n = parseFloat(val); if (!isNaN(n)) l.purchaseMoisture = n; saveMaizeLogs(); renderMaizeMoistureTable(); });
@@ -872,6 +976,23 @@ document.addEventListener('DOMContentLoaded', () => {
         grid.innerHTML = '';
 
         silosData.forEach(silo => {
+            if (silo.id === 1) {
+                const header = document.createElement('div');
+                header.style.gridColumn = '1 / -1';
+                header.innerHTML = `<h2 style="color: var(--text-primary); padding: 1rem 0 0.5rem; border-bottom: 2px solid var(--accent-color); font-size: 1.8rem; margin-top: -1rem;">Main Silos</h2>`;
+                grid.appendChild(header);
+            } else if (silo.id === 9) {
+                const header = document.createElement('div');
+                header.style.gridColumn = '1 / -1';
+                header.innerHTML = `<h2 style="color: var(--text-primary); padding: 1rem 0 0.5rem; border-bottom: 2px solid var(--accent-color); font-size: 1.8rem; margin-top: 1rem;">Dryer Side Silos</h2>`;
+                grid.appendChild(header);
+            } else if (silo.id === 13) {
+                const header = document.createElement('div');
+                header.style.gridColumn = '1 / -1';
+                header.innerHTML = `<h2 style="color: var(--text-primary); padding: 1rem 0 0.5rem; border-bottom: 2px solid var(--accent-color); font-size: 1.8rem; margin-top: 1rem;">Solvent Silos</h2>`;
+                grid.appendChild(header);
+            }
+
             const mc  = getMoistureColor(silo.currentMoisture);
             const mPct = Math.min((silo.currentMoisture / 20) * 100, 100);
 
@@ -895,12 +1016,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                     </div>
+                    <div style="position: absolute; top: 10px; right: 10px; z-index: 4; background: rgba(255,255,255,0.8); padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.8rem; color: var(--text-primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Fill: ${silo.fillLevel}%</div>
                 </div>
                 <div class="silo-card-content">
                     <div class="silo-header">
-                        <div class="silo-title editable-value" id="name-${silo.id}" title="Click to edit">${silo.name}</div>
-                        <div class="status-indicator status-${silo.status.toLowerCase()} status-toggle"
-                             id="status-${silo.id}" title="Click to toggle status">
+                        <div class="silo-title" id="name-${silo.id}">${silo.name}</div>
+                        <div class="status-indicator status-${silo.status.toLowerCase()}"
+                             id="status-${silo.id}">
                             <span class="status-dot"></span>
                             <span class="status-text">${silo.status}</span>
                         </div>
@@ -910,12 +1032,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="metric">
                         <div class="metric-label">
                             <span>Material Type</span>
-                            <select class="material-select" data-id="${silo.id}"
-                                style="background:rgba(0,0,0,0.3);color:var(--text-primary);border:1px solid var(--card-border);
-                                       padding:0.2rem 0.5rem;border-radius:0.25rem;font-family:inherit;font-size:0.85rem;outline:none;">
-                                ${availableMaterials.map(m => `<option value="${m}" ${m===silo.materialType?'selected':''} style="background:var(--bg-color);">${m}</option>`).join('')}
-                                <option value="add_new" style="background:var(--bg-color);">+ Add New...</option>
-                            </select>
+                            <span class="metric-value">${silo.materialType}</span>
                         </div>
                     </div>
 
@@ -939,7 +1056,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="metric">
                         <div class="metric-label">
                             <span>Fan Status</span>
-                            <span class="metric-value fan-toggle" id="fan-${silo.id}" title="Click to toggle"
+                            <span class="metric-value" id="fan-${silo.id}"
                                   style="color:${silo.fanStatus==='On'?'var(--success-color)':'var(--text-secondary)'}">
                                 ${silo.fanStatus}
                             </span>
@@ -992,125 +1109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             grid.appendChild(card);
 
-            // ── Name ────────────────────────────────────────────────────────────
-            makeEditable(
-                document.getElementById(`name-${silo.id}`),
-                'text',
-                () => silo.name,
-                (val, el) => {
-                    silo.name = val || silo.name;
-                    el.textContent = silo.name;
-                    saveData(silo);
-                }
-            );
-
-            // ── Current Fill ────────────────────────────────────────────────────
-            makeEditable(
-                document.getElementById(`fill-${silo.id}`),
-                'number',
-                () => silo.currentFillTons,
-                (val, el) => {
-                    const n = parseFloat(val);
-                    if (!isNaN(n) && n >= 0) {
-                        silo.currentFillTons = Math.min(n, silo.capacity);
-                        silo.fillLevel = Math.round((silo.currentFillTons / silo.capacity) * 100);
-                    }
-                    el.textContent = `${silo.currentFillTons} Tons (${silo.fillLevel}%)`;
-                    saveData(silo);
-                }
-            );
-
-            // ── Filling Start ───────────────────────────────────────────────────
-            makeEditable(
-                document.getElementById(`fstart-${silo.id}`),
-                'text',
-                () => silo.fillingStart,
-                (val, el) => {
-                    silo.fillingStart = val || silo.fillingStart;
-                    el.textContent = silo.fillingStart;
-                    saveData(silo);
-                }
-            );
-
-            // ── Filling End ─────────────────────────────────────────────────────
-            makeEditable(
-                document.getElementById(`fend-${silo.id}`),
-                'text',
-                () => silo.fillingEnd,
-                (val, el) => {
-                    silo.fillingEnd = val || silo.fillingEnd;
-                    el.textContent = silo.fillingEnd;
-                    saveData(silo);
-                }
-            );
-
-            // ── Purchase Moisture ───────────────────────────────────────────────
-            makeEditable(
-                document.getElementById(`pmoist-${silo.id}`),
-                'number',
-                () => silo.purchaseMoisture,
-                (val, el) => {
-                    const n = parseFloat(val);
-                    if (!isNaN(n)) silo.purchaseMoisture = n;
-                    el.textContent = `${silo.purchaseMoisture}%`;
-                    saveData(silo);
-                }
-            );
-
-            // ── Current Moisture ────────────────────────────────────────────────
-            makeEditable(
-                document.getElementById(`cmoist-${silo.id}`),
-                'number',
-                () => silo.currentMoisture,
-                (val, el) => {
-                    const n = parseFloat(val);
-                    if (!isNaN(n)) silo.currentMoisture = n;
-                    const col = getMoistureColor(silo.currentMoisture);
-                    el.textContent  = `${silo.currentMoisture}%`;
-                    el.style.color  = col;
-                    const bar = document.getElementById(`mbar-${silo.id}`);
-                    if (bar) {
-                        bar.style.width           = Math.min((silo.currentMoisture / 20) * 100, 100) + '%';
-                        bar.style.backgroundColor = col;
-                    }
-                    saveData(silo);
-                    renderSummary();
-                }
-            );
-
-            // ── Run Time ────────────────────────────────────────────────────────
-            makeEditable(
-                document.getElementById(`runtime-${silo.id}`),
-                'number',
-                () => silo.runTime,
-                (val, el) => {
-                    const n = parseFloat(val);
-                    if (!isNaN(n) && n >= 0) silo.runTime = n;
-                    el.textContent = `${silo.runTime} Hours`;
-                    saveData(silo);
-                    renderSummary();
-                }
-            );
-
-            // ── Fan toggle ──────────────────────────────────────────────────────
-            document.getElementById(`fan-${silo.id}`).addEventListener('click', () => {
-                silo.fanStatus = silo.fanStatus === 'On' ? 'Off' : 'On';
-                saveData(silo);
-                renderSilos();
-                renderSummary();
-            });
-
-            // ── Status toggle ───────────────────────────────────────────────────
-            document.getElementById(`status-${silo.id}`).addEventListener('click', () => {
-                silo.status = silo.status === 'Running' ? 'Stopped' : 'Running';
-                // If the entire silo is stopped, automatically turn off the fan
-                if (silo.status === 'Stopped') {
-                    silo.fanStatus = 'Off';
-                }
-                saveData(silo);
-                renderSilos();
-                renderSummary();
-            });
+            // Read-only in this view. Data is editable in the Daily Report table.
         });
 
         // ── Remove Three.js call as we use a static image ──

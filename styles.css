@@ -1,11 +1,11 @@
 :root {
-  --bg-color: #0f172a;
-  --card-bg: rgba(30, 41, 59, 0.7);
-  --card-border: rgba(255, 255, 255, 0.1);
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --accent-color: #3b82f6;
-  --accent-glow: rgba(59, 130, 246, 0.5);
+  --bg-color: #e8f5e9;
+  --card-bg: rgba(255, 255, 255, 0.7);
+  --card-border: rgba(0, 0, 0, 0.1);
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --accent-color: #059669;
+  --accent-glow: rgba(5, 150, 105, 0.5);
   --success-color: #10b981;
   --warning-color: #f59e0b;
   --danger-color: #ef4444;
@@ -25,8 +25,8 @@ body {
   margin: 0;
   padding: 0;
   background-image: 
-    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.15), transparent 25%);
+    radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.15), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(5, 150, 105, 0.15), transparent 25%);
 }
 
 .layout-wrapper {
@@ -37,7 +37,7 @@ body {
 
 .sidebar {
   width: 260px;
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(10px);
   border-right: 1px solid var(--card-border);
   padding: 2rem 1rem;
@@ -76,12 +76,12 @@ body {
 }
 
 .nav-item:hover, .nav-item.active {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.05);
   color: var(--text-primary);
 }
 
 .nav-item.active {
-  background: rgba(59, 130, 246, 0.2);
+  background: rgba(5, 150, 105, 0.1);
   border-left: 4px solid var(--accent-color);
 }
 
@@ -116,10 +116,10 @@ header {
 header h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  background: linear-gradient(90deg, #60a5fa, #34d399);
+  background: linear-gradient(90deg, #065f46, #059669);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+  text-shadow: 0 0 20px rgba(5, 150, 105, 0.2);
 }
 
 .date-time {
@@ -209,8 +209,8 @@ header h1 {
 /* ── Pure CSS Glass Silo ─────────────────────────────────────────────── */
 .glass-silo-container {
   width: 100%;
-  height: 250px;
-  background-color: rgba(0, 0, 0, 0.15);
+  height: 230px;
+  background-color: rgba(255, 255, 255, 0.1);
   border-bottom: 1px solid var(--card-border);
   display: flex;
   flex-direction: column;
@@ -222,18 +222,18 @@ header h1 {
 }
 
 .glass-silo-body {
-  width: 120px;
-  height: 160px;
+  width: 130px;
+  height: 170px;
   position: relative;
-  border-radius: 60px 60px 5px 5px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 65px 65px 8px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-bottom: 3px solid rgba(255, 255, 255, 0.8);
   box-shadow: 
-    inset -10px 0 20px rgba(0, 0, 0, 0.3),
-    inset 10px 0 20px rgba(255, 255, 255, 0.15),
-    0 10px 20px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(3px);
+    inset -15px 0 25px rgba(0, 0, 0, 0.15),
+    inset 15px 0 25px rgba(255, 255, 255, 0.5),
+    0 10px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(1px);
   overflow: hidden;
   z-index: 3;
 }
@@ -243,9 +243,13 @@ header h1 {
   bottom: 0;
   left: 0;
   width: 100%;
-  background: linear-gradient(90deg, #d97706 0%, #f59e0b 30%, #fbbf24 60%, #b45309 100%);
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2) 2px, transparent 3px) 0 0,
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.1) 2px, transparent 3px) 5px 5px,
+    linear-gradient(90deg, #d97706 0%, #f59e0b 30%, #fbbf24 60%, #b45309 100%);
+  background-size: 10px 10px, 10px 10px, 100% 100%;
   transition: height 1s ease-in-out;
-  box-shadow: inset 0 5px 15px rgba(0,0,0,0.4);
+  box-shadow: inset 0 8px 20px rgba(0,0,0,0.4);
   z-index: 1;
 }
 
@@ -253,8 +257,8 @@ header h1 {
   content: '';
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px);
-  background-size: 5px 5px;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 10px);
+  pointer-events: none;
 }
 
 .glass-silo-reflection {
@@ -263,7 +267,7 @@ header h1 {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.1) 15%, transparent 30%, transparent 80%, rgba(255,255,255,0.2) 100%);
+  background: linear-gradient(90deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.2) 15%, transparent 35%, transparent 75%, rgba(255,255,255,0.4) 100%);
   pointer-events: none;
   z-index: 2;
 }
@@ -562,7 +566,7 @@ header h1 {
 }
 
 .btn {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.05);
   border: 1px solid var(--card-border);
   color: var(--text-primary);
   padding: 0.75rem 1.5rem;
@@ -575,7 +579,7 @@ header h1 {
 }
 
 .btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -637,7 +641,7 @@ header h1 {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(30, 41, 59, 0.7);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(5px);
   border: 1px solid var(--card-border);
   color: var(--text-primary);
@@ -650,7 +654,7 @@ header h1 {
 }
 
 .btn-supabase-status:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.05);
   transform: translateY(-1px);
 }
 
