@@ -18,12 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewSiloStatus = document.getElementById('view-silo-status');
     const viewDailyReport = document.getElementById('view-daily-report');
     const viewMaizeMoisture = document.getElementById('view-maize-moisture');
+    const navDailyLessExcess = document.getElementById('nav-daily-less-excess');
+    const viewDailyLessExcess = document.getElementById('view-daily-less-excess');
 
     const switchView = (activeNav, activeView) => {
-        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture].forEach(nav => {
+        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess].forEach(nav => {
             if (nav) nav.classList.remove('active');
         });
-        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture].forEach(view => {
+        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess].forEach(view => {
             if (view) view.style.display = 'none';
         });
 
@@ -62,10 +64,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (navDailyLessExcess) {
+        navDailyLessExcess.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(navDailyLessExcess, viewDailyLessExcess);
+        });
+    }
+
     // ─── LocalStorage & Supabase configuration keys ───────────────────────────
     const LS_SILOS       = 'fmpr_silosData';
     const LS_MATERIALS   = 'fmpr_materials';
     const LS_MAIZE_LOGS  = 'fmpr_maizeLogs';
+    const LS_LESS_EXCESS_LOGS = 'fmpr_lessExcessLogs';
     const LS_SB_URL      = 'fmpr_supabaseUrl';
     const LS_SB_KEY      = 'fmpr_supabaseKey';
     const LS_SB_DISABLED = 'fmpr_supabaseDisabled';
@@ -73,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let availableMaterials = ['Maize', 'Rice'];
     let silosData = [];
     let maizeLogs = [];
+    let lessExcessLogs = [];
 
     let sbDisabled = localStorage.getItem(LS_SB_DISABLED) === 'true';
     let supabaseUrl = localStorage.getItem(LS_SB_URL) || (sbDisabled ? '' : (window.env && window.env.SUPABASE_URL) || '');
@@ -279,6 +290,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     silosData = defaultSilos;
                 }
 
+                maizeLogs = JSON.parse(localStorage.getItem(LS_MAIZE_LOGS)) || [];
+                lessExcessLogs = JSON.parse(localStorage.getItem(LS_LESS_EXCESS_LOGS)) || [];
+
                 enforceFixedCapacities();
                 // Sync to backup local storage
                 localStorage.setItem(LS_SILOS, JSON.stringify(silosData));
@@ -306,12 +320,16 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem(LS_SILOS, JSON.stringify(silosData));
         }
         maizeLogs = JSON.parse(localStorage.getItem(LS_MAIZE_LOGS)) || [];
+        lessExcessLogs = JSON.parse(localStorage.getItem(LS_LESS_EXCESS_LOGS)) || [];
         enforceFixedCapacities();
     };
 
     const saveMaizeLogs = () => {
         localStorage.setItem(LS_MAIZE_LOGS, JSON.stringify(maizeLogs));
-        // If we want to sync to supabase later, we'd do it here.
+    };
+
+    const saveLessExcessLogs = () => {
+        localStorage.setItem(LS_LESS_EXCESS_LOGS, JSON.stringify(lessExcessLogs));
     };
 
     const saveData = async (modifiedSilo = null) => {
@@ -401,6 +419,40 @@ document.addEventListener('DOMContentLoaded', () => {
         saveMaizeLogs();
         renderMaizeMoistureTable();
         showToast('✓ Added new date log');
+    });
+
+    document.getElementById('btn-add-less-excess-log').addEventListener('click', () => {
+        const today = new Date();
+        const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+        const h = today.getHours();
+        
+        let currentShift = 'A';
+        if (h >= 6 && h < 14) currentShift = 'A';
+        else if (h >= 14 && h < 22) currentShift = 'B';
+        else currentShift = 'C';
+
+        let currentOfficer = 'Zubair';
+        for (let i = lessExcessLogs.length - 1; i >= 0; i--) {
+            if (lessExcessLogs[i].date === d && lessExcessLogs[i].shift === currentShift) {
+                currentOfficer = lessExcessLogs[i].officerName;
+                break;
+            }
+        }
+
+        lessExcessLogs.push({
+            id: Date.now(),
+            date: d,
+            shift: currentShift,
+            officerName: currentOfficer,
+            feedName: 'Feed 1',
+            batches: 1,
+            productionBags: 100,
+            waterAddition: 0,
+            overallAvg: 0
+        });
+        saveLessExcessLogs();
+        renderLessExcessTable();
+        showToast('✓ Added new Less/Excess log');
     });
 
     const shareWhatsAppBtn = document.getElementById('btn-share-whatsapp');
@@ -712,7 +764,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Inline edit helper ────────────────────────────────────────────────────
     // Makes a span click-to-edit.  onCommit(rawValue) lets caller format display & save.
-    const makeEditable = (el, inputType, getRaw, onCommit) => {
+    const makeEditable = (el, inputType, getRaw, onCommit, options = null) => {
         el.classList.add('editable-value');
         el.title = 'Click to edit';
 
@@ -720,14 +772,28 @@ document.addEventListener('DOMContentLoaded', () => {
             if (el.classList.contains('editing')) return;
             el.classList.add('editing');
 
-            const input = document.createElement('input');
-            input.type      = inputType;
-            input.value     = getRaw();
-            input.className = 'inline-edit-input';
+            let input;
+            if (options) {
+                input = document.createElement('select');
+                input.className = 'inline-edit-input';
+                options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt;
+                    option.textContent = opt;
+                    if (opt === getRaw()) option.selected = true;
+                    input.appendChild(option);
+                });
+            } else {
+                input = document.createElement('input');
+                input.type      = inputType;
+                input.value     = getRaw();
+                input.className = 'inline-edit-input';
+            }
+            
             el.innerHTML = '';
             el.appendChild(input);
             input.focus();
-            input.select();
+            if (!options) input.select();
 
             const commit = () => {
                 el.classList.remove('editing');
@@ -739,11 +805,16 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             const origText = el.textContent;
 
-            input.addEventListener('blur',    commit);
-            input.addEventListener('keydown', e => {
-                if (e.key === 'Enter')  { input.blur(); }
-                if (e.key === 'Escape') { input.removeEventListener('blur', commit); cancel(origText); }
-            });
+            if (options) {
+                input.addEventListener('change', commit);
+                input.addEventListener('blur', commit);
+            } else {
+                input.addEventListener('blur', commit);
+                input.addEventListener('keydown', e => {
+                    if (e.key === 'Enter')  { input.blur(); }
+                    if (e.key === 'Escape') { input.removeEventListener('blur', commit); cancel(origText); }
+                });
+            }
         });
     };
 
@@ -970,6 +1041,110 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // ─── Render Less / Excess Table ───────────────────────────────────────────
+    const renderLessExcessTable = () => {
+        const tbody = document.querySelector('#daily-less-excess-table tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        
+        // Keep a running total for cumulative average calculation
+        const feedTotals = {};
+
+        lessExcessLogs.forEach(log => {
+            const expectedBags = log.batches * 100;
+            const diffBags = log.productionBags - expectedBags;
+            
+            // Add current row to running totals BEFORE calculating its overall percentage
+            if (!feedTotals[log.feedName]) feedTotals[log.feedName] = { expected: 0, diff: 0 };
+            feedTotals[log.feedName].expected += expectedBags;
+            feedTotals[log.feedName].diff += diffBags;
+            
+            let pct = '0.00%';
+            if (expectedBags > 0) {
+                pct = ((diffBags / expectedBags) * 100).toFixed(2) + '%';
+            }
+            
+            const badgeClass = diffBags > 0 ? 'badge-success' : diffBags < 0 ? 'badge-danger' : 'badge-neutral';
+            const diffStr = diffBags > 0 ? '+' + diffBags : diffBags;
+            const pctStr = diffBags > 0 ? '+' + pct : pct;
+            
+            // Overall Average calculations (cumulative)
+            const totals = feedTotals[log.feedName];
+            let overallPct = '0.00%';
+            let overallBadgeClass = 'badge-neutral';
+            if (totals && totals.expected > 0) {
+                const pctNum = (totals.diff / totals.expected) * 100;
+                overallPct = pctNum.toFixed(2) + '%';
+                if (pctNum > 0) {
+                    overallPct = '+' + overallPct;
+                    overallBadgeClass = 'badge-success';
+                } else if (pctNum < 0) {
+                    overallBadgeClass = 'badge-danger';
+                }
+            }
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span class="editable-value" id="le-date-${log.id}" title="Click to edit">${log.date}</span></td>
+                <td><span class="editable-value" id="le-shift-${log.id}" title="Click to edit">${log.shift || '-'}</span></td>
+                <td><span class="editable-value" id="le-officer-${log.id}" title="Click to edit">${log.officerName || '-'}</span></td>
+                <td><span class="editable-value" id="le-feed-${log.id}" title="Click to edit">${log.feedName}</span></td>
+                <td><span class="editable-value" id="le-batch-${log.id}" title="Click to edit">${log.batches}</span></td>
+                <td><span class="editable-value" id="le-prod-${log.id}" title="Click to edit" style="font-weight: bold; color: #93c5fd;">${log.productionBags}</span></td>
+                <td><span class="badge ${badgeClass}">${diffStr}</span></td>
+                <td><span class="badge ${badgeClass}">${pctStr}</span></td>
+                <td><span class="editable-value" id="le-water-${log.id}" title="Click to edit">${log.waterAddition ?? 0}</span></td>
+                <td><span class="badge ${overallBadgeClass}">${overallPct}</span></td>
+            `;
+            tbody.appendChild(tr);
+
+            // Bind editables
+            makeEditable(document.getElementById(`le-date-${log.id}`), 'text', () => log.date, (val) => { 
+                log.date = val || log.date; 
+                saveLessExcessLogs(); renderLessExcessTable(); 
+            });
+            makeEditable(document.getElementById(`le-shift-${log.id}`), 'text', () => log.shift || 'A', (val) => { 
+                log.shift = val || log.shift; 
+                // Dynamically find the last officer assigned to this shift on the same date
+                for (let i = lessExcessLogs.length - 1; i >= 0; i--) {
+                    if (lessExcessLogs[i].id !== log.id && lessExcessLogs[i].shift === log.shift && lessExcessLogs[i].date === log.date) {
+                        log.officerName = lessExcessLogs[i].officerName;
+                        break;
+                    }
+                }
+                saveLessExcessLogs(); renderLessExcessTable(); 
+            }, ['A', 'B', 'C']);
+            
+            makeEditable(document.getElementById(`le-officer-${log.id}`), 'text', () => log.officerName || 'Zubair', (val) => { 
+                log.officerName = val || log.officerName; 
+                // Dynamically find the last shift assigned to this officer on the same date
+                for (let i = lessExcessLogs.length - 1; i >= 0; i--) {
+                    if (lessExcessLogs[i].id !== log.id && lessExcessLogs[i].officerName === log.officerName && lessExcessLogs[i].date === log.date) {
+                        log.shift = lessExcessLogs[i].shift;
+                        break;
+                    }
+                }
+                saveLessExcessLogs(); renderLessExcessTable(); 
+            }, ['Zubair', 'Shoaib', 'Tahir']);
+            makeEditable(document.getElementById(`le-feed-${log.id}`), 'text', () => log.feedName, (val) => { 
+                log.feedName = val || log.feedName; 
+                saveLessExcessLogs(); renderLessExcessTable(); 
+            });
+            makeEditable(document.getElementById(`le-batch-${log.id}`), 'number', () => log.batches, (val) => { 
+                const n = parseFloat(val); if (!isNaN(n)) log.batches = n; 
+                saveLessExcessLogs(); renderLessExcessTable(); 
+            });
+            makeEditable(document.getElementById(`le-prod-${log.id}`), 'number', () => log.productionBags, (val) => { 
+                const n = parseFloat(val); if (!isNaN(n)) log.productionBags = n; 
+                saveLessExcessLogs(); renderLessExcessTable(); 
+            });
+            makeEditable(document.getElementById(`le-water-${log.id}`), 'number', () => log.waterAddition ?? 0, (val) => { 
+                const n = parseFloat(val); if (!isNaN(n)) log.waterAddition = n; 
+                saveLessExcessLogs(); renderLessExcessTable(); 
+            });
+        });
+    };
+
     // ─── Render Silo Cards ────────────────────────────────────────────────────
     const renderSilos = () => {
         const grid = document.getElementById('silo-grid');
@@ -1118,6 +1293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSummary();
         renderDailyReportTable();
         renderMaizeMoistureTable();
+        renderLessExcessTable();
 
         // ── Material select ───────────────────────────────────────────────────
         document.querySelectorAll('.material-select').forEach(select => {

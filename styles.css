@@ -600,6 +600,42 @@ header h1 {
   100% { opacity: 1; transform: scale(1); }
 }
 
+/* ── Beautiful Badges for Less/Excess ────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  letter-spacing: 0.5px;
+}
+
+.badge-success {
+  background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.4));
+  color: #34d399;
+  border: 1px solid rgba(52,211,153,0.3);
+}
+
+.badge-danger {
+  background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.4));
+  color: #f87171;
+  border: 1px solid rgba(248,113,113,0.3);
+}
+
+.badge-neutral {
+  background: linear-gradient(135deg, rgba(156,163,175,0.2), rgba(156,163,175,0.4));
+  color: #d1d5db;
+  border: 1px solid rgba(209,213,219,0.3);
+}
+
+/* Highlighted Columns */
+.less-excess-table td:nth-child(4),
+.less-excess-table th:nth-child(4) {
+  background: rgba(59, 130, 246, 0.05); /* subtle blue for actual */
+}
+
 @media print {
   body {
     background: white;
@@ -940,12 +976,12 @@ header h1 {
 .report-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
+  text-align: center;
 }
 
 .report-table th, .report-table td {
   padding: 1rem;
-  border-bottom: 1px solid var(--card-border);
+  border: 1px solid var(--card-border);
 }
 
 .report-table th {
