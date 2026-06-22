@@ -422,18 +422,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('btn-add-less-excess-log').addEventListener('click', () => {
+        if (lessExcessLogs.length > 0) {
+            const lastLog = lessExcessLogs[lessExcessLogs.length - 1];
+            if (!lastLog.locked) {
+                alert('Please submit the current shift before starting a new one!');
+                return;
+            }
+        }
+        
         const today = new Date();
         const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
-        const h = today.getHours();
         
         let currentShift = 'A';
-        if (h >= 6 && h < 14) currentShift = 'A';
-        else if (h >= 14 && h < 22) currentShift = 'B';
-        else currentShift = 'C';
-
+        if (lessExcessLogs.length > 0) {
+            const lastLog = lessExcessLogs[lessExcessLogs.length - 1];
+            if (lastLog.shift === 'A') currentShift = 'B';
+            else if (lastLog.shift === 'B') currentShift = 'C';
+            else if (lastLog.shift === 'C') currentShift = 'A';
+        }
+        
         let currentOfficer = 'Zubair';
         for (let i = lessExcessLogs.length - 1; i >= 0; i--) {
-            if (lessExcessLogs[i].date === d && lessExcessLogs[i].shift === currentShift) {
+            if (lessExcessLogs[i].shift === currentShift) {
                 currentOfficer = lessExcessLogs[i].officerName;
                 break;
             }
@@ -448,11 +458,13 @@ document.addEventListener('DOMContentLoaded', () => {
             batches: 1,
             productionBags: 100,
             waterAddition: 0,
-            overallAvg: 0
+            overallAvg: 0,
+            remarks: '',
+            locked: false
         });
         saveLessExcessLogs();
         renderLessExcessTable();
-        showToast('✓ Added new Less/Excess log');
+        showToast('✓ Started new shift');
     });
 
     const shareWhatsAppBtn = document.getElementById('btn-share-whatsapp');
@@ -1043,18 +1055,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Render Less / Excess Table ───────────────────────────────────────────
     const renderLessExcessTable = () => {
-        const tbody = document.querySelector('#daily-less-excess-table tbody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        
         // Keep a running total for cumulative average calculation
         const feedTotals = {};
 
+        // Calculate totals dynamically forward (oldest first)
         lessExcessLogs.forEach(log => {
             const expectedBags = log.batches * 100;
             const diffBags = log.productionBags - expectedBags;
             
-            // Add current row to running totals BEFORE calculating its overall percentage
             if (!feedTotals[log.feedName]) feedTotals[log.feedName] = { expected: 0, diff: 0 };
             feedTotals[log.feedName].expected += expectedBags;
             feedTotals[log.feedName].diff += diffBags;
@@ -1064,84 +1072,199 @@ document.addEventListener('DOMContentLoaded', () => {
                 pct = ((diffBags / expectedBags) * 100).toFixed(2) + '%';
             }
             
-            const badgeClass = diffBags > 0 ? 'badge-success' : diffBags < 0 ? 'badge-danger' : 'badge-neutral';
-            const diffStr = diffBags > 0 ? '+' + diffBags : diffBags;
-            const pctStr = diffBags > 0 ? '+' + pct : pct;
-            
-            // Overall Average calculations (cumulative)
+            log._overallBadgeClass = 'badge-neutral';
+            log._overallPct = '0.00%';
+            log._diffStr = diffBags > 0 ? '+' + diffBags : diffBags;
+            log._pctStr = diffBags > 0 ? '+' + pct : pct;
+            log._badgeClass = diffBags > 0 ? 'badge-success' : diffBags < 0 ? 'badge-danger' : 'badge-neutral';
+
             const totals = feedTotals[log.feedName];
-            let overallPct = '0.00%';
-            let overallBadgeClass = 'badge-neutral';
             if (totals && totals.expected > 0) {
                 const pctNum = (totals.diff / totals.expected) * 100;
-                overallPct = pctNum.toFixed(2) + '%';
+                log._overallPct = pctNum.toFixed(2) + '%';
                 if (pctNum > 0) {
-                    overallPct = '+' + overallPct;
-                    overallBadgeClass = 'badge-success';
+                    log._overallPct = '+' + log._overallPct;
+                    log._overallBadgeClass = 'badge-success';
                 } else if (pctNum < 0) {
-                    overallBadgeClass = 'badge-danger';
+                    log._overallBadgeClass = 'badge-danger';
+                }
+            }
+        });
+
+        // Now render backwards (newest first) with grouping
+        const container = document.getElementById('daily-less-excess-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const reversedLogs = [...lessExcessLogs].reverse();
+        let currentGroupKey = null;
+        let currentTableBody = null;
+
+        reversedLogs.forEach(log => {
+            const groupKey = `${log.date}|${log.shift}|${log.officerName}`;
+            
+            if (groupKey !== currentGroupKey) {
+                // Create Group Container
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'shift-group-container';
+                groupDiv.style.background = 'var(--card-bg)';
+                groupDiv.style.borderRadius = '8px';
+                groupDiv.style.overflow = 'hidden';
+                groupDiv.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+                
+                const isLocked = log.locked === true;
+                
+                let shiftStyle = 'background: var(--card-bg);';
+                let shiftBadgeClass = '';
+                if (log.shift === 'A') {
+                    shiftStyle = 'background: linear-gradient(to right, rgba(245, 158, 11, 0.15), var(--card-bg)); border-left: 4px solid #f59e0b;';
+                    shiftBadgeClass = 'color: #f59e0b; font-weight: bold; background: rgba(245, 158, 11, 0.2); padding: 0.1rem 0.4rem; border-radius: 4px;';
+                } else if (log.shift === 'B') {
+                    shiftStyle = 'background: linear-gradient(to right, rgba(59, 130, 246, 0.15), var(--card-bg)); border-left: 4px solid #3b82f6;';
+                    shiftBadgeClass = 'color: #3b82f6; font-weight: bold; background: rgba(59, 130, 246, 0.2); padding: 0.1rem 0.4rem; border-radius: 4px;';
+                } else if (log.shift === 'C') {
+                    shiftStyle = 'background: linear-gradient(to right, rgba(139, 92, 246, 0.15), var(--card-bg)); border-left: 4px solid #8b5cf6;';
+                    shiftBadgeClass = 'color: #8b5cf6; font-weight: bold; background: rgba(139, 92, 246, 0.2); padding: 0.1rem 0.4rem; border-radius: 4px;';
+                }
+                
+                let actionHtml = '';
+                if (isLocked) {
+                    actionHtml = `<span style="color:var(--success-color); font-weight:bold; font-size: 0.9rem;">🔒 Shift Submitted</span>`;
+                } else {
+                    actionHtml = `
+                        <button class="btn btn-sm" id="btn-submit-grp-${log.id}" style="padding: 0.2rem 0.6rem; font-size: 0.85rem; border-radius: 4px; border: 1px solid var(--success-color); background: transparent; color: var(--success-color); cursor: pointer; margin-right: 0.5rem;">✅ Submit Shift</button>
+                        <button class="btn btn-sm btn-primary" id="btn-add-grp-${log.id}" style="padding: 0.2rem 0.6rem; font-size: 0.85rem; border-radius: 4px; border: none; background: var(--accent-color); color: #fff; cursor: pointer;">➕ Add Entry</button>
+                    `;
+                }
+
+                const headerDiv = document.createElement('div');
+                headerDiv.style = `padding: 1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; ${shiftStyle}`;
+                headerDiv.innerHTML = `
+                    <div>
+                        <strong style="color:var(--text-secondary)">Date:</strong> <span class="${isLocked ? '' : 'editable-value'}" id="le-grp-date-${log.id}" title="${isLocked ? '' : 'Click to edit'}">${log.date}</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <strong style="color:var(--text-secondary)">Shift:</strong> <span class="${isLocked ? '' : 'editable-value'}" id="le-grp-shift-${log.id}" title="${isLocked ? '' : 'Click to edit'}" style="${shiftBadgeClass}">${log.shift}</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <strong style="color:var(--text-secondary)">Officer:</strong> <span class="${isLocked ? '' : 'editable-value'}" id="le-grp-officer-${log.id}" title="${isLocked ? '' : 'Click to edit'}">${log.officerName}</span>
+                    </div>
+                    <div>${actionHtml}</div>
+                `;
+                groupDiv.appendChild(headerDiv);
+                
+                const table = document.createElement('table');
+                table.className = 'report-table less-excess-table';
+                table.style.margin = '0';
+                table.style.borderTop = 'none';
+                table.style.borderTopLeftRadius = '0';
+                table.style.borderTopRightRadius = '0';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Feed Name / No.</th>
+                            <th>Batches</th>
+                            <th>Actual Production (Bags)</th>
+                            <th>Less/Excess (Bags)</th>
+                            <th>Final %age</th>
+                            <th>Water Addition</th>
+                            <th>Overall Avg Less/Excess</th>
+                            <th>Remarks</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+                currentTableBody = table.querySelector('tbody');
+                groupDiv.appendChild(table);
+                container.appendChild(groupDiv);
+                
+                currentGroupKey = groupKey;
+
+                if (!isLocked) {
+                    // Bind Group Editables
+                    const updateGroup = (field, newVal) => {
+                        lessExcessLogs.forEach(l => {
+                            if (l.date === log.date && l.shift === log.shift && l.officerName === log.officerName) {
+                                l[field] = newVal;
+                            }
+                        });
+                        saveLessExcessLogs();
+                        renderLessExcessTable();
+                    };
+
+                    makeEditable(document.getElementById(`le-grp-date-${log.id}`), 'text', () => log.date, (val) => updateGroup('date', val || log.date));
+                    makeEditable(document.getElementById(`le-grp-shift-${log.id}`), 'text', () => log.shift, (val) => updateGroup('shift', val || log.shift), ['A', 'B', 'C']);
+                    makeEditable(document.getElementById(`le-grp-officer-${log.id}`), 'text', () => log.officerName, (val) => updateGroup('officerName', val || log.officerName), ['Zubair', 'Shoaib', 'Tahir']);
+
+                    document.getElementById(`btn-submit-grp-${log.id}`).addEventListener('click', () => {
+                        if (confirm('Submit this shift? You will no longer be able to edit or add entries to it.')) {
+                            lessExcessLogs.forEach(l => {
+                                if (l.date === log.date && l.shift === log.shift && l.officerName === log.officerName) {
+                                    l.locked = true;
+                                }
+                            });
+                            saveLessExcessLogs();
+                            renderLessExcessTable();
+                            showToast('✓ Shift Submitted successfully');
+                        }
+                    });
+
+                    document.getElementById(`btn-add-grp-${log.id}`).addEventListener('click', () => {
+                        let insertIndex = lessExcessLogs.length;
+                        for (let i = lessExcessLogs.length - 1; i >= 0; i--) {
+                            if (lessExcessLogs[i].date === log.date && lessExcessLogs[i].shift === log.shift && lessExcessLogs[i].officerName === log.officerName) {
+                                insertIndex = i + 1;
+                                break;
+                            }
+                        }
+                        lessExcessLogs.splice(insertIndex, 0, {
+                            id: Date.now(),
+                            date: log.date,
+                            shift: log.shift,
+                            officerName: log.officerName,
+                            feedName: 'Feed 1',
+                            batches: 1,
+                            productionBags: 100,
+                            waterAddition: 0,
+                            overallAvg: 0,
+                            remarks: '',
+                            locked: false
+                        });
+                        saveLessExcessLogs();
+                        renderLessExcessTable();
+                        showToast('✓ Added new entry to shift');
+                    });
                 }
             }
             
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><span class="editable-value" id="le-date-${log.id}" title="Click to edit">${log.date}</span></td>
-                <td><span class="editable-value" id="le-shift-${log.id}" title="Click to edit">${log.shift || '-'}</span></td>
-                <td><span class="editable-value" id="le-officer-${log.id}" title="Click to edit">${log.officerName || '-'}</span></td>
-                <td><span class="editable-value" id="le-feed-${log.id}" title="Click to edit">${log.feedName}</span></td>
-                <td><span class="editable-value" id="le-batch-${log.id}" title="Click to edit">${log.batches}</span></td>
-                <td><span class="editable-value" id="le-prod-${log.id}" title="Click to edit" style="font-weight: bold; color: #93c5fd;">${log.productionBags}</span></td>
-                <td><span class="badge ${badgeClass}">${diffStr}</span></td>
-                <td><span class="badge ${badgeClass}">${pctStr}</span></td>
-                <td><span class="editable-value" id="le-water-${log.id}" title="Click to edit">${log.waterAddition ?? 0}</span></td>
-                <td><span class="badge ${overallBadgeClass}">${overallPct}</span></td>
+                <td><span class="${log.locked ? '' : 'editable-value'}" id="le-feed-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.feedName}</span></td>
+                <td><span class="${log.locked ? '' : 'editable-value'}" id="le-batch-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.batches}</span></td>
+                <td><span class="${log.locked ? '' : 'editable-value'}" id="le-prod-${log.id}" title="${log.locked ? '' : 'Click to edit'}" style="font-weight: bold; color: #93c5fd;">${log.productionBags}</span></td>
+                <td><span class="badge ${log._badgeClass}">${log._diffStr}</span></td>
+                <td><span class="badge ${log._badgeClass}">${log._pctStr}</span></td>
+                <td><span class="${log.locked ? '' : 'editable-value'}" id="le-water-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.waterAddition ?? 0}</span></td>
+                <td><span class="badge ${log._overallBadgeClass}">${log._overallPct}</span></td>
+                <td><span class="${log.locked ? '' : 'editable-value'}" id="le-remarks-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.remarks || (log.locked ? '' : '<span style="color:var(--text-secondary); font-style:italic; font-size:0.85rem;">+ Add remark</span>')}</span></td>
+                <td>${log.locked ? '' : `<button class="btn btn-sm" style="background:transparent; border:none; color:var(--danger-color); cursor:pointer; font-size:1.1rem; padding:0;" id="le-del-${log.id}" title="Delete Entry">🗑️</button>`}</td>
             `;
-            tbody.appendChild(tr);
+            currentTableBody.appendChild(tr);
 
-            // Bind editables
-            makeEditable(document.getElementById(`le-date-${log.id}`), 'text', () => log.date, (val) => { 
-                log.date = val || log.date; 
-                saveLessExcessLogs(); renderLessExcessTable(); 
-            });
-            makeEditable(document.getElementById(`le-shift-${log.id}`), 'text', () => log.shift || 'A', (val) => { 
-                log.shift = val || log.shift; 
-                // Dynamically find the last officer assigned to this shift on the same date
-                for (let i = lessExcessLogs.length - 1; i >= 0; i--) {
-                    if (lessExcessLogs[i].id !== log.id && lessExcessLogs[i].shift === log.shift && lessExcessLogs[i].date === log.date) {
-                        log.officerName = lessExcessLogs[i].officerName;
-                        break;
+            if (!log.locked) {
+                // Bind individual row editables
+                makeEditable(document.getElementById(`le-feed-${log.id}`), 'text', () => log.feedName, (val) => { log.feedName = val || log.feedName; saveLessExcessLogs(); renderLessExcessTable(); });
+                makeEditable(document.getElementById(`le-batch-${log.id}`), 'number', () => log.batches, (val) => { const n = parseFloat(val); if (!isNaN(n)) log.batches = n; saveLessExcessLogs(); renderLessExcessTable(); });
+                makeEditable(document.getElementById(`le-prod-${log.id}`), 'number', () => log.productionBags, (val) => { const n = parseFloat(val); if (!isNaN(n)) log.productionBags = n; saveLessExcessLogs(); renderLessExcessTable(); });
+                makeEditable(document.getElementById(`le-water-${log.id}`), 'number', () => log.waterAddition ?? 0, (val) => { const n = parseFloat(val); if (!isNaN(n)) log.waterAddition = n; saveLessExcessLogs(); renderLessExcessTable(); });
+                makeEditable(document.getElementById(`le-remarks-${log.id}`), 'text', () => log.remarks || '', (val) => { log.remarks = val || ''; saveLessExcessLogs(); renderLessExcessTable(); });
+
+                document.getElementById(`le-del-${log.id}`).addEventListener('click', () => {
+                    if (confirm('Are you sure you want to delete this entry?')) {
+                        lessExcessLogs = lessExcessLogs.filter(x => x.id !== log.id);
+                        saveLessExcessLogs();
+                        renderLessExcessTable();
+                        showToast('✓ Entry deleted');
                     }
-                }
-                saveLessExcessLogs(); renderLessExcessTable(); 
-            }, ['A', 'B', 'C']);
-            
-            makeEditable(document.getElementById(`le-officer-${log.id}`), 'text', () => log.officerName || 'Zubair', (val) => { 
-                log.officerName = val || log.officerName; 
-                // Dynamically find the last shift assigned to this officer on the same date
-                for (let i = lessExcessLogs.length - 1; i >= 0; i--) {
-                    if (lessExcessLogs[i].id !== log.id && lessExcessLogs[i].officerName === log.officerName && lessExcessLogs[i].date === log.date) {
-                        log.shift = lessExcessLogs[i].shift;
-                        break;
-                    }
-                }
-                saveLessExcessLogs(); renderLessExcessTable(); 
-            }, ['Zubair', 'Shoaib', 'Tahir']);
-            makeEditable(document.getElementById(`le-feed-${log.id}`), 'text', () => log.feedName, (val) => { 
-                log.feedName = val || log.feedName; 
-                saveLessExcessLogs(); renderLessExcessTable(); 
-            });
-            makeEditable(document.getElementById(`le-batch-${log.id}`), 'number', () => log.batches, (val) => { 
-                const n = parseFloat(val); if (!isNaN(n)) log.batches = n; 
-                saveLessExcessLogs(); renderLessExcessTable(); 
-            });
-            makeEditable(document.getElementById(`le-prod-${log.id}`), 'number', () => log.productionBags, (val) => { 
-                const n = parseFloat(val); if (!isNaN(n)) log.productionBags = n; 
-                saveLessExcessLogs(); renderLessExcessTable(); 
-            });
-            makeEditable(document.getElementById(`le-water-${log.id}`), 'number', () => log.waterAddition ?? 0, (val) => { 
-                const n = parseFloat(val); if (!isNaN(n)) log.waterAddition = n; 
-                saveLessExcessLogs(); renderLessExcessTable(); 
-            });
+                });
+            }
         });
     };
 
