@@ -211,6 +211,8 @@ create table if not exists public.silos (
   current_fill_tons numeric not null,
   filling_start text not null,
   filling_end text not null,
+  fan_on_time text not null default '-',
+  fan_off_time text not null default '-',
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -229,6 +231,21 @@ create table if not exists public.daily_maize_logs (
   c_room_un_grind numeric[],
   lab_wet_un_grind numeric[],
   lab_wet_grind numeric[],
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Create daily_less_excess_logs table
+create table if not exists public.daily_less_excess_logs (
+  id bigint primary key,
+  report_date text not null,
+  shift text,
+  officer_name text,
+  feed_name text,
+  batches numeric not null default 0,
+  production_bags numeric not null default 0,
+  water_addition numeric not null default 0,
+  remarks text,
+  is_locked boolean not null default false,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );</code></pre>
                         <button class="btn btn-copy-sql" id="btn-copy-sql">Copy SQL</button>
