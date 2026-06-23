@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_KEY || '';
+const supabaseKey = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || '';
 
 const content = `window.env = {
     SUPABASE_URL: "${supabaseUrl}",
