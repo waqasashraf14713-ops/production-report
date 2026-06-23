@@ -1,6 +1,9 @@
 # Local environment config (ignore credentials)
 env.js
 
+# Build output
+public/
+
 # Dependencies
 node_modules/
 .DS_Store
