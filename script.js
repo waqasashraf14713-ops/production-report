@@ -155,6 +155,28 @@ document.addEventListener('DOMContentLoaded', () => {
         is_locked: log.locked
     });
 
+    const mapMaizeLogFromDb = (dbLog) => ({
+        id: dbLog.id,
+        date: dbLog.date,
+        siloNumber: dbLog.silo_number,
+        purchaseMoisture: parseFloat(dbLog.purchase_moisture || 0),
+        formulaMoisture: parseFloat(dbLog.formula_moisture || 0),
+        cRoomUnGrind: dbLog.c_room_un_grind || [null, null, null, null, null, null],
+        labWetUnGrind: dbLog.lab_wet_un_grind || [null, null, null, null, null, null],
+        labWetGrind: dbLog.lab_wet_grind || [null, null, null, null, null, null]
+    });
+
+    const mapMaizeLogToDb = (log) => ({
+        id: log.id,
+        date: log.date,
+        silo_number: log.siloNumber,
+        purchase_moisture: log.purchaseMoisture,
+        formula_moisture: log.formulaMoisture,
+        c_room_un_grind: log.cRoomUnGrind,
+        lab_wet_un_grind: log.labWetUnGrind,
+        lab_wet_grind: log.labWetGrind
+    });
+
 
     // ─── Supabase Status UI ────────────────────────────────────────────────────
     const updateSbStatusUI = () => {
@@ -331,7 +353,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                maizeLogs = JSON.parse(localStorage.getItem(LS_MAIZE_LOGS)) || [];
+                // Fetch Maize logs
+                const { data: dbMaize, error: maizeErr } = await sbClient.from('daily_maize_logs').select('*').order('id', { ascending: true });
+                if (maizeErr) throw maizeErr;
+
+                if (dbMaize && dbMaize.length > 0) {
+                    maizeLogs = dbMaize.map(mapMaizeLogFromDb);
+                } else {
+                    maizeLogs = JSON.parse(localStorage.getItem(LS_MAIZE_LOGS)) || [];
+                    if (maizeLogs.length > 0) {
+                        // Seed local data to Supabase
+                        await sbClient.from('daily_maize_logs').insert(maizeLogs.map(mapMaizeLogToDb));
+                    }
+                }
 
                 enforceFixedCapacities();
                 // Sync to backup local storage
@@ -364,8 +398,18 @@ document.addEventListener('DOMContentLoaded', () => {
         enforceFixedCapacities();
     };
 
-    const saveMaizeLogs = () => {
+    const saveMaizeLogs = async () => {
         localStorage.setItem(LS_MAIZE_LOGS, JSON.stringify(maizeLogs));
+        if (isSbConnected && sbClient) {
+            try {
+                const { error } = await sbClient
+                    .from('daily_maize_logs')
+                    .upsert(maizeLogs.map(mapMaizeLogToDb));
+                if (error) throw error;
+            } catch (err) {
+                console.error('Supabase save failed for maize logs:', err);
+            }
+        }
     };
 
     const saveLessExcessLogs = async () => {

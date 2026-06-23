@@ -217,7 +217,20 @@ create table if not exists public.silos (
 -- Insert default materials
 insert into public.materials (name) 
 values ('Maize'), ('Rice')
-on conflict (name) do nothing;</code></pre>
+on conflict (name) do nothing;
+
+-- Create daily_maize_logs table
+create table if not exists public.daily_maize_logs (
+  id bigint primary key,
+  date text not null,
+  silo_number text not null,
+  purchase_moisture numeric not null default 0,
+  formula_moisture numeric not null default 0,
+  c_room_un_grind numeric[],
+  lab_wet_un_grind numeric[],
+  lab_wet_grind numeric[],
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);</code></pre>
                         <button class="btn btn-copy-sql" id="btn-copy-sql">Copy SQL</button>
                     </div>
                 </div>
