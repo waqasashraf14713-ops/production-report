@@ -87,6 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let sbDisabled = localStorage.getItem(LS_SB_DISABLED) === 'true';
     let supabaseUrl = localStorage.getItem(LS_SB_URL) || (sbDisabled ? '' : (window.env && window.env.SUPABASE_URL) || '');
+    if (supabaseUrl) {
+        supabaseUrl = supabaseUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+    }
     let supabaseKey = localStorage.getItem(LS_SB_KEY) || (sbDisabled ? '' : (window.env && window.env.SUPABASE_KEY) || '');
     let sbClient = null;
     let isSbConnected = false;
@@ -135,11 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
         shift: dbRow.shift,
         officerName: dbRow.officer_name,
         feedName: dbRow.feed_name,
-        batches: dbRow.batches,
-        productionBags: dbRow.production_bags,
-        waterAddition: dbRow.water_addition,
+        batches: parseFloat(dbRow.batches || 0),
+        productionBags: parseFloat(dbRow.production_bags || 0),
+        waterAddition: parseFloat(dbRow.water_addition || 0),
         remarks: dbRow.remarks || '',
-        locked: dbRow.is_locked
+        locked: dbRow.is_locked === true || dbRow.is_locked === 'true'
     });
 
     const mapLessExcessToDb = (log) => ({
@@ -148,11 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
         shift: log.shift,
         officer_name: log.officerName,
         feed_name: log.feedName,
-        batches: log.batches,
-        production_bags: log.productionBags,
-        water_addition: log.waterAddition,
+        batches: parseFloat(log.batches || 0),
+        production_bags: parseFloat(log.productionBags || 0),
+        water_addition: parseFloat(log.waterAddition || 0),
         remarks: log.remarks || '',
-        is_locked: log.locked
+        is_locked: log.locked === true
     });
 
     const mapMaizeLogFromDb = (dbLog) => ({
@@ -408,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (error) throw error;
             } catch (err) {
                 console.error('Supabase save failed for maize logs:', err);
+                alert('Supabase Save Error (Maize Logs): ' + (err.message || err.details || JSON.stringify(err)));
             }
         }
     };
@@ -422,6 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (error) throw error;
             } catch (err) {
                 console.error('Supabase save failed for less/excess logs:', err);
+                alert('Supabase Save Error (Less/Excess): ' + (err.message || err.details || JSON.stringify(err)));
             }
         }
     };
@@ -726,7 +731,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Test Connection
     if (testBtn) {
         testBtn.addEventListener('click', async () => {
-            const url = document.getElementById('sb-url').value.trim();
+            const rawUrl = document.getElementById('sb-url').value.trim();
+            const url = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
             const key = document.getElementById('sb-key').value.trim();
 
             if (!url || !key) {
@@ -758,7 +764,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Save and Sync
     if (saveSbBtn) {
         saveSbBtn.addEventListener('click', async () => {
-            const url = document.getElementById('sb-url').value.trim();
+            const rawUrl = document.getElementById('sb-url').value.trim();
+            const url = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
             const key = document.getElementById('sb-key').value.trim();
 
             if (!url || !key) {
