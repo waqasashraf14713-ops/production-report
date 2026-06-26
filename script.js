@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const navFiveS = document.getElementById('nav-five-s');
     const viewFiveS = document.getElementById('view-five-s');
     // navDailyChecklist and viewDailyChecklist are now part of view-five-s tabs
-    const navShiftReport   = document.getElementById('nav-shift-report');
-    const viewShiftReport  = document.getElementById('view-shift-report');
+    const navShiftReport = document.getElementById('nav-shift-report');
+    const viewShiftReport = document.getElementById('view-shift-report');
     const navBatchingAudit = document.getElementById('nav-batching-audit');
     const viewBatchingAudit = document.getElementById('view-batching-audit');
 
@@ -365,8 +365,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSrFilterDate = null;
     let activeSrId = null;
     let batchingAudits = [];
-    let currentBaDate = null;
-    let activeBaSlotIndex = null;
+    let currentBaFilterDate = null;
+    let activeBaId = null;
 
     let sbDisabled = localStorage.getItem(LS_SB_DISABLED) === 'true';
     let supabaseUrl = localStorage.getItem(LS_SB_URL) || (sbDisabled ? '' : (window.env && window.env.SUPABASE_URL) || '');
@@ -539,38 +539,29 @@ document.addEventListener('DOMContentLoaded', () => {
         is_submitted: r.isSubmitted === true
     });
 
-    const mapBatchingAuditFromDb = (r) => ({
-        id: r.id,
-        date: r.audit_date,
-        slotIndex: r.slot_index,
-        slotLabel: r.slot_label,
-        slotTime:  r.slot_time,
-        auditorName: r.auditor_name,
-        batchesChecked: r.batches_checked || 0,
-        medicineCorrect: r.medicine_correct !== false,
-        weightCorrect:   r.weight_correct   !== false,
-        sequenceCorrect: r.sequence_correct  !== false,
-        issuesFound: r.issues_found || '',
-        remarks:     r.remarks || '',
-        isPass:      r.is_pass !== false
+    const mapBatchingAuditFromDb = (a) => ({
+        id: a.id,
+        date: a.audit_date,
+        time: a.audit_time,
+        medicineName: a.medicine_name,
+        batchNo: a.batch_no || '',
+        expectedQty: parseFloat(a.expected_qty || 0),
+        actualQty: parseFloat(a.actual_qty || 0),
+        remarks: a.remarks || '',
+        auditorName: a.auditor_name || ''
     });
 
-    const mapBatchingAuditToDb = (r) => ({
-        id: r.id,
-        audit_date: r.date,
-        slot_index: r.slotIndex,
-        slot_label: r.slotLabel,
-        slot_time:  r.slotTime,
-        auditor_name: r.auditorName,
-        batches_checked: r.batchesChecked || 0,
-        medicine_correct: r.medicineCorrect !== false,
-        weight_correct:   r.weightCorrect   !== false,
-        sequence_correct: r.sequenceCorrect  !== false,
-        issues_found: r.issuesFound || '',
-        remarks:      r.remarks || '',
-        is_pass:      r.isPass !== false
+    const mapBatchingAuditToDb = (a) => ({
+        id: a.id,
+        audit_date: a.date,
+        audit_time: a.time,
+        medicine_name: a.medicineName,
+        batch_no: a.batchNo || '',
+        expected_qty: a.expectedQty || 0,
+        actual_qty: a.actualQty || 0,
+        remarks: a.remarks || '',
+        auditor_name: a.auditorName || ''
     });
-
 
     // ─── Supabase Status UI ────────────────────────────────────────────────────
     const updateSbStatusUI = () => {
@@ -851,8 +842,8 @@ document.addEventListener('DOMContentLoaded', () => {
             seedDefaultFiveSLogs();
         }
         dailyChecklists = JSON.parse(localStorage.getItem(LS_DAILY_CHECKLISTS)) || [];
-        shiftReports    = JSON.parse(localStorage.getItem(LS_SHIFT_REPORTS))    || [];
-        batchingAudits  = JSON.parse(localStorage.getItem(LS_BATCHING_AUDITS))  || [];
+        shiftReports = JSON.parse(localStorage.getItem(LS_SHIFT_REPORTS)) || [];
+        batchingAudits = JSON.parse(localStorage.getItem(LS_BATCHING_AUDITS)) || [];
         enforceFixedCapacities();
     };
 
@@ -961,12 +952,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { error: srErr } = await sbClient.from('shift_reports').delete().gt('id', 0);
                 if (srErr) throw srErr;
 
+                // Delete batching audits
+                const { error: baErr } = await sbClient.from('batching_audits').delete().gt('id', 0);
+                if (baErr) throw baErr;
+
                 availableMaterials = [];
                 ensureDefaultMaterials();
                 silosData = generateSiloData(16);
                 fiveSLogs = [];
                 dailyChecklists = [];
                 shiftReports = [];
+                batchingAudits = [];
                 // This will trigger re-seeding inside loadAllData
                 await loadAllData();
                 renderSilos();
@@ -981,12 +977,14 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem(LS_FIVE_S_LOGS);
             localStorage.removeItem(LS_DAILY_CHECKLISTS);
             localStorage.removeItem(LS_SHIFT_REPORTS);
+            localStorage.removeItem(LS_BATCHING_AUDITS);
             availableMaterials = [];
             ensureDefaultMaterials();
             silosData = generateSiloData(16);
             fiveSLogs = [];
             dailyChecklists = [];
             shiftReports = [];
+            batchingAudits = [];
             saveData();
             seedDefaultFiveSLogs();
             renderSilos();
@@ -3119,14 +3117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // ─── Batching Audit Module ─────────────────────────────────────────────────
-
-    // The 3 fixed audit slots every day (12:00 AM, 8:00 AM, 4:00 PM)
-    const BA_SLOTS = [
-        { index: 0, label: 'Audit 1 — Midnight',   time: '12:00 AM', emoji: '🌙', accentClass: 'ba-accent-night'     },
-        { index: 1, label: 'Audit 2 — Morning',     time: '08:00 AM', emoji: '🌅', accentClass: 'ba-accent-morning'   },
-        { index: 2, label: 'Audit 3 — Afternoon',   time: '04:00 PM', emoji: '☀️', accentClass: 'ba-accent-afternoon' }
-    ];
+    // ─── Batching Audit Module ────────────────────────────────────────────────
 
     const saveBatchingAudits = async () => {
         localStorage.setItem(LS_BATCHING_AUDITS, JSON.stringify(batchingAudits));
@@ -3134,12 +3125,12 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const { error } = await sbClient
                     .from('batching_audits')
-                    .upsert(batchingAudits.map(mapBatchingAuditToDb), { onConflict: 'audit_date,slot_index' });
+                    .upsert(batchingAudits.map(mapBatchingAuditToDb));
                 if (error) throw error;
-                showToast('✓ Audit saved to Supabase');
+                showToast('✓ Batching Audit saved to Supabase');
             } catch (err) {
                 console.error('Supabase save failed for batching audits:', err);
-                showToast('✓ Audit saved locally');
+                showToast('✓ Saved locally (Supabase offline)');
             }
         } else {
             showToast('✓ Batching Audit saved');
@@ -3147,284 +3138,211 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const initBatchingAuditView = () => {
-        const inp = document.getElementById('ba-date-select');
-        if (inp) {
-            if (!inp.value) {
+        const filterInput = document.getElementById('ba-filter-date');
+        if (filterInput) {
+            if (!filterInput.value) {
                 const today = new Date();
                 const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
-                inp.value = d;
-                currentBaDate = d;
+                filterInput.value = d;
+                currentBaFilterDate = d;
             } else {
-                currentBaDate = inp.value.trim();
+                currentBaFilterDate = filterInput.value.trim();
             }
         }
-        renderBatchingAuditView();
+        renderBatchingAudits();
     };
 
-    const getBaAudit = (date, slotIndex) =>
-        batchingAudits.find(a => a.date === date && a.slotIndex === slotIndex) || null;
+    const getFilteredBatchingAudits = () => {
+        if (!currentBaFilterDate) return [...batchingAudits].reverse();
+        return batchingAudits.filter(a => a.date === currentBaFilterDate).reverse();
+    };
 
-    const renderBatchingAuditView = () => {
-        const date = currentBaDate || '';
-
-        // --- Summary strip ---
-        const dayAudits = batchingAudits.filter(a => a.date === date);
-        const completed  = dayAudits.length;
-        const totalBatches = dayAudits.reduce((s, a) => s + (a.batchesChecked || 0), 0);
-        const issueCount = dayAudits.filter(a => a.issuesFound && a.issuesFound.trim()).length;
-        const passCount  = dayAudits.filter(a => a.isPass).length;
-        const passRate   = completed > 0 ? Math.round((passCount / completed) * 100) + '%' : '—';
-
-        const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
-        el('ba-completed-count', `${completed} / 3`);
-        el('ba-total-batches', totalBatches);
-        el('ba-issues-count', issueCount);
-        el('ba-pass-rate', passRate);
-
-        // --- Slot cards ---
-        const container = document.getElementById('ba-slots-container');
+    const renderBatchingAudits = () => {
+        const container = document.getElementById('ba-cards-container');
         if (!container) return;
-        container.innerHTML = '';
 
-        BA_SLOTS.forEach(slot => {
-            const audit = getBaAudit(date, slot.index);
-            let badgeHtml, metaHtml;
-            if (audit) {
-                const pfClass = audit.isPass ? 'ba-badge-pass' : 'ba-badge-fail';
-                const pfText  = audit.isPass ? '✅ PASS' : '❌ FAIL';
-                badgeHtml = `<span class="ba-status-badge ${pfClass}">${pfText}</span>`;
-                metaHtml = `
-                    <div class="ba-slot-meta-row">👷 Auditor: <strong>${audit.auditorName}</strong></div>
-                    <div class="ba-slot-meta-row">🏭 Batches: <strong>${audit.batchesChecked}</strong></div>
-                    ${audit.issuesFound ? `<div class="ba-slot-meta-row" style="color:#f59e0b;">⚠️ ${audit.issuesFound}</div>` : '<div class="ba-slot-meta-row" style="color:var(--accent-color);">✔ No issues</div>'}
-                `;
-            } else {
-                badgeHtml = `<span class="ba-status-badge ba-badge-pending">⏳ Pending</span>`;
-                metaHtml  = `<div class="ba-slot-meta-row" style="opacity:0.5;font-style:italic;">Not yet filled</div>`;
-            }
+        const filtered = getFilteredBatchingAudits();
 
-            const card = document.createElement('div');
-            card.className = 'ba-slot-card';
-            card.innerHTML = `
-                <div class="ba-slot-accent ${slot.accentClass}"></div>
-                <div class="ba-slot-inner">
-                    <div class="ba-slot-header">
-                        <div class="ba-slot-title-group">
-                            <div class="ba-slot-emoji">${slot.emoji}</div>
-                            <div>
-                                <div class="ba-slot-name">${slot.label}</div>
-                                <div class="ba-slot-time">🕐 ${slot.time}</div>
-                            </div>
-                        </div>
-                        ${badgeHtml}
-                    </div>
-                    <div class="ba-slot-meta">${metaHtml}</div>
-                    <div class="ba-slot-action">
-                        ${audit ? `<button class="btn btn-danger" style="padding:0.3rem 0.7rem;font-size:0.8rem;" onclick="deleteBaAudit(${slot.index})">🗑</button>` : ''}
-                        <button class="btn ${audit ? 'btn-secondary' : 'btn-primary'}" style="padding:0.3rem 1rem;font-size:0.83rem;" onclick="openBaModal(${slot.index})">
-                            ${audit ? '✏️ Edit' : '➕ Fill Audit'}
-                        </button>
-                    </div>
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:3rem 1rem;color:var(--text-secondary);opacity:0.65;">
+                    <div style="font-size:3rem;margin-bottom:1rem;">💊</div>
+                    <div style="font-size:1.1rem;font-weight:600;">No batching audits for this date</div>
+                    <div style="font-size:0.9rem;margin-top:0.5rem;">Click "+ New Audit" to add one.</div>
                 </div>`;
-            container.appendChild(card);
-        });
-
-        // --- History table ---
-        renderBaHistoryTable();
-    };
-
-    const renderBaHistoryTable = () => {
-        const tbody = document.getElementById('ba-history-body');
-        if (!tbody) return;
-        const sorted = [...batchingAudits].sort((a, b) => {
-            if (a.date < b.date) return 1;
-            if (a.date > b.date) return -1;
-            return a.slotIndex - b.slotIndex;
-        });
-        if (sorted.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;opacity:0.5;padding:2rem;">No audit records yet.</td></tr>`;
             return;
         }
-        tbody.innerHTML = sorted.map(a => {
-            const pfCell = a.isPass
-                ? `<span class="ba-pass-cell">✅ PASS</span>`
-                : `<span class="ba-fail-cell">❌ FAIL</span>`;
-            const chk = v => v ? '✅' : '❌';
-            return `<tr>
-                <td>${a.date}</td>
-                <td>${a.slotLabel}</td>
-                <td>${a.slotTime}</td>
-                <td>${a.auditorName}</td>
-                <td>${a.batchesChecked}</td>
-                <td>${chk(a.medicineCorrect)}</td>
-                <td>${chk(a.weightCorrect)}</td>
-                <td>${chk(a.sequenceCorrect)}</td>
-                <td>${pfCell}</td>
-                <td style="max-width:180px;white-space:normal;">${a.issuesFound || '—'}</td>
-                <td><button class="btn btn-secondary" style="padding:0.25rem 0.6rem;font-size:0.78rem;" onclick="openBaModal(${a.slotIndex}, '${a.date}')">✏️</button>
-                    <button class="btn btn-danger" style="padding:0.25rem 0.6rem;font-size:0.78rem;" onclick="deleteBaAudit(${a.slotIndex}, '${a.date}')">🗑</button></td>
-            </tr>`;
-        }).join('');
+
+        container.innerHTML = '';
+        filtered.forEach(a => {
+            const variance = a.expectedQty - a.actualQty;
+            const isOk = Math.abs(variance) < 0.01; // Allow floating point tolerance
+            const variancePill = isOk 
+                ? '<span class="ba-variance-pill ok">✅ OK</span>'
+                : '<span class="ba-variance-pill warning">⚠️ Variance: ' + variance.toFixed(2) + '</span>';
+
+            const card = document.createElement('div');
+            card.className = 'ba-card';
+            card.innerHTML = `
+                <div class="ba-card-header">
+                    <div style="display:flex;align-items:center;gap:1rem;">
+                        <span class="ba-time-badge">🕒 ${a.time}</span>
+                        <div>
+                            <div style="font-weight:700;font-size:1rem;color:var(--text-primary);">💊 ${a.medicineName}</div>
+                            <div style="font-size:0.82rem;color:var(--text-secondary);font-weight:500;">Batch: ${a.batchNo || 'N/A'}</div>
+                        </div>
+                    </div>
+                    <div class="ba-card-actions" style="display:flex;align-items:center;gap:0.5rem;">
+                        ${variancePill}
+                        <button class="btn btn-secondary" style="padding:0.3rem 0.75rem;font-size:0.82rem;" onclick="openBaEditModal(${a.id})">✏️ Edit</button>
+                        <button class="btn btn-danger" style="padding:0.3rem 0.75rem;font-size:0.82rem;" onclick="deleteBaReport(${a.id})">🗑</button>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;">
+                    <div class="sr-field-group">
+                        <div class="sr-field-label">Expected Qty</div>
+                        <div class="sr-field-value">${a.expectedQty}</div>
+                    </div>
+                    <div class="sr-field-group">
+                        <div class="sr-field-label">Actual Qty</div>
+                        <div class="sr-field-value">${a.actualQty}</div>
+                    </div>
+                    <div class="sr-field-group">
+                        <div class="sr-field-label">Auditor</div>
+                        <div class="sr-field-value">${a.auditorName || '-'}</div>
+                    </div>
+                    <div class="sr-field-group">
+                        <div class="sr-field-label">Remarks</div>
+                        <div class="sr-field-value">${a.remarks || '-'}</div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
     };
 
-    // Update live Pass/Fail badge inside modal based on checkboxes
-    const updateBaPfBadge = () => {
-        const checks = ['ba-chk-medicine','ba-chk-weight','ba-chk-sequence','ba-chk-scale','ba-chk-label','ba-chk-contamination'];
-        const allPass = checks.every(id => { const e = document.getElementById(id); return e ? e.checked : true; });
-        const badge  = document.getElementById('ba-pf-badge');
-        const indic  = document.getElementById('ba-pf-indicator');
-        if (!badge || !indic) return;
-        if (allPass) {
-            badge.textContent = '✅ PASS';
-            badge.style.background = 'rgba(16,185,129,0.15)';
-            badge.style.color      = '#10b981';
-            badge.style.border     = '1px solid rgba(16,185,129,0.3)';
-            indic.style.background = 'rgba(16,185,129,0.08)';
-            indic.style.border     = '1px solid rgba(16,185,129,0.2)';
-        } else {
-            badge.textContent = '❌ FAIL';
-            badge.style.background = 'rgba(239,68,68,0.15)';
-            badge.style.color      = '#ef4444';
-            badge.style.border     = '1px solid rgba(239,68,68,0.3)';
-            indic.style.background = 'rgba(239,68,68,0.05)';
-            indic.style.border     = '1px solid rgba(239,68,68,0.2)';
-        }
-    };
-
-    // Global helpers for inline onclick
-    window.openBaModal = (slotIndex, dateOverride) => {
-        activeBaSlotIndex = slotIndex;
-        const slot  = BA_SLOTS[slotIndex];
-        const date  = dateOverride || currentBaDate;
-        const audit = getBaAudit(date, slotIndex);
-
-        // Update slot banner
-        const sn = document.getElementById('ba-slot-name');
-        const si = document.getElementById('ba-slot-icon');
-        const st = document.getElementById('ba-slot-time-label');
-        const mt = document.getElementById('ba-modal-title');
-        if (sn) sn.textContent = slot.label;
-        if (si) si.textContent = slot.emoji;
-        if (st) st.textContent = `${slot.time}  ·  Date: ${date}`;
-        if (mt) mt.textContent = audit ? `Edit Audit — ${slot.label}` : `New Audit — ${slot.label}`;
-
-        // Pre-fill form
-        const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v ?? ''; };
-        const chk = (id, v) => { const e = document.getElementById(id); if (e) e.checked = v !== false; };
-        set('ba-modal-auditor', audit ? audit.auditorName : 'Zubair');
-        set('ba-modal-batches', audit ? audit.batchesChecked : '');
-        chk('ba-chk-medicine',      audit ? audit.medicineCorrect : true);
-        chk('ba-chk-weight',        audit ? audit.weightCorrect : true);
-        chk('ba-chk-sequence',      audit ? audit.sequenceCorrect : true);
-        chk('ba-chk-scale',         true);   // no separate DB field, defaults to true
-        chk('ba-chk-label',         true);
-        chk('ba-chk-contamination', true);
-        set('ba-modal-issues',  audit ? audit.issuesFound : '');
-        set('ba-modal-remarks', audit ? audit.remarks : '');
-
-        updateBaPfBadge();
-
+    window.openBaEditModal = (id) => {
+        const a = batchingAudits.find(x => x.id === id);
+        if (!a) return;
+        activeBaId = id;
+        const set = (elId, val) => { const e = document.getElementById(elId); if (e) e.value = val || ''; };
+        set('ba-modal-date', a.date);
+        set('ba-modal-time', a.time);
+        set('ba-modal-medicine', a.medicineName);
+        set('ba-modal-batch', a.batchNo);
+        set('ba-modal-expected', a.expectedQty);
+        set('ba-modal-actual', a.actualQty);
+        set('ba-modal-auditor', a.auditorName);
+        set('ba-modal-remarks', a.remarks);
+        const title = document.getElementById('ba-modal-title');
+        if (title) title.textContent = `Edit Batching Audit — ${a.date} ${a.time}`;
         const modal = document.getElementById('batching-audit-modal');
         if (modal) modal.classList.add('show');
     };
 
-    window.deleteBaAudit = async (slotIndex, dateOverride) => {
-        const date = dateOverride || currentBaDate;
-        if (!confirm(`Delete audit for ${BA_SLOTS[slotIndex].label} on ${date}?`)) return;
-        const old = batchingAudits.find(a => a.date === date && a.slotIndex === slotIndex);
-        batchingAudits = batchingAudits.filter(a => !(a.date === date && a.slotIndex === slotIndex));
-        if (isSbConnected && sbClient && old) {
-            try { await sbClient.from('batching_audits').delete().eq('id', old.id); } catch(e) {}
+    window.deleteBaReport = async (id) => {
+        if (!confirm('Delete this batching audit?')) return;
+        batchingAudits = batchingAudits.filter(x => x.id !== id);
+        if (isSbConnected && sbClient) {
+            try { await sbClient.from('batching_audits').delete().eq('id', id); } catch (e) { /* ignore */ }
         }
         await saveBatchingAudits();
-        renderBatchingAuditView();
+        renderBatchingAudits();
+    };
+
+    const openBaNewModal = () => {
+        activeBaId = null;
+        const today = new Date();
+        const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+        const set = (elId, val) => { const e = document.getElementById(elId); if (e) e.value = val || ''; };
+        set('ba-modal-date', currentBaFilterDate || d);
+        set('ba-modal-time', '12 AM');
+        set('ba-modal-medicine', '');
+        set('ba-modal-batch', '');
+        set('ba-modal-expected', '');
+        set('ba-modal-actual', '');
+        set('ba-modal-auditor', '');
+        set('ba-modal-remarks', '');
+        const title = document.getElementById('ba-modal-title');
+        if (title) title.textContent = 'New Batching Audit';
+        const modal = document.getElementById('batching-audit-modal');
+        if (modal) modal.classList.add('show');
     };
 
     const closeBaModal = () => {
         const modal = document.getElementById('batching-audit-modal');
         if (modal) modal.classList.remove('show');
-        activeBaSlotIndex = null;
+        activeBaId = null;
     };
 
     const saveBaModal = async () => {
-        if (activeBaSlotIndex === null) return;
-        const slot = BA_SLOTS[activeBaSlotIndex];
-        const date = currentBaDate;
-        if (!date) { alert('No date selected.'); return; }
-
-        const get = id => { const e = document.getElementById(id); return e ? e.value.trim() : ''; };
-        const chkVal = id => { const e = document.getElementById(id); return e ? e.checked : true; };
-
-        const auditorName   = get('ba-modal-auditor');
-        const batchesChecked = parseInt(get('ba-modal-batches')) || 0;
-        const medicineCorrect = chkVal('ba-chk-medicine');
-        const weightCorrect   = chkVal('ba-chk-weight');
-        const sequenceCorrect = chkVal('ba-chk-sequence');
-        const isPass = medicineCorrect && weightCorrect && sequenceCorrect &&
-                       chkVal('ba-chk-scale') && chkVal('ba-chk-label') && chkVal('ba-chk-contamination');
-
-        const record = {
-            id: Date.now(),
+        const get = (elId) => { const e = document.getElementById(elId); return e ? e.value.trim() : ''; };
+        const date = get('ba-modal-date');
+        const time = get('ba-modal-time');
+        const medicineName = get('ba-modal-medicine');
+        if (!date || !time || !medicineName) {
+            alert('Please fill in Date, Time, and Medicine Name.');
+            return;
+        }
+        const auditData = {
             date,
-            slotIndex: slot.index,
-            slotLabel: slot.label,
-            slotTime:  slot.time,
-            auditorName,
-            batchesChecked,
-            medicineCorrect,
-            weightCorrect,
-            sequenceCorrect,
-            issuesFound: get('ba-modal-issues'),
-            remarks:     get('ba-modal-remarks'),
-            isPass
+            time,
+            medicineName,
+            batchNo: get('ba-modal-batch'),
+            expectedQty: parseFloat(get('ba-modal-expected')) || 0,
+            actualQty: parseFloat(get('ba-modal-actual')) || 0,
+            auditorName: get('ba-modal-auditor'),
+            remarks: get('ba-modal-remarks')
         };
 
-        // Upsert by date + slotIndex
-        const idx = batchingAudits.findIndex(a => a.date === date && a.slotIndex === slot.index);
-        if (idx !== -1) {
-            record.id = batchingAudits[idx].id;
-            batchingAudits[idx] = record;
+        if (activeBaId) {
+            const idx = batchingAudits.findIndex(x => x.id === activeBaId);
+            if (idx !== -1) {
+                auditData.id = activeBaId;
+                batchingAudits[idx] = auditData;
+            }
         } else {
-            batchingAudits.push(record);
+            auditData.id = Date.now();
+            batchingAudits.push(auditData);
         }
-
+        currentBaFilterDate = date;
+        const filterEl = document.getElementById('ba-filter-date');
+        if (filterEl) filterEl.value = date;
         await saveBatchingAudits();
-        renderBatchingAuditView();
+        renderBatchingAudits();
         closeBaModal();
     };
 
     const initBatchingAuditEvents = () => {
-        // Date filter
-        const dateInp = document.getElementById('ba-date-select');
-        if (dateInp) {
-            dateInp.addEventListener('change', () => {
-                currentBaDate = dateInp.value.trim();
-                renderBatchingAuditView();
+        const btnAdd = document.getElementById('btn-add-batching-audit');
+        if (btnAdd) btnAdd.addEventListener('click', openBaNewModal);
+
+        const modalClose = document.getElementById('ba-modal-close');
+        if (modalClose) modalClose.addEventListener('click', closeBaModal);
+
+        const btnCancel = document.getElementById('btn-cancel-ba-modal');
+        if (btnCancel) btnCancel.addEventListener('click', closeBaModal);
+
+        const btnSave = document.getElementById('btn-save-ba-modal');
+        if (btnSave) btnSave.addEventListener('click', saveBaModal);
+
+        const filterInput = document.getElementById('ba-filter-date');
+        if (filterInput) {
+            filterInput.addEventListener('change', () => {
+                currentBaFilterDate = filterInput.value.trim();
+                renderBatchingAudits();
             });
-            dateInp.addEventListener('keyup', e => {
-                if (e.key === 'Enter') { currentBaDate = dateInp.value.trim(); renderBatchingAuditView(); }
+            filterInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    currentBaFilterDate = filterInput.value.trim();
+                    renderBatchingAudits();
+                }
             });
         }
-
-        // Modal buttons
-        const closeBtn   = document.getElementById('ba-modal-close');
-        const cancelBtn  = document.getElementById('btn-cancel-ba-modal');
-        const saveBtn    = document.getElementById('btn-save-ba-modal');
-        if (closeBtn)  closeBtn.addEventListener('click', closeBaModal);
-        if (cancelBtn) cancelBtn.addEventListener('click', closeBaModal);
-        if (saveBtn)   saveBtn.addEventListener('click', saveBaModal);
-
-        // Live Pass/Fail update when checkboxes change
-        ['ba-chk-medicine','ba-chk-weight','ba-chk-sequence','ba-chk-scale','ba-chk-label','ba-chk-contamination']
-            .forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('change', updateBaPfBadge);
-            });
     };
 
     // Start application
     initializeApplication();
-
 
 
     // ─── Three.js ─────────────────────────────────────────────────────────────
