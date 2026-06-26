@@ -23,14 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const navFiveS = document.getElementById('nav-five-s');
     const viewFiveS = document.getElementById('view-five-s');
     // navDailyChecklist and viewDailyChecklist are now part of view-five-s tabs
-    const navShiftReport = document.getElementById('nav-shift-report');
-    const viewShiftReport = document.getElementById('view-shift-report');
+    const navShiftReport   = document.getElementById('nav-shift-report');
+    const viewShiftReport  = document.getElementById('view-shift-report');
+    const navBatchingAudit = document.getElementById('nav-batching-audit');
+    const viewBatchingAudit = document.getElementById('view-batching-audit');
 
     const switchView = (activeNav, activeView) => {
-        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navFiveS, navShiftReport].forEach(nav => {
+        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navFiveS, navShiftReport, navBatchingAudit].forEach(nav => {
             if (nav) nav.classList.remove('active');
         });
-        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewFiveS, viewShiftReport].forEach(view => {
+        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewFiveS, viewShiftReport, viewBatchingAudit].forEach(view => {
             if (view) view.style.display = 'none';
         });
 
@@ -95,6 +97,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (navBatchingAudit) {
+        navBatchingAudit.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(navBatchingAudit, viewBatchingAudit);
+            initBatchingAuditView();
+        });
+    }
+
     // ─── LocalStorage & Supabase configuration keys ───────────────────────────
     const LS_SILOS       = 'fmpr_silosData';
     const LS_MATERIALS   = 'fmpr_materials';
@@ -103,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const LS_FIVE_S_LOGS = 'fmpr_fiveSLogs';
     const LS_DAILY_CHECKLISTS = 'fmpr_dailyChecklists';
     const LS_SHIFT_REPORTS    = 'fmpr_shiftReports';
+    const LS_BATCHING_AUDITS  = 'fmpr_batchingAudits';
     const LS_SB_URL      = 'fmpr_supabaseUrl';
     const LS_SB_KEY      = 'fmpr_supabaseKey';
     const LS_SB_DISABLED = 'fmpr_supabaseDisabled';
@@ -353,6 +364,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let shiftReports = [];
     let currentSrFilterDate = null;
     let activeSrId = null;
+    let batchingAudits = [];
+    let currentBaDate = null;
+    let activeBaSlotIndex = null;
 
     let sbDisabled = localStorage.getItem(LS_SB_DISABLED) === 'true';
     let supabaseUrl = localStorage.getItem(LS_SB_URL) || (sbDisabled ? '' : (window.env && window.env.SUPABASE_URL) || '');
@@ -523,6 +537,38 @@ document.addEventListener('DOMContentLoaded', () => {
         quality_remarks: r.qualityRemarks || '',
         general_remarks: r.generalRemarks || '',
         is_submitted: r.isSubmitted === true
+    });
+
+    const mapBatchingAuditFromDb = (r) => ({
+        id: r.id,
+        date: r.audit_date,
+        slotIndex: r.slot_index,
+        slotLabel: r.slot_label,
+        slotTime:  r.slot_time,
+        auditorName: r.auditor_name,
+        batchesChecked: r.batches_checked || 0,
+        medicineCorrect: r.medicine_correct !== false,
+        weightCorrect:   r.weight_correct   !== false,
+        sequenceCorrect: r.sequence_correct  !== false,
+        issuesFound: r.issues_found || '',
+        remarks:     r.remarks || '',
+        isPass:      r.is_pass !== false
+    });
+
+    const mapBatchingAuditToDb = (r) => ({
+        id: r.id,
+        audit_date: r.date,
+        slot_index: r.slotIndex,
+        slot_label: r.slotLabel,
+        slot_time:  r.slotTime,
+        auditor_name: r.auditorName,
+        batches_checked: r.batchesChecked || 0,
+        medicine_correct: r.medicineCorrect !== false,
+        weight_correct:   r.weightCorrect   !== false,
+        sequence_correct: r.sequenceCorrect  !== false,
+        issues_found: r.issuesFound || '',
+        remarks:      r.remarks || '',
+        is_pass:      r.isPass !== false
     });
 
 
@@ -763,6 +809,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 localStorage.setItem(LS_SHIFT_REPORTS, JSON.stringify(shiftReports));
+
+                // Fetch Batching Audits
+                const { data: dbBa, error: baErr } = await sbClient.from('batching_audits').select('*').order('id', { ascending: true });
+                if (baErr) throw baErr;
+                if (dbBa && dbBa.length > 0) {
+                    batchingAudits = dbBa.map(mapBatchingAuditFromDb);
+                } else {
+                    batchingAudits = JSON.parse(localStorage.getItem(LS_BATCHING_AUDITS)) || [];
+                    if (batchingAudits.length > 0) {
+                        await sbClient.from('batching_audits').insert(batchingAudits.map(mapBatchingAuditToDb));
+                    }
+                }
+                localStorage.setItem(LS_BATCHING_AUDITS, JSON.stringify(batchingAudits));
             } catch (err) {
                 console.error('Supabase fetch failed, fallback to local storage:', err);
                 loadFromLocalStorage();
@@ -792,7 +851,8 @@ document.addEventListener('DOMContentLoaded', () => {
             seedDefaultFiveSLogs();
         }
         dailyChecklists = JSON.parse(localStorage.getItem(LS_DAILY_CHECKLISTS)) || [];
-        shiftReports = JSON.parse(localStorage.getItem(LS_SHIFT_REPORTS)) || [];
+        shiftReports    = JSON.parse(localStorage.getItem(LS_SHIFT_REPORTS))    || [];
+        batchingAudits  = JSON.parse(localStorage.getItem(LS_BATCHING_AUDITS))  || [];
         enforceFixedCapacities();
     };
 
@@ -1124,6 +1184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initFiveSEvents();
         initDailyChecklistEvents();
         initShiftReportEvents();
+        initBatchingAuditEvents();
     };
 
     // ─── Modal Actions ──────────────────────────────────────────────────────────
@@ -3058,8 +3119,312 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // ─── Batching Audit Module ─────────────────────────────────────────────────
+
+    // The 3 fixed audit slots every day (12:00 AM, 8:00 AM, 4:00 PM)
+    const BA_SLOTS = [
+        { index: 0, label: 'Audit 1 — Midnight',   time: '12:00 AM', emoji: '🌙', accentClass: 'ba-accent-night'     },
+        { index: 1, label: 'Audit 2 — Morning',     time: '08:00 AM', emoji: '🌅', accentClass: 'ba-accent-morning'   },
+        { index: 2, label: 'Audit 3 — Afternoon',   time: '04:00 PM', emoji: '☀️', accentClass: 'ba-accent-afternoon' }
+    ];
+
+    const saveBatchingAudits = async () => {
+        localStorage.setItem(LS_BATCHING_AUDITS, JSON.stringify(batchingAudits));
+        if (isSbConnected && sbClient) {
+            try {
+                const { error } = await sbClient
+                    .from('batching_audits')
+                    .upsert(batchingAudits.map(mapBatchingAuditToDb), { onConflict: 'audit_date,slot_index' });
+                if (error) throw error;
+                showToast('✓ Audit saved to Supabase');
+            } catch (err) {
+                console.error('Supabase save failed for batching audits:', err);
+                showToast('✓ Audit saved locally');
+            }
+        } else {
+            showToast('✓ Batching Audit saved');
+        }
+    };
+
+    const initBatchingAuditView = () => {
+        const inp = document.getElementById('ba-date-select');
+        if (inp) {
+            if (!inp.value) {
+                const today = new Date();
+                const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+                inp.value = d;
+                currentBaDate = d;
+            } else {
+                currentBaDate = inp.value.trim();
+            }
+        }
+        renderBatchingAuditView();
+    };
+
+    const getBaAudit = (date, slotIndex) =>
+        batchingAudits.find(a => a.date === date && a.slotIndex === slotIndex) || null;
+
+    const renderBatchingAuditView = () => {
+        const date = currentBaDate || '';
+
+        // --- Summary strip ---
+        const dayAudits = batchingAudits.filter(a => a.date === date);
+        const completed  = dayAudits.length;
+        const totalBatches = dayAudits.reduce((s, a) => s + (a.batchesChecked || 0), 0);
+        const issueCount = dayAudits.filter(a => a.issuesFound && a.issuesFound.trim()).length;
+        const passCount  = dayAudits.filter(a => a.isPass).length;
+        const passRate   = completed > 0 ? Math.round((passCount / completed) * 100) + '%' : '—';
+
+        const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+        el('ba-completed-count', `${completed} / 3`);
+        el('ba-total-batches', totalBatches);
+        el('ba-issues-count', issueCount);
+        el('ba-pass-rate', passRate);
+
+        // --- Slot cards ---
+        const container = document.getElementById('ba-slots-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        BA_SLOTS.forEach(slot => {
+            const audit = getBaAudit(date, slot.index);
+            let badgeHtml, metaHtml;
+            if (audit) {
+                const pfClass = audit.isPass ? 'ba-badge-pass' : 'ba-badge-fail';
+                const pfText  = audit.isPass ? '✅ PASS' : '❌ FAIL';
+                badgeHtml = `<span class="ba-status-badge ${pfClass}">${pfText}</span>`;
+                metaHtml = `
+                    <div class="ba-slot-meta-row">👷 Auditor: <strong>${audit.auditorName}</strong></div>
+                    <div class="ba-slot-meta-row">🏭 Batches: <strong>${audit.batchesChecked}</strong></div>
+                    ${audit.issuesFound ? `<div class="ba-slot-meta-row" style="color:#f59e0b;">⚠️ ${audit.issuesFound}</div>` : '<div class="ba-slot-meta-row" style="color:var(--accent-color);">✔ No issues</div>'}
+                `;
+            } else {
+                badgeHtml = `<span class="ba-status-badge ba-badge-pending">⏳ Pending</span>`;
+                metaHtml  = `<div class="ba-slot-meta-row" style="opacity:0.5;font-style:italic;">Not yet filled</div>`;
+            }
+
+            const card = document.createElement('div');
+            card.className = 'ba-slot-card';
+            card.innerHTML = `
+                <div class="ba-slot-accent ${slot.accentClass}"></div>
+                <div class="ba-slot-inner">
+                    <div class="ba-slot-header">
+                        <div class="ba-slot-title-group">
+                            <div class="ba-slot-emoji">${slot.emoji}</div>
+                            <div>
+                                <div class="ba-slot-name">${slot.label}</div>
+                                <div class="ba-slot-time">🕐 ${slot.time}</div>
+                            </div>
+                        </div>
+                        ${badgeHtml}
+                    </div>
+                    <div class="ba-slot-meta">${metaHtml}</div>
+                    <div class="ba-slot-action">
+                        ${audit ? `<button class="btn btn-danger" style="padding:0.3rem 0.7rem;font-size:0.8rem;" onclick="deleteBaAudit(${slot.index})">🗑</button>` : ''}
+                        <button class="btn ${audit ? 'btn-secondary' : 'btn-primary'}" style="padding:0.3rem 1rem;font-size:0.83rem;" onclick="openBaModal(${slot.index})">
+                            ${audit ? '✏️ Edit' : '➕ Fill Audit'}
+                        </button>
+                    </div>
+                </div>`;
+            container.appendChild(card);
+        });
+
+        // --- History table ---
+        renderBaHistoryTable();
+    };
+
+    const renderBaHistoryTable = () => {
+        const tbody = document.getElementById('ba-history-body');
+        if (!tbody) return;
+        const sorted = [...batchingAudits].sort((a, b) => {
+            if (a.date < b.date) return 1;
+            if (a.date > b.date) return -1;
+            return a.slotIndex - b.slotIndex;
+        });
+        if (sorted.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;opacity:0.5;padding:2rem;">No audit records yet.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = sorted.map(a => {
+            const pfCell = a.isPass
+                ? `<span class="ba-pass-cell">✅ PASS</span>`
+                : `<span class="ba-fail-cell">❌ FAIL</span>`;
+            const chk = v => v ? '✅' : '❌';
+            return `<tr>
+                <td>${a.date}</td>
+                <td>${a.slotLabel}</td>
+                <td>${a.slotTime}</td>
+                <td>${a.auditorName}</td>
+                <td>${a.batchesChecked}</td>
+                <td>${chk(a.medicineCorrect)}</td>
+                <td>${chk(a.weightCorrect)}</td>
+                <td>${chk(a.sequenceCorrect)}</td>
+                <td>${pfCell}</td>
+                <td style="max-width:180px;white-space:normal;">${a.issuesFound || '—'}</td>
+                <td><button class="btn btn-secondary" style="padding:0.25rem 0.6rem;font-size:0.78rem;" onclick="openBaModal(${a.slotIndex}, '${a.date}')">✏️</button>
+                    <button class="btn btn-danger" style="padding:0.25rem 0.6rem;font-size:0.78rem;" onclick="deleteBaAudit(${a.slotIndex}, '${a.date}')">🗑</button></td>
+            </tr>`;
+        }).join('');
+    };
+
+    // Update live Pass/Fail badge inside modal based on checkboxes
+    const updateBaPfBadge = () => {
+        const checks = ['ba-chk-medicine','ba-chk-weight','ba-chk-sequence','ba-chk-scale','ba-chk-label','ba-chk-contamination'];
+        const allPass = checks.every(id => { const e = document.getElementById(id); return e ? e.checked : true; });
+        const badge  = document.getElementById('ba-pf-badge');
+        const indic  = document.getElementById('ba-pf-indicator');
+        if (!badge || !indic) return;
+        if (allPass) {
+            badge.textContent = '✅ PASS';
+            badge.style.background = 'rgba(16,185,129,0.15)';
+            badge.style.color      = '#10b981';
+            badge.style.border     = '1px solid rgba(16,185,129,0.3)';
+            indic.style.background = 'rgba(16,185,129,0.08)';
+            indic.style.border     = '1px solid rgba(16,185,129,0.2)';
+        } else {
+            badge.textContent = '❌ FAIL';
+            badge.style.background = 'rgba(239,68,68,0.15)';
+            badge.style.color      = '#ef4444';
+            badge.style.border     = '1px solid rgba(239,68,68,0.3)';
+            indic.style.background = 'rgba(239,68,68,0.05)';
+            indic.style.border     = '1px solid rgba(239,68,68,0.2)';
+        }
+    };
+
+    // Global helpers for inline onclick
+    window.openBaModal = (slotIndex, dateOverride) => {
+        activeBaSlotIndex = slotIndex;
+        const slot  = BA_SLOTS[slotIndex];
+        const date  = dateOverride || currentBaDate;
+        const audit = getBaAudit(date, slotIndex);
+
+        // Update slot banner
+        const sn = document.getElementById('ba-slot-name');
+        const si = document.getElementById('ba-slot-icon');
+        const st = document.getElementById('ba-slot-time-label');
+        const mt = document.getElementById('ba-modal-title');
+        if (sn) sn.textContent = slot.label;
+        if (si) si.textContent = slot.emoji;
+        if (st) st.textContent = `${slot.time}  ·  Date: ${date}`;
+        if (mt) mt.textContent = audit ? `Edit Audit — ${slot.label}` : `New Audit — ${slot.label}`;
+
+        // Pre-fill form
+        const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v ?? ''; };
+        const chk = (id, v) => { const e = document.getElementById(id); if (e) e.checked = v !== false; };
+        set('ba-modal-auditor', audit ? audit.auditorName : 'Zubair');
+        set('ba-modal-batches', audit ? audit.batchesChecked : '');
+        chk('ba-chk-medicine',      audit ? audit.medicineCorrect : true);
+        chk('ba-chk-weight',        audit ? audit.weightCorrect : true);
+        chk('ba-chk-sequence',      audit ? audit.sequenceCorrect : true);
+        chk('ba-chk-scale',         true);   // no separate DB field, defaults to true
+        chk('ba-chk-label',         true);
+        chk('ba-chk-contamination', true);
+        set('ba-modal-issues',  audit ? audit.issuesFound : '');
+        set('ba-modal-remarks', audit ? audit.remarks : '');
+
+        updateBaPfBadge();
+
+        const modal = document.getElementById('batching-audit-modal');
+        if (modal) modal.classList.add('show');
+    };
+
+    window.deleteBaAudit = async (slotIndex, dateOverride) => {
+        const date = dateOverride || currentBaDate;
+        if (!confirm(`Delete audit for ${BA_SLOTS[slotIndex].label} on ${date}?`)) return;
+        const old = batchingAudits.find(a => a.date === date && a.slotIndex === slotIndex);
+        batchingAudits = batchingAudits.filter(a => !(a.date === date && a.slotIndex === slotIndex));
+        if (isSbConnected && sbClient && old) {
+            try { await sbClient.from('batching_audits').delete().eq('id', old.id); } catch(e) {}
+        }
+        await saveBatchingAudits();
+        renderBatchingAuditView();
+    };
+
+    const closeBaModal = () => {
+        const modal = document.getElementById('batching-audit-modal');
+        if (modal) modal.classList.remove('show');
+        activeBaSlotIndex = null;
+    };
+
+    const saveBaModal = async () => {
+        if (activeBaSlotIndex === null) return;
+        const slot = BA_SLOTS[activeBaSlotIndex];
+        const date = currentBaDate;
+        if (!date) { alert('No date selected.'); return; }
+
+        const get = id => { const e = document.getElementById(id); return e ? e.value.trim() : ''; };
+        const chkVal = id => { const e = document.getElementById(id); return e ? e.checked : true; };
+
+        const auditorName   = get('ba-modal-auditor');
+        const batchesChecked = parseInt(get('ba-modal-batches')) || 0;
+        const medicineCorrect = chkVal('ba-chk-medicine');
+        const weightCorrect   = chkVal('ba-chk-weight');
+        const sequenceCorrect = chkVal('ba-chk-sequence');
+        const isPass = medicineCorrect && weightCorrect && sequenceCorrect &&
+                       chkVal('ba-chk-scale') && chkVal('ba-chk-label') && chkVal('ba-chk-contamination');
+
+        const record = {
+            id: Date.now(),
+            date,
+            slotIndex: slot.index,
+            slotLabel: slot.label,
+            slotTime:  slot.time,
+            auditorName,
+            batchesChecked,
+            medicineCorrect,
+            weightCorrect,
+            sequenceCorrect,
+            issuesFound: get('ba-modal-issues'),
+            remarks:     get('ba-modal-remarks'),
+            isPass
+        };
+
+        // Upsert by date + slotIndex
+        const idx = batchingAudits.findIndex(a => a.date === date && a.slotIndex === slot.index);
+        if (idx !== -1) {
+            record.id = batchingAudits[idx].id;
+            batchingAudits[idx] = record;
+        } else {
+            batchingAudits.push(record);
+        }
+
+        await saveBatchingAudits();
+        renderBatchingAuditView();
+        closeBaModal();
+    };
+
+    const initBatchingAuditEvents = () => {
+        // Date filter
+        const dateInp = document.getElementById('ba-date-select');
+        if (dateInp) {
+            dateInp.addEventListener('change', () => {
+                currentBaDate = dateInp.value.trim();
+                renderBatchingAuditView();
+            });
+            dateInp.addEventListener('keyup', e => {
+                if (e.key === 'Enter') { currentBaDate = dateInp.value.trim(); renderBatchingAuditView(); }
+            });
+        }
+
+        // Modal buttons
+        const closeBtn   = document.getElementById('ba-modal-close');
+        const cancelBtn  = document.getElementById('btn-cancel-ba-modal');
+        const saveBtn    = document.getElementById('btn-save-ba-modal');
+        if (closeBtn)  closeBtn.addEventListener('click', closeBaModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeBaModal);
+        if (saveBtn)   saveBtn.addEventListener('click', saveBaModal);
+
+        // Live Pass/Fail update when checkboxes change
+        ['ba-chk-medicine','ba-chk-weight','ba-chk-sequence','ba-chk-scale','ba-chk-label','ba-chk-contamination']
+            .forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', updateBaPfBadge);
+            });
+    };
+
     // Start application
     initializeApplication();
+
 
 
     // ─── Three.js ─────────────────────────────────────────────────────────────

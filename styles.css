@@ -1488,3 +1488,165 @@ header h1 {
     display: none !important;
   }
 }
+
+/* ── Batching Audit ───────────────────────────────────────────────────── */
+
+/* Slot card */
+.ba-slot-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+  transition: box-shadow 0.3s, transform 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.ba-slot-card:hover {
+  box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+/* Top colour accent bar */
+.ba-slot-accent {
+  height: 5px;
+  width: 100%;
+}
+.ba-accent-night     { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+.ba-accent-morning   { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.ba-accent-afternoon { background: linear-gradient(90deg, #0ea5e9, #22d3ee); }
+
+.ba-slot-inner {
+  padding: 1.25rem 1.5rem;
+}
+
+.ba-slot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.ba-slot-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ba-slot-emoji {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.ba-slot-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.ba-slot-time {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Status badges */
+.ba-status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.28rem 0.75rem;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.ba-badge-pending {
+  background: rgba(251,191,36,0.15);
+  color: #d97706;
+  border: 1px solid rgba(251,191,36,0.35);
+  animation: ba-pulse 2s ease-in-out infinite;
+}
+
+.ba-badge-pass {
+  background: rgba(16,185,129,0.12);
+  color: #10b981;
+  border: 1px solid rgba(16,185,129,0.3);
+}
+
+.ba-badge-fail {
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.3);
+}
+
+@keyframes ba-pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+/* Slot info rows */
+.ba-slot-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  min-height: 3.5rem;
+}
+
+.ba-slot-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+}
+
+.ba-slot-meta-row strong {
+  color: var(--text-primary);
+}
+
+/* Action button area */
+.ba-slot-action {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Check-row label in modal */
+.ba-check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.ba-check-row:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--card-border);
+}
+
+.ba-check-row input[type="checkbox"] {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+  accent-color: var(--accent-color, #22c55e);
+  cursor: pointer;
+}
+
+/* History table pass/fail cells */
+.ba-pass-cell { color: #10b981; font-weight: 700; }
+.ba-fail-cell { color: #ef4444; font-weight: 700; }
+
+@media print {
+  #ba-slots-container, #ba-date-select {
+    display: none !important;
+  }
+}
