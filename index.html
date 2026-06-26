@@ -37,6 +37,14 @@
                     <span class="nav-icon">⚖️</span>
                     <span>Daily Less/Excess</span>
                 </a>
+                <a href="#five-s" class="nav-item" id="nav-five-s">
+                    <span class="nav-icon">✅</span>
+                    <span>5S & Daily Checklist</span>
+                </a>
+                <a href="#shift-report" class="nav-item" id="nav-shift-report">
+                    <span class="nav-icon">📝</span>
+                    <span>Shift Report</span>
+                </a>
             </nav>
         </aside>
         
@@ -147,6 +155,162 @@
             </section>
         </div>
 
+        <!-- ══ MERGED: 5S Audit + Daily Checklist ══ -->
+        <div id="view-five-s" class="view-section" style="display: none;">
+
+            <!-- ── Tab Bar ── -->
+            <div class="qs-tab-bar" id="qs-tab-bar">
+                <button class="qs-tab active" id="tab-five-s" onclick="switchQSTab('five-s')">✨ 5S Audit Logs</button>
+                <button class="qs-tab" id="tab-daily-checklist" onclick="switchQSTab('daily-checklist')">📅 Daily Checklist</button>
+            </div>
+
+            <!-- ══════════════════════════════════════════ -->
+            <!-- TAB 1 — 5S Audit Logs                    -->
+            <!-- ══════════════════════════════════════════ -->
+            <div id="qs-panel-five-s">
+                <!-- Department Selection Dashboard -->
+                <div id="five-s-dashboard-view">
+                    <div class="table-header">
+                        <h2>5S Department Dashboard</h2>
+                    </div>
+                    <div class="five-s-dept-grid">
+                        <!-- Cards will be populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Department Detail View -->
+                <div id="five-s-detail-view" style="display: none;">
+                    <div class="table-header" style="margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <button class="btn btn-secondary" id="btn-five-s-back">← Back to Departments</button>
+                            <h2 id="five-s-dept-title">Mechanical Department 5S Audits</h2>
+                        </div>
+                        <div class="header-actions" style="display:flex; gap:1rem;">
+                            <button class="btn btn-secondary" id="btn-add-five-s-log">➕ New 5S Audit</button>
+                            <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+                        </div>
+                    </div>
+
+                    <!-- Summary Cards for Department 5S -->
+                    <div class="five-s-summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div class="summary-card" style="margin-bottom:0; padding: 1rem;">
+                            <h3 style="font-size: 0.85rem;">Overall 5S Score</h3>
+                            <div class="value" id="dept-overall-5s-score" style="font-size: 1.8rem; margin: 0.25rem 0;">0.0/5</div>
+                            <div id="dept-overall-5s-badge" style="display: inline-block; font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 600;">-</div>
+                        </div>
+                        <div class="summary-card" style="margin-bottom:0; padding: 1rem;">
+                            <h3 style="font-size: 0.85rem;">Total Audits</h3>
+                            <div class="value" id="dept-total-5s-audits" style="font-size: 1.8rem; margin: 0.25rem 0;">0</div>
+                        </div>
+                        <div class="summary-card" style="margin-bottom:0; padding: 1rem;">
+                            <h3 style="font-size: 0.85rem; color:#f59e0b;">Sort (Seiri)</h3>
+                            <div class="value" id="dept-avg-sort" style="font-size: 1.8rem; margin: 0.25rem 0;">0.0</div>
+                        </div>
+                        <div class="summary-card" style="margin-bottom:0; padding: 1rem;">
+                            <h3 style="font-size: 0.85rem; color:#3b82f6;">Set in Order</h3>
+                            <div class="value" id="dept-avg-set" style="font-size: 1.8rem; margin: 0.25rem 0;">0.0</div>
+                        </div>
+                        <div class="summary-card" style="margin-bottom:0; padding: 1rem;">
+                            <h3 style="font-size: 0.85rem; color:#10b981;">Shine (Seiso)</h3>
+                            <div class="value" id="dept-avg-shine" style="font-size: 1.8rem; margin: 0.25rem 0;">0.0</div>
+                        </div>
+                        <div class="summary-card" style="margin-bottom:0; padding: 1rem;">
+                            <h3 style="font-size: 0.85rem; color:#8b5cf6;">Standardize</h3>
+                            <div class="value" id="dept-avg-standardize" style="font-size: 1.8rem; margin: 0.25rem 0;">0.0</div>
+                        </div>
+                        <div class="summary-card" style="margin-bottom:0; padding: 1rem;">
+                            <h3 style="font-size: 0.85rem; color:#ec4899;">Sustain</h3>
+                            <div class="value" id="dept-avg-sustain" style="font-size: 1.8rem; margin: 0.25rem 0;">0.0</div>
+                        </div>
+                    </div>
+
+                    <div class="table-container" style="padding: 1.5rem;">
+                        <div class="table-responsive">
+                            <table class="report-table" id="five-s-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Auditor</th>
+                                        <th title="Sort (Seiri)" style="border-bottom: 3px solid #f59e0b;">1. Sort</th>
+                                        <th title="Set in Order (Seiton)" style="border-bottom: 3px solid #3b82f6;">2. Set</th>
+                                        <th title="Shine (Seiso)" style="border-bottom: 3px solid #10b981;">3. Shine</th>
+                                        <th title="Standardize (Seiketsu)" style="border-bottom: 3px solid #8b5cf6;">4. Std</th>
+                                        <th title="Sustain (Shitsuke)" style="border-bottom: 3px solid #ec4899;">5. Sust</th>
+                                        <th>Avg Score</th>
+                                        <th>Status</th>
+                                        <th>Remarks & Actions</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Rows will be populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /qs-panel-five-s -->
+
+            <!-- ══════════════════════════════════════════ -->
+            <!-- TAB 2 — Daily Checklist                  -->
+            <!-- ══════════════════════════════════════════ -->
+            <div id="qs-panel-daily-checklist" style="display:none;">
+                <div class="table-header">
+                    <h2>Department Daily Checklist</h2>
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <label for="dc-date-select" style="font-weight:600; color:var(--text-secondary);">Date:</label>
+                        <input type="text" id="dc-date-select" style="border-radius:4px; border:1px solid var(--card-border); padding:0.5rem; background:var(--card-bg); color:var(--text-primary); outline:none; font-weight:600; width: 140px; text-align: center;" placeholder="e.g., 26-Jun" />
+                    </div>
+                </div>
+                <div class="dc-dept-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1rem; margin-bottom: 2rem;">
+                    <!-- Cards will be dynamically populated by JS -->
+                </div>
+            </div><!-- /qs-panel-daily-checklist -->
+
+        </div><!-- /view-five-s -->
+
+        <!-- Production Officer Shift Report -->
+        <div id="view-shift-report" class="view-section" style="display: none;">
+            <section class="table-container">
+                <div class="table-header">
+                    <h2>📝 Production Officer Shift Report</h2>
+                    <div class="header-actions" style="display:flex;gap:1rem;align-items:center;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <label for="sr-filter-date" style="font-weight:600;color:var(--text-secondary);font-size:0.9rem;">Date:</label>
+                            <input type="text" id="sr-filter-date" placeholder="e.g., 26-Jun" style="border-radius:4px;border:1px solid var(--card-border);padding:0.4rem 0.6rem;background:var(--card-bg);color:var(--text-primary);outline:none;font-weight:600;width:110px;text-align:center;" />
+                        </div>
+                        <button class="btn btn-secondary" id="btn-add-shift-report">➕ New Shift Report</button>
+                        <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+                    </div>
+                </div>
+
+                <!-- Summary strip -->
+                <div id="sr-summary-strip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin:1rem 0 1.5rem;">
+                    <div class="summary-card" style="margin-bottom:0;padding:1rem;">
+                        <h3 style="font-size:0.82rem;">Total Shifts Today</h3>
+                        <div class="value" id="sr-total-shifts" style="font-size:1.8rem;margin:0.25rem 0;">0</div>
+                    </div>
+                    <div class="summary-card" style="margin-bottom:0;padding:1rem;">
+                        <h3 style="font-size:0.82rem;">Total Batches</h3>
+                        <div class="value" id="sr-total-batches" style="font-size:1.8rem;margin:0.25rem 0;">0</div>
+                    </div>
+                    <div class="summary-card" style="margin-bottom:0;padding:1rem;">
+                        <h3 style="font-size:0.82rem;">Total Production (Bags)</h3>
+                        <div class="value" id="sr-total-bags" style="font-size:1.8rem;margin:0.25rem 0;">0</div>
+                    </div>
+                    <div class="summary-card" style="margin-bottom:0;padding:1rem;">
+                        <h3 style="font-size:0.82rem;">Machine Downtime Issues</h3>
+                        <div class="value" id="sr-total-issues" style="font-size:1.8rem;margin:0.25rem 0;">0</div>
+                    </div>
+                </div>
+
+                <!-- Shift cards container -->
+                <div id="sr-cards-container" style="display:flex;flex-direction:column;gap:2rem;">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+        </div>
+
         <div class="actions">
             <button class="btn btn-primary" onclick="window.print()">Export / Print Report</button>
             <button class="btn btn-danger" id="btn-reset">Reset to Defaults</button>
@@ -249,11 +413,59 @@ create table if not exists public.daily_less_excess_logs (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Create five_s_logs table
+create table if not exists public.five_s_logs (
+  id bigint primary key,
+  audit_date text not null,
+  auditor_name text not null,
+  area_name text not null,
+  sort_score numeric not null default 5,
+  set_order_score numeric not null default 5,
+  shine_score numeric not null default 5,
+  standardize_score numeric not null default 5,
+  sustain_score numeric not null default 5,
+  remarks text not null default '',
+  is_locked boolean not null default false,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Create daily_checklists table
+create table if not exists public.daily_checklists (
+  id bigint primary key,
+  checklist_date text not null,
+  department_name text not null,
+  filled_by text not null,
+  checked_items boolean[] not null,
+  remarks text not null default '',
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  constraint uniq_date_dept unique(checklist_date, department_name)
+);
+
+-- Create shift_reports table
+create table if not exists public.shift_reports (
+  id bigint primary key,
+  report_date text not null,
+  shift text not null,
+  officer_name text not null,
+  feed_produced text not null default '',
+  batches numeric not null default 0,
+  production_bags numeric not null default 0,
+  raw_material_used text not null default '',
+  machine_issues text not null default '',
+  quality_remarks text not null default '',
+  general_remarks text not null default '',
+  is_submitted boolean not null default false,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- Disable RLS (Row Level Security) for all tables to allow public anonymous access
 alter table public.materials disable row level security;
 alter table public.silos disable row level security;
 alter table public.daily_maize_logs disable row level security;
 alter table public.daily_less_excess_logs disable row level security;
+alter table public.five_s_logs disable row level security;
+alter table public.daily_checklists disable row level security;
+alter table public.shift_reports disable row level security;
 
 -- Create daily less/excess report view
 create or replace view public.v_daily_less_excess_report as
@@ -355,6 +567,28 @@ select
 from
   averages
 order by
+  id desc;
+
+-- Create five_s_report view
+create or replace view public.v_five_s_report as
+select
+  id,
+  audit_date,
+  auditor_name,
+  area_name,
+  sort_score,
+  set_order_score,
+  shine_score,
+  standardize_score,
+  sustain_score,
+  (sort_score + set_order_score + shine_score + standardize_score + sustain_score) as total_score,
+  round((sort_score + set_order_score + shine_score + standardize_score + sustain_score)::numeric / 5.0, 2) as average_score,
+  remarks,
+  is_locked,
+  updated_at
+from
+  public.five_s_logs
+order by
   id desc;</code></pre>
                         <button class="btn btn-copy-sql" id="btn-copy-sql">Copy SQL</button>
                     </div>
@@ -362,6 +596,181 @@ order by
 
                 <div class="modal-footer-actions">
                     <button class="btn btn-danger" id="btn-disconnect-supabase" style="display: none;">Disconnect Supabase (Use Local Storage)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5S Checklist Modal -->
+    <div id="five-s-checklist-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2 id="f5-modal-title">5S Audit Checklist</h2>
+                <button id="f5-modal-close" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem 2rem;">
+                <!-- Audit Metadata -->
+                <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label for="f5-audit-date">Audit Date</label>
+                        <input type="text" id="f5-audit-date" placeholder="e.g., 26-Jun" style="width: 100%; border-radius: 4px; border: 1px solid var(--card-border); padding: 0.5rem; background: var(--card-bg); color: var(--text-primary); outline: none;" />
+                    </div>
+                    <div class="form-group">
+                        <label for="f5-audit-auditor">Auditor Name</label>
+                        <select id="f5-audit-auditor" style="width: 100%; border-radius: 4px; border: 1px solid var(--card-border); padding: 0.5rem; background: var(--card-bg); color: var(--text-primary); outline: none;">
+                            <option value="Zubair" style="background:var(--bg-color);">Zubair</option>
+                            <option value="Shoaib" style="background:var(--bg-color);">Shoaib</option>
+                            <option value="Tahir" style="background:var(--bg-color);">Tahir</option>
+                            <option value="Waqas" style="background:var(--bg-color);">Waqas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-divider" style="margin: 1.5rem 0; height: 1px; background: var(--card-border);"></div>
+
+                <!-- Checklist categories -->
+                <div id="f5-checklist-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <!-- Categories will be generated dynamically by JS -->
+                </div>
+
+                <div class="modal-divider" style="margin: 1.5rem 0; height: 1px; background: var(--card-border);"></div>
+
+                <div class="form-group">
+                    <label for="f5-audit-remarks">Audit Remarks & Action Items</label>
+                    <textarea id="f5-audit-remarks" rows="3" placeholder="Enter observations, red tags applied, or required actions..." style="width: 100%; border-radius: 4px; border: 1px solid var(--card-border); padding: 0.5rem; background: var(--card-bg); color: var(--text-primary); font-family: inherit; resize: vertical; outline: none;"></textarea>
+                </div>
+
+                <div class="f5-score-summary" style="display:flex; justify-content:space-between; align-items:center; background: rgba(5, 150, 105, 0.08); padding: 1.25rem; border-radius: 8px; margin-top: 1.5rem; border: 1px solid rgba(5, 150, 105, 0.2);">
+                    <div>
+                        <strong style="color:var(--text-secondary)">Calculated 5S Score:</strong>
+                        <span id="f5-modal-overall-score" style="font-size: 1.5rem; font-weight: 700; color: var(--accent-color); margin-left: 0.5rem;">5.0 / 5</span>
+                    </div>
+                    <span id="f5-modal-status-badge" class="five-s-badge badge-excellent">Excellent</span>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                    <button class="btn btn-secondary" id="btn-cancel-f5-modal" style="width: auto; padding: 0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-f5-modal" style="width: auto; padding: 0.5rem 2rem;">Save Audit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Checklist Modal -->
+    <div id="daily-checklist-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2 id="dc-modal-title">Department Daily Checklist</h2>
+                <button id="dc-modal-close" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem 2rem;">
+                <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label for="dc-modal-head">Department Head</label>
+                        <select id="dc-modal-head" style="width: 100%; border-radius: 4px; border: 1px solid var(--card-border); padding: 0.5rem; background: var(--card-bg); color: var(--text-primary); outline: none;">
+                            <!-- Will be populated dynamically based on department -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-divider" style="margin: 1.5rem 0; height: 1px; background: var(--card-border);"></div>
+
+                <div id="dc-questions-container" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                    <!-- Checkboxes will be populated by JS -->
+                </div>
+
+                <div class="modal-divider" style="margin: 1.5rem 0; height: 1px; background: var(--card-border);"></div>
+
+                <div class="form-group">
+                    <label for="dc-modal-remarks">Observations / Remarks</label>
+                    <textarea id="dc-modal-remarks" rows="3" placeholder="Enter notes or machine status..." style="width: 100%; border-radius: 4px; border: 1px solid var(--card-border); padding: 0.5rem; background: var(--card-bg); color: var(--text-primary); font-family: inherit; resize: vertical; outline: none;"></textarea>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                    <button class="btn btn-secondary" id="btn-cancel-dc-modal" style="width: auto; padding: 0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-dc-modal" style="width: auto; padding: 0.5rem 2rem;">Save Checklist</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Production Officer Shift Report Modal -->
+    <div id="shift-report-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:680px;width:90%;max-height:92vh;overflow-y:auto;">
+            <div class="modal-header">
+                <h2 id="sr-modal-title">New Shift Report</h2>
+                <button id="sr-modal-close" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem 2rem;">
+
+                <!-- Row 1: Date / Shift / Officer -->
+                <div class="form-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.25rem;">
+                    <div class="form-group">
+                        <label for="sr-modal-date">Report Date</label>
+                        <input type="text" id="sr-modal-date" placeholder="e.g., 26-Jun" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                    </div>
+                    <div class="form-group">
+                        <label for="sr-modal-shift">Shift</label>
+                        <select id="sr-modal-shift" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
+                            <option value="A">Shift A</option>
+                            <option value="B">Shift B</option>
+                            <option value="C">Shift C</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="sr-modal-officer">Production Officer</label>
+                        <select id="sr-modal-officer" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
+                            <option value="Zubair">Zubair</option>
+                            <option value="Shoaib">Shoaib</option>
+                            <option value="Tahir">Tahir</option>
+                            <option value="Waqas">Waqas</option>
+                            <option value="Asif">Asif</option>
+                            <option value="Imran">Imran</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-divider" style="margin:1.25rem 0;height:1px;background:var(--card-border);"></div>
+
+                <!-- Row 2: Production details -->
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
+                    <div class="form-group" style="grid-column:1/-1;">
+                        <label for="sr-modal-feed">Feed Produced (Name / Type)</label>
+                        <input type="text" id="sr-modal-feed" placeholder="e.g., Broiler Starter, Layer Mash..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                    </div>
+                    <div class="form-group">
+                        <label for="sr-modal-batches">Total Batches Completed</label>
+                        <input type="number" id="sr-modal-batches" placeholder="0" min="0" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                    </div>
+                    <div class="form-group">
+                        <label for="sr-modal-bags">Total Production Bags</label>
+                        <input type="number" id="sr-modal-bags" placeholder="0" min="0" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                    </div>
+                </div>
+
+                <div class="modal-divider" style="margin:1.25rem 0;height:1px;background:var(--card-border);"></div>
+
+                <!-- Row 3: Raw Material / Machine / Quality -->
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label for="sr-modal-raw">Raw Material Used</label>
+                    <textarea id="sr-modal-raw" rows="2" placeholder="e.g., Maize: 12 tons, Soya: 4 tons, Premix: 120 kg..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);font-family:inherit;resize:vertical;outline:none;"></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label for="sr-modal-machine">Machine / Equipment Issues</label>
+                    <textarea id="sr-modal-machine" rows="2" placeholder="e.g., Hammer mill #2 vibration at 14:30, resolved by 15:00..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);font-family:inherit;resize:vertical;outline:none;"></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label for="sr-modal-quality">Quality Observations</label>
+                    <textarea id="sr-modal-quality" rows="2" placeholder="e.g., Pellet hardness OK, moisture within range..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);font-family:inherit;resize:vertical;outline:none;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="sr-modal-general">General Remarks</label>
+                    <textarea id="sr-modal-general" rows="2" placeholder="Any other notes for the next shift..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);font-family:inherit;resize:vertical;outline:none;"></textarea>
+                </div>
+
+                <div class="modal-actions" style="margin-top:1.75rem;display:flex;justify-content:flex-end;gap:1rem;">
+                    <button class="btn btn-secondary" id="btn-cancel-sr-modal" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-sr-modal" style="width:auto;padding:0.5rem 2rem;">💾 Save Report</button>
                 </div>
             </div>
         </div>

@@ -20,12 +20,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewMaizeMoisture = document.getElementById('view-maize-moisture');
     const navDailyLessExcess = document.getElementById('nav-daily-less-excess');
     const viewDailyLessExcess = document.getElementById('view-daily-less-excess');
+    const navFiveS = document.getElementById('nav-five-s');
+    const viewFiveS = document.getElementById('view-five-s');
+    // navDailyChecklist and viewDailyChecklist are now part of view-five-s tabs
+    const navShiftReport = document.getElementById('nav-shift-report');
+    const viewShiftReport = document.getElementById('view-shift-report');
 
     const switchView = (activeNav, activeView) => {
-        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess].forEach(nav => {
+        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navFiveS, navShiftReport].forEach(nav => {
             if (nav) nav.classList.remove('active');
         });
-        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess].forEach(view => {
+        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewFiveS, viewShiftReport].forEach(view => {
             if (view) view.style.display = 'none';
         });
 
@@ -71,19 +76,283 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (navFiveS) {
+        navFiveS.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(navFiveS, viewFiveS);
+            // Default to 5S tab; initialize both sub-modules
+            switchQSTab('five-s');
+            showFiveSDashboard();
+        });
+    }
+    // Daily Checklist is now a tab inside view-five-s — no separate nav handler needed
+
+    if (navShiftReport) {
+        navShiftReport.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(navShiftReport, viewShiftReport);
+            initShiftReportView();
+        });
+    }
+
     // ─── LocalStorage & Supabase configuration keys ───────────────────────────
     const LS_SILOS       = 'fmpr_silosData';
     const LS_MATERIALS   = 'fmpr_materials';
     const LS_MAIZE_LOGS  = 'fmpr_maizeLogs';
     const LS_LESS_EXCESS_LOGS = 'fmpr_lessExcessLogs';
+    const LS_FIVE_S_LOGS = 'fmpr_fiveSLogs';
+    const LS_DAILY_CHECKLISTS = 'fmpr_dailyChecklists';
+    const LS_SHIFT_REPORTS    = 'fmpr_shiftReports';
     const LS_SB_URL      = 'fmpr_supabaseUrl';
     const LS_SB_KEY      = 'fmpr_supabaseKey';
     const LS_SB_DISABLED = 'fmpr_supabaseDisabled';
+
+    const DEPARTMENTS = [
+        { id: 'godown', name: 'Old Godown', icon: '📦', class: 'godown' },
+        { id: 'mech', name: 'Mechanical', icon: '⚙️', class: 'mech' },
+        { id: 'elec', name: 'Electrical', icon: '⚡', class: 'elec' },
+        { id: 'control', name: 'Control Room', icon: '🎛️', class: 'control' },
+        { id: 'premix', name: 'Premix', icon: '🥣', class: 'premix' },
+        { id: 'other', name: 'Other Department', icon: '📁', class: 'other' }
+    ];
+
+    const CHECKLIST_ITEMS = {
+        'Old Godown': {
+            sort: [
+                'Obsolete materials and damaged bags are removed.',
+                'Unused pallets and packaging materials are stored away.',
+                'No personal or unrelated items are left in storage areas.',
+                'Red tags are applied to questionable items.',
+                'Aisles and exit routes are free of storage overflow.'
+            ],
+            set: [
+                'Stacking zones and lanes are clearly marked and labeled.',
+                'Pallets are perfectly aligned within grid lines.',
+                'Raw materials are stacked by batch number and type.',
+                'Visual stock cards are placed and readable.',
+                'First-In, First-Out (FIFO) pathways are clear.'
+            ],
+            shine: [
+                'Floor is swept and free of spilled grains/dust.',
+                'Dust is wiped from the bags and stacks.',
+                'Pallets and storage racks are clean.',
+                'Cleaning tools (brooms, pans) are in their spots.',
+                'Rodent traps are clean and placed correctly.'
+            ],
+            std: [
+                'Stacking height limit guides are clearly posted.',
+                'Standard operating procedures (SOPs) are visible.',
+                'Safety signs and fire exit marks are clear.',
+                'Cleaning schedules are active and signed off.',
+                '5S audit summary sheet is displayed on the board.'
+            ],
+            sust: [
+                'Warehouse team performs daily 5-minute sweeps.',
+                'PPE (dust masks, safety shoes) is worn by all.',
+                'Deviations are corrected immediately.',
+                'Weekly team audit results are updated.',
+                'Daily inspection check sheet is completed.'
+            ]
+        },
+        'Mechanical': {
+            sort: [
+                'No broken tools or machinery parts lying around.',
+                'Scrap metal is immediately placed in the scrap bin.',
+                'Unused spare parts are returned to store.',
+                'Red tags applied to inactive workshop equipment.',
+                'Workbenches are free of unnecessary items.'
+            ],
+            set: [
+                'Tools are hung on labeled shadow boards.',
+                'Parts drawers and storage bins are clearly labeled.',
+                'Gas cylinders and heavy machines are secured in spots.',
+                'Safety walkways are marked and completely clear.',
+                'Toolboxes are organized by category.'
+            ],
+            shine: [
+                'Workbenches are wiped clean of oil and grease.',
+                'Floor is free of oil spills and metal shavings.',
+                'Maintenance machines (lathe, drill) are clean.',
+                'Cleaning rags are disposed of in fireproof bins.',
+                'Light fixtures are clean and functioning.'
+            ],
+            std: [
+                'Machine safety guards are installed and labeled.',
+                'Emergency stop buttons are highly visible.',
+                'LOTO (Lock-Out Tag-Out) station is stocked.',
+                'Maintenance logbook is active and updated.',
+                'Lubrication charts are posted near machines.'
+            ],
+            sust: [
+                'Technicians return tools to boards immediately.',
+                'Daily 5-minute cleanup is performed.',
+                'Safety shoes and goggles are worn constantly.',
+                'Housekeeping logs are signed off daily.',
+                'Preventive maintenance checks are sustained.'
+            ]
+        },
+        'Electrical': {
+            sort: [
+                'No scrap wire pieces or insulation left on floor.',
+                'Obsolete electrical components are disposed.',
+                'Broken test meters/leads are removed.',
+                'Personal items kept outside switchgear rooms.',
+                'Red tags placed on retired electrical gear.'
+            ],
+            set: [
+                'Electrical panels are labeled and doors closed.',
+                'Cables are neatly tied, routed, and tagged.',
+                'Test equipment is stored in designated cases.',
+                'Keys to panels are in labeled key cabinets.',
+                'LOTO padlocks are organized on board.'
+            ],
+            shine: [
+                'Inside of control panels is free of dust.',
+                'Switchgear room floor is dry and swept.',
+                'No cobwebs or dust on cable trays.',
+                'Panel exterior surfaces are wiped clean.',
+                'Air vents on panels are clean and open.'
+            ],
+            std: [
+                'High voltage danger signs are posted.',
+                'Electrical single-line diagrams are in folders.',
+                'LOTO procedures are clearly posted.',
+                'Rubber insulation mats are placed in front of panels.',
+                'Calibration dates are marked on all meters.'
+            ],
+            sust: [
+                'Panel doors are always kept locked after work.',
+                'Daily visual inspections are done and logged.',
+                'Safety gloves/glasses worn during live testing.',
+                'Only authorized electricians enter control rooms.',
+                'Weekly battery bank checks are maintained.'
+            ]
+        },
+        'Control Room': {
+            sort: [
+                'Desks are free of personal clutter (cups, food).',
+                'Old paper logs are filed and archived.',
+                'Unused computer peripherals are removed.',
+                'Red tags placed on obsolete monitors/servers.',
+                'Operators desks have only active documents.'
+            ],
+            set: [
+                'Monitors and HMI screens are positioned correctly.',
+                'Emergency contact list is posted by the phone.',
+                'Mill plant manuals are in labeled folders.',
+                'Keyboards and mice are in clean desk pads.',
+                'Operator chairs are adjusted and in place.'
+            ],
+            shine: [
+                'Screens are free of fingerprints and dust.',
+                'Keyboards and desks are wiped clean daily.',
+                'Air conditioning filters are clean.',
+                'Trash bin is emptied every shift.',
+                'Control panel status LEDs are clean and visible.'
+            ],
+            std: [
+                'SOPs for plant startup and shutdown are posted.',
+                'Critical alarm levels are marked on charts.',
+                'Operator shift handover log is standard.',
+                'Visitor logbook is active at entry.',
+                'Safety exit route from control room is clear.'
+            ],
+            sust: [
+                'No eating or drinking near control consoles.',
+                'Hourly process parameters are logged standard.',
+                'Shift screen layouts are kept to standards.',
+                'Alarm responses are logged immediately.',
+                'Daily checklist completed before shift starts.'
+            ]
+        },
+        'Premix': {
+            sort: [
+                'Obsolete micro-ingredients are removed.',
+                'Empty bags/liners are disposed of immediately.',
+                'Only active bags are placed on supply pallets.',
+                'Scoops not in use are removed from scales.',
+                'Red tags applied to expired premix batches.'
+            ],
+            set: [
+                'Micro-ingredient bins are labeled with bag codes.',
+                'Scoops are hung on designated colored hooks.',
+                'Weighing scales are set on clean tables.',
+                'Active recipe sheets are placed on clipboard.',
+                'Pallets of active ingredients are aligned.'
+            ],
+            shine: [
+                'Weighing scales are brushed clean of dust.',
+                'No powder spills on the floor or tables.',
+                'Dust extraction hoods are clean and running.',
+                'Hand washing sink is clean and dry.',
+                'Premix mixer exterior is wiped daily.'
+            ],
+            std: [
+                'Scale calibration weights are stored and labeled.',
+                'Micro-ingredient recipe chart is posted.',
+                'Batch sheet verification standard is active.',
+                'Wear-mask and wear-gloves signs are posted.',
+                'All ingredient bins have lid status labels.'
+            ],
+            sust: [
+                'Dust masks, hairnets, and gloves worn by all.',
+                'Scale calibration verified before every batch.',
+                'Bags are tightly sealed immediately after scoop.',
+                'Premix room door is kept closed.',
+                'Cross-contamination prevention check logged.'
+            ]
+        },
+        'Other Department': {
+            sort: [
+                'Unused files or office materials archived.',
+                'Red tags applied to broken chairs or fans.',
+                'Trash is separated into bins.',
+                'Walkways and corridors free of clutter.',
+                'Notice boards have only active posters.'
+            ],
+            set: [
+                'First aid kit is fully stocked and labeled.',
+                'Fire extinguishers are accessible and tagged.',
+                'Evacuation route maps are clearly posted.',
+                'Office files are organized in labeled cabinets.',
+                'Stationery is sorted in drawers.'
+            ],
+            shine: [
+                'Floors are swept and mopped daily.',
+                'Windows and desks are dust-free.',
+                'Bins are emptied and sanitized daily.',
+                'Common dining/break area is clean.',
+                'Office equipment is wiped down.'
+            ],
+            std: [
+                'Housekeeping standards are posted.',
+                'Emergency assembly point sign is visible.',
+                'Fire drill record is logged.',
+                'First aider contact list is posted.',
+                'Weekly cleaning roster is visible.'
+            ],
+            sust: [
+                '5S audit score is updated on notice board.',
+                'Safety drills are attended by all staff.',
+                'Housekeeping deviations are corrected.',
+                'Staff complete their daily desk cleanup.',
+                'Monthly 5S committee reviews are held.'
+            ]
+        }
+    };
 
     let availableMaterials = ['Maize', 'Rice'];
     let silosData = [];
     let maizeLogs = [];
     let lessExcessLogs = [];
+    let fiveSLogs = [];
+    let currentFiveSDept = null;
+    let activeFiveSAuditId = null;
+    let dailyChecklists = [];
+    let currentChecklistDate = null;
+    let shiftReports = [];
+    let currentSrFilterDate = null;
+    let activeSrId = null;
 
     let sbDisabled = localStorage.getItem(LS_SB_DISABLED) === 'true';
     let supabaseUrl = localStorage.getItem(LS_SB_URL) || (sbDisabled ? '' : (window.env && window.env.SUPABASE_URL) || '');
@@ -178,6 +447,82 @@ document.addEventListener('DOMContentLoaded', () => {
         c_room_un_grind: log.cRoomUnGrind,
         lab_wet_un_grind: log.labWetUnGrind,
         lab_wet_grind: log.labWetGrind
+    });
+
+    const mapFiveSFromDb = (dbRow) => ({
+        id: dbRow.id,
+        date: dbRow.audit_date,
+        auditorName: dbRow.auditor_name,
+        areaName: dbRow.area_name,
+        sortScore: parseFloat(dbRow.sort_score || 5),
+        setOrderScore: parseFloat(dbRow.set_order_score || 5),
+        shineScore: parseFloat(dbRow.shine_score || 5),
+        standardizeScore: parseFloat(dbRow.standardize_score || 5),
+        sustainScore: parseFloat(dbRow.sustain_score || 5),
+        remarks: dbRow.remarks || '',
+        locked: dbRow.is_locked === true || dbRow.is_locked === 'true'
+    });
+
+    const mapFiveSToDb = (log) => ({
+        id: log.id,
+        audit_date: log.date,
+        auditor_name: log.auditorName,
+        area_name: log.areaName,
+        sort_score: log.sortScore,
+        set_order_score: log.setOrderScore,
+        shine_score: log.shineScore,
+        standardize_score: log.standardizeScore,
+        sustain_score: log.sustainScore,
+        remarks: log.remarks || '',
+        is_locked: log.locked === true
+    });
+
+    const mapDailyChecklistFromDb = (dbRow) => ({
+        id: dbRow.id,
+        date: dbRow.checklist_date,
+        departmentName: dbRow.department_name,
+        filledBy: dbRow.filled_by,
+        checkedItems: dbRow.checked_items || [],
+        remarks: dbRow.remarks || ''
+    });
+
+    const mapDailyChecklistToDb = (log) => ({
+        id: log.id,
+        checklist_date: log.date,
+        department_name: log.departmentName,
+        filled_by: log.filledBy,
+        checked_items: log.checkedItems,
+        remarks: log.remarks || ''
+    });
+
+    const mapShiftReportFromDb = (r) => ({
+        id: r.id,
+        date: r.report_date,
+        shift: r.shift,
+        officerName: r.officer_name,
+        feedProduced: r.feed_produced || '',
+        batches: parseFloat(r.batches || 0),
+        productionBags: parseFloat(r.production_bags || 0),
+        rawMaterialUsed: r.raw_material_used || '',
+        machineIssues: r.machine_issues || '',
+        qualityRemarks: r.quality_remarks || '',
+        generalRemarks: r.general_remarks || '',
+        isSubmitted: r.is_submitted === true
+    });
+
+    const mapShiftReportToDb = (r) => ({
+        id: r.id,
+        report_date: r.date,
+        shift: r.shift,
+        officer_name: r.officerName,
+        feed_produced: r.feedProduced || '',
+        batches: r.batches || 0,
+        production_bags: r.productionBags || 0,
+        raw_material_used: r.rawMaterialUsed || '',
+        machine_issues: r.machineIssues || '',
+        quality_remarks: r.qualityRemarks || '',
+        general_remarks: r.generalRemarks || '',
+        is_submitted: r.isSubmitted === true
     });
 
 
@@ -370,10 +715,54 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+                // Fetch 5S logs
+                const { data: dbFiveS, error: fiveSErr } = await sbClient.from('five_s_logs').select('*').order('id', { ascending: true });
+                if (fiveSErr) throw fiveSErr;
+
+                if (dbFiveS && dbFiveS.length > 0) {
+                    fiveSLogs = dbFiveS.map(mapFiveSFromDb);
+                } else {
+                    fiveSLogs = JSON.parse(localStorage.getItem(LS_FIVE_S_LOGS)) || [];
+                    if (fiveSLogs.length > 0) {
+                        await sbClient.from('five_s_logs').insert(fiveSLogs.map(mapFiveSToDb));
+                    } else {
+                        seedDefaultFiveSLogs();
+                        await sbClient.from('five_s_logs').insert(fiveSLogs.map(mapFiveSToDb));
+                    }
+                }
+
+                // Fetch Daily Checklists
+                const { data: dbChecklists, error: checklistErr } = await sbClient.from('daily_checklists').select('*').order('id', { ascending: true });
+                if (checklistErr) throw checklistErr;
+
+                if (dbChecklists && dbChecklists.length > 0) {
+                    dailyChecklists = dbChecklists.map(mapDailyChecklistFromDb);
+                } else {
+                    dailyChecklists = JSON.parse(localStorage.getItem(LS_DAILY_CHECKLISTS)) || [];
+                    if (dailyChecklists.length > 0) {
+                        await sbClient.from('daily_checklists').insert(dailyChecklists.map(mapDailyChecklistToDb));
+                    }
+                }
+
                 enforceFixedCapacities();
                 // Sync to backup local storage
                 localStorage.setItem(LS_SILOS, JSON.stringify(silosData));
                 localStorage.setItem(LS_MATERIALS, JSON.stringify(availableMaterials));
+                localStorage.setItem(LS_FIVE_S_LOGS, JSON.stringify(fiveSLogs));
+                localStorage.setItem(LS_DAILY_CHECKLISTS, JSON.stringify(dailyChecklists));
+
+                // Fetch Shift Reports
+                const { data: dbSr, error: srErr } = await sbClient.from('shift_reports').select('*').order('id', { ascending: true });
+                if (srErr) throw srErr;
+                if (dbSr && dbSr.length > 0) {
+                    shiftReports = dbSr.map(mapShiftReportFromDb);
+                } else {
+                    shiftReports = JSON.parse(localStorage.getItem(LS_SHIFT_REPORTS)) || [];
+                    if (shiftReports.length > 0) {
+                        await sbClient.from('shift_reports').insert(shiftReports.map(mapShiftReportToDb));
+                    }
+                }
+                localStorage.setItem(LS_SHIFT_REPORTS, JSON.stringify(shiftReports));
             } catch (err) {
                 console.error('Supabase fetch failed, fallback to local storage:', err);
                 loadFromLocalStorage();
@@ -398,6 +787,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         maizeLogs = JSON.parse(localStorage.getItem(LS_MAIZE_LOGS)) || [];
         lessExcessLogs = JSON.parse(localStorage.getItem(LS_LESS_EXCESS_LOGS)) || [];
+        fiveSLogs = JSON.parse(localStorage.getItem(LS_FIVE_S_LOGS)) || [];
+        if (fiveSLogs.length === 0) {
+            seedDefaultFiveSLogs();
+        }
+        dailyChecklists = JSON.parse(localStorage.getItem(LS_DAILY_CHECKLISTS)) || [];
+        shiftReports = JSON.parse(localStorage.getItem(LS_SHIFT_REPORTS)) || [];
         enforceFixedCapacities();
     };
 
@@ -427,6 +822,21 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error('Supabase save failed for less/excess logs:', err);
                 alert('Supabase Save Error (Less/Excess): ' + (err.message || err.details || JSON.stringify(err)));
+            }
+        }
+    };
+
+    const saveFiveSLogs = async () => {
+        localStorage.setItem(LS_FIVE_S_LOGS, JSON.stringify(fiveSLogs));
+        if (isSbConnected && sbClient) {
+            try {
+                const { error } = await sbClient
+                    .from('five_s_logs')
+                    .upsert(fiveSLogs.map(mapFiveSToDb));
+                if (error) throw error;
+            } catch (err) {
+                console.error('Supabase save failed for 5S logs:', err);
+                alert('Supabase Save Error (5S Logs): ' + (err.message || err.details || JSON.stringify(err)));
             }
         }
     };
@@ -479,9 +889,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { error: matErr } = await sbClient.from('materials').delete().neq('name', '');
                 if (matErr) throw matErr;
 
+                // Delete five_s_logs
+                const { error: f5Err } = await sbClient.from('five_s_logs').delete().gt('id', 0);
+                if (f5Err) throw f5Err;
+
+                // Delete daily_checklists
+                const { error: dcErr } = await sbClient.from('daily_checklists').delete().gt('id', 0);
+                if (dcErr) throw dcErr;
+
+                // Delete shift_reports
+                const { error: srErr } = await sbClient.from('shift_reports').delete().gt('id', 0);
+                if (srErr) throw srErr;
+
                 availableMaterials = [];
                 ensureDefaultMaterials();
                 silosData = generateSiloData(16);
+                fiveSLogs = [];
+                dailyChecklists = [];
+                shiftReports = [];
                 // This will trigger re-seeding inside loadAllData
                 await loadAllData();
                 renderSilos();
@@ -493,10 +918,17 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             localStorage.removeItem(LS_SILOS);
             localStorage.removeItem(LS_MATERIALS);
+            localStorage.removeItem(LS_FIVE_S_LOGS);
+            localStorage.removeItem(LS_DAILY_CHECKLISTS);
+            localStorage.removeItem(LS_SHIFT_REPORTS);
             availableMaterials = [];
             ensureDefaultMaterials();
             silosData = generateSiloData(16);
+            fiveSLogs = [];
+            dailyChecklists = [];
+            shiftReports = [];
             saveData();
+            seedDefaultFiveSLogs();
             renderSilos();
         }
     };
@@ -689,6 +1121,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render UI
         renderSilos();
+        initFiveSEvents();
+        initDailyChecklistEvents();
+        initShiftReportEvents();
     };
 
     // ─── Modal Actions ──────────────────────────────────────────────────────────
@@ -1511,9 +1946,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Read-only in this view. Data is editable in the Daily Report table.
         });
 
-        // ── Remove Three.js call as we use a static image ──
-        // (Image is rendered in the HTML template directly)
-
         renderSummary();
         renderDailyReportTable();
         renderMaizeMoistureTable();
@@ -1553,8 +1985,1082 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // ─── 5S Audit & Checklist Functions ──────────────────────────────────────────
+    const seedDefaultFiveSLogs = () => {
+        const defaultAuditors = ['Tahir', 'Shoaib', 'Zubair'];
+        const areas = ['Old Godown', 'Mechanical', 'Electrical', 'Control Room', 'Premix', 'Other Department'];
+        const logs = [];
+        
+        areas.forEach((area, idx) => {
+            const d1 = new Date();
+            d1.setDate(d1.getDate() - 7);
+            const d1Str = d1.getDate() + '-' + d1.toLocaleString('default', { month: 'short' });
+            
+            const d2 = new Date();
+            d2.setDate(d2.getDate() - 1);
+            const d2Str = d2.getDate() + '-' + d2.toLocaleString('default', { month: 'short' });
+            
+            logs.push({
+                id: Date.now() - (idx * 200000) - 100000,
+                date: d1Str,
+                auditorName: defaultAuditors[idx % defaultAuditors.length],
+                areaName: area,
+                sortScore: idx === 0 ? 4 : idx === 1 ? 3 : idx === 2 ? 4 : idx === 3 ? 5 : 4,
+                setOrderScore: idx === 0 ? 3 : idx === 1 ? 4 : idx === 2 ? 3 : idx === 3 ? 4 : 4,
+                shineScore: idx === 0 ? 4 : idx === 1 ? 3 : idx === 2 ? 4 : idx === 3 ? 5 : 5,
+                standardizeScore: idx === 0 ? 4 : idx === 1 ? 3 : idx === 2 ? 3 : idx === 3 ? 4 : 4,
+                sustainScore: idx === 0 ? 3 : idx === 1 ? 3 : idx === 2 ? 3 : idx === 3 ? 4 : 4,
+                remarks: 'Initial 5S Audit. Clutter identified, clean-up scheduled.',
+                locked: false
+            });
+            
+            logs.push({
+                id: Date.now() - (idx * 200000),
+                date: d2Str,
+                auditorName: defaultAuditors[(idx + 1) % defaultAuditors.length],
+                areaName: area,
+                sortScore: idx === 0 ? 5 : idx === 1 ? 4 : idx === 2 ? 5 : idx === 3 ? 5 : 5,
+                setOrderScore: idx === 0 ? 4 : idx === 1 ? 5 : idx === 2 ? 4 : idx === 3 ? 5 : 5,
+                shineScore: idx === 0 ? 5 : idx === 1 ? 4 : idx === 2 ? 5 : idx === 3 ? 5 : 5,
+                standardizeScore: idx === 0 ? 4 : idx === 1 ? 4 : idx === 2 ? 4 : idx === 3 ? 5 : 5,
+                sustainScore: idx === 0 ? 4 : idx === 1 ? 4 : idx === 2 ? 4 : idx === 3 ? 5 : 5,
+                remarks: 'Follow-up audit. Visual controls implemented.',
+                locked: false
+            });
+        });
+        
+        fiveSLogs = logs;
+        localStorage.setItem(LS_FIVE_S_LOGS, JSON.stringify(fiveSLogs));
+    };
+
+    const showFiveSDashboard = () => {
+        const dbView = document.getElementById('five-s-dashboard-view');
+        const detView = document.getElementById('five-s-detail-view');
+        if (dbView) dbView.style.display = 'block';
+        if (detView) detView.style.display = 'none';
+
+        const grid = document.querySelector('.five-s-dept-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        DEPARTMENTS.forEach(dept => {
+            const deptLogs = fiveSLogs.filter(log => log.areaName === dept.name);
+            
+            let scoreStr = 'N/A';
+            let progressPct = 0;
+            let statusBadge = `<span class="five-s-badge badge-neutral">No Audits</span>`;
+            let lastDate = 'Never';
+
+            if (deptLogs.length > 0) {
+                const latestLog = deptLogs[deptLogs.length - 1];
+                lastDate = latestLog.date;
+
+                let totalSum = 0;
+                deptLogs.forEach(l => {
+                    const avg = (l.sortScore + l.setOrderScore + l.shineScore + l.standardizeScore + l.sustainScore) / 5.0;
+                    totalSum += avg;
+                });
+                const overallAvg = totalSum / deptLogs.length;
+                scoreStr = overallAvg.toFixed(1) + ' / 5';
+                progressPct = (overallAvg / 5.0) * 100;
+
+                const latestAvg = (latestLog.sortScore + latestLog.setOrderScore + latestLog.shineScore + latestLog.standardizeScore + latestLog.sustainScore) / 5.0;
+                if (latestAvg >= 4.5) {
+                    statusBadge = `<span class="five-s-badge badge-excellent">Excellent</span>`;
+                } else if (latestAvg >= 3.5) {
+                    statusBadge = `<span class="five-s-badge badge-good">Good</span>`;
+                } else if (latestAvg >= 2.5) {
+                    statusBadge = `<span class="five-s-badge badge-fair">Fair</span>`;
+                } else {
+                    statusBadge = `<span class="five-s-badge badge-action">Action Needed</span>`;
+                }
+            }
+
+            const card = document.createElement('div');
+            card.className = `five-s-dept-card ${dept.class}`;
+            card.innerHTML = `
+                <div class="five-s-card-header">
+                    <span class="five-s-card-icon">${dept.icon}</span>
+                    ${statusBadge}
+                </div>
+                <div>
+                    <h3 class="five-s-card-title">${dept.name} Department</h3>
+                    <div class="five-s-card-meta">Last Audit: ${lastDate}</div>
+                </div>
+                <div>
+                    <div class="five-s-card-score-row">
+                        <span style="font-size:0.85rem; color:var(--text-secondary)">5S Score (Avg)</span>
+                        <span class="five-s-card-score">${scoreStr}</span>
+                    </div>
+                    <div class="five-s-progress-container">
+                        <div class="five-s-progress-bar" style="width: ${progressPct}%"></div>
+                    </div>
+                </div>
+            `;
+
+            card.addEventListener('click', () => {
+                showFiveSDepartmentDetail(dept.name);
+            });
+
+            grid.appendChild(card);
+        });
+    };
+
+    const showFiveSDepartmentDetail = (deptName) => {
+        currentFiveSDept = deptName;
+        
+        const dbView = document.getElementById('five-s-dashboard-view');
+        const detView = document.getElementById('five-s-detail-view');
+        if (dbView) dbView.style.display = 'none';
+        if (detView) detView.style.display = 'block';
+
+        const titleEl = document.getElementById('five-s-dept-title');
+        if (titleEl) titleEl.textContent = `${deptName} Department 5S Audits`;
+
+        renderFiveSLogsTable();
+    };
+
+    const renderFiveSLogsTable = () => {
+        const tableBody = document.querySelector('#five-s-table tbody');
+        if (!tableBody) return;
+        tableBody.innerHTML = '';
+
+        if (!currentFiveSDept) return;
+
+        const deptLogs = fiveSLogs.filter(log => log.areaName === currentFiveSDept);
+
+        let totalAudits = deptLogs.length;
+        let sumSort = 0, sumSet = 0, sumShine = 0, sumStandardize = 0, sumSustain = 0;
+        let sumOverall = 0;
+
+        deptLogs.forEach(l => {
+            sumSort += l.sortScore;
+            sumSet += l.setOrderScore;
+            sumShine += l.shineScore;
+            sumStandardize += l.standardizeScore;
+            sumSustain += l.sustainScore;
+            sumOverall += (l.sortScore + l.setOrderScore + l.shineScore + l.standardizeScore + l.sustainScore) / 5.0;
+        });
+
+        const avgSort = totalAudits > 0 ? (sumSort / totalAudits) : 0;
+        const avgSet = totalAudits > 0 ? (sumSet / totalAudits) : 0;
+        const avgShine = totalAudits > 0 ? (sumShine / totalAudits) : 0;
+        const avgStandardize = totalAudits > 0 ? (sumStandardize / totalAudits) : 0;
+        const avgSustain = totalAudits > 0 ? (sumSustain / totalAudits) : 0;
+        const overallScore = totalAudits > 0 ? (sumOverall / totalAudits) : 0;
+
+        document.getElementById('dept-total-5s-audits').textContent = totalAudits;
+        document.getElementById('dept-avg-sort').textContent = avgSort.toFixed(1);
+        document.getElementById('dept-avg-set').textContent = avgSet.toFixed(1);
+        document.getElementById('dept-avg-shine').textContent = avgShine.toFixed(1);
+        document.getElementById('dept-avg-standardize').textContent = avgStandardize.toFixed(1);
+        document.getElementById('dept-avg-sustain').textContent = avgSustain.toFixed(1);
+        document.getElementById('dept-overall-5s-score').textContent = overallScore.toFixed(1) + ' / 5';
+
+        const badgeEl = document.getElementById('dept-overall-5s-badge');
+        if (badgeEl) {
+            badgeEl.className = '';
+            if (totalAudits === 0) {
+                badgeEl.textContent = 'No Audits';
+                badgeEl.classList.add('five-s-badge', 'badge-neutral');
+            } else if (overallScore >= 4.5) {
+                badgeEl.textContent = 'Excellent';
+                badgeEl.classList.add('five-s-badge', 'badge-excellent');
+            } else if (overallScore >= 3.5) {
+                badgeEl.textContent = 'Good';
+                badgeEl.classList.add('five-s-badge', 'badge-good');
+            } else if (overallScore >= 2.5) {
+                badgeEl.textContent = 'Fair';
+                badgeEl.classList.add('five-s-badge', 'badge-fair');
+            } else {
+                badgeEl.textContent = 'Action Needed';
+                badgeEl.classList.add('five-s-badge', 'badge-action');
+            }
+        }
+
+        const sortedLogs = [...deptLogs].reverse();
+
+        sortedLogs.forEach(log => {
+            const row = document.createElement('tr');
+            const rowAvg = (log.sortScore + log.setOrderScore + log.shineScore + log.standardizeScore + log.sustainScore) / 5.0;
+            
+            let statusText = 'Fair';
+            let badgeClass = 'badge-fair';
+            if (rowAvg >= 4.5) { statusText = 'Excellent'; badgeClass = 'badge-excellent'; }
+            else if (rowAvg >= 3.5) { statusText = 'Good'; badgeClass = 'badge-good'; }
+            else if (rowAvg < 2.5) { statusText = 'Action Needed'; badgeClass = 'badge-action'; }
+
+            row.innerHTML = `
+                <td><span class="editable-value" id="f5-date-${log.id}">${log.date}</span></td>
+                <td><span class="editable-value" id="f5-auditor-${log.id}">${log.auditorName}</span></td>
+                <td><span style="color:#f59e0b;font-weight:600;">${log.sortScore}</span></td>
+                <td><span style="color:#3b82f6;font-weight:600;">${log.setOrderScore}</span></td>
+                <td><span style="color:#10b981;font-weight:600;">${log.shineScore}</span></td>
+                <td><span style="color:#8b5cf6;font-weight:600;">${log.standardizeScore}</span></td>
+                <td><span style="color:#ec4899;font-weight:600;">${log.sustainScore}</span></td>
+                <td style="font-weight: bold;">${rowAvg.toFixed(1)}</td>
+                <td><span class="five-s-badge ${badgeClass}">${statusText}</span></td>
+                <td><span class="editable-value" id="f5-remarks-${log.id}">${log.remarks || '-'}</span></td>
+                <td style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
+                    <button class="btn btn-secondary btn-sm" id="btn-edit-chk-f5-${log.id}" style="padding:0.25rem 0.5rem;font-size:0.8rem;border:none;background:var(--text-secondary);color:#fff;border-radius:4px;cursor:pointer;">📋 Checklist</button>
+                    <button class="btn btn-danger btn-sm" id="btn-delete-f5-${log.id}" style="padding:0.25rem 0.5rem;font-size:0.8rem;">🗑️ Delete</button>
+                </td>
+            `;
+
+            tableBody.appendChild(row);
+
+            makeEditable(document.getElementById(`f5-date-${log.id}`), 'text', () => log.date, (val) => {
+                log.date = val || log.date;
+                saveFiveSLogs();
+                renderFiveSLogsTable();
+            });
+
+            makeEditable(document.getElementById(`f5-auditor-${log.id}`), 'text', () => log.auditorName, (val) => {
+                log.auditorName = val || log.auditorName;
+                saveFiveSLogs();
+                renderFiveSLogsTable();
+            }, ['Zubair', 'Shoaib', 'Tahir', 'Waqas']);
+
+            makeEditable(document.getElementById(`f5-remarks-${log.id}`), 'text', () => log.remarks || '', (val) => {
+                log.remarks = val || '';
+                saveFiveSLogs();
+                renderFiveSLogsTable();
+            });
+
+            document.getElementById(`btn-edit-chk-f5-${log.id}`).addEventListener('click', () => {
+                openFiveSChecklistModal(log);
+            });
+
+            document.getElementById(`btn-delete-f5-${log.id}`).addEventListener('click', async () => {
+                if (confirm('Are you sure you want to delete this audit record?')) {
+                    fiveSLogs = fiveSLogs.filter(x => x.id !== log.id);
+                    localStorage.setItem(LS_FIVE_S_LOGS, JSON.stringify(fiveSLogs));
+                    if (isSbConnected && sbClient) {
+                        try {
+                            await sbClient.from('five_s_logs').delete().eq('id', log.id);
+                        } catch (err) {
+                            console.error('Failed to delete from Supabase:', err);
+                        }
+                    }
+                    renderFiveSLogsTable();
+                    showToast('✓ Audit deleted');
+                }
+            });
+        });
+    };
+
+    // ─── 5S Modal Functions ──────────────────────────────────────────────────────
+    const openFiveSChecklistModal = (log = null) => {
+        const modal = document.getElementById('five-s-checklist-modal');
+        if (!modal) return;
+
+        const dateInput = document.getElementById('f5-audit-date');
+        const auditorSelect = document.getElementById('f5-audit-auditor');
+        const remarksText = document.getElementById('f5-audit-remarks');
+        const titleEl = document.getElementById('f5-modal-title');
+
+        if (titleEl) {
+            titleEl.textContent = log 
+                ? `Edit 5S Audit - ${currentFiveSDept}`
+                : `New 5S Audit - ${currentFiveSDept}`;
+        }
+
+        let checklistState = [];
+        if (log) {
+            activeFiveSAuditId = log.id;
+            if (dateInput) dateInput.value = log.date;
+            if (auditorSelect) auditorSelect.value = log.auditorName;
+            if (remarksText) remarksText.value = log.remarks || '';
+
+            if (log.checklistState && log.checklistState.length === 25) {
+                checklistState = [...log.checklistState];
+            } else {
+                // Fallback from raw scores
+                const scores = [log.sortScore, log.setOrderScore, log.shineScore, log.standardizeScore, log.sustainScore];
+                scores.forEach(score => {
+                    const val = Math.round(score);
+                    for (let i = 0; i < 5; i++) {
+                        checklistState.push(i < val);
+                    }
+                });
+            }
+        } else {
+            activeFiveSAuditId = null;
+            if (dateInput) {
+                const today = new Date();
+                dateInput.value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+            }
+            if (auditorSelect) auditorSelect.selectedIndex = 0;
+            if (remarksText) remarksText.value = '';
+            // Default all 25 items to checked (score = 5)
+            for (let i = 0; i < 25; i++) checklistState.push(true);
+        }
+
+        // Generate Checklist items HTML
+        const container = document.getElementById('f5-checklist-container');
+        if (container) {
+            container.innerHTML = '';
+            const deptItems = CHECKLIST_ITEMS[currentFiveSDept] || CHECKLIST_ITEMS['Other Department'];
+
+            const categories = [
+                { key: 'sort', name: '1. Sort (Seiri)', color: '#f59e0b', items: deptItems.sort },
+                { key: 'set', name: '2. Set In Order (Seiton)', color: '#3b82f6', items: deptItems.set },
+                { key: 'shine', name: '3. Shine (Seiso)', color: '#10b981', items: deptItems.shine },
+                { key: 'std', name: '4. Standardize (Seiketsu)', color: '#8b5cf6', items: deptItems.std },
+                { key: 'sust', name: '5. Sustain (Shitsuke)', color: '#ec4899', items: deptItems.sust }
+            ];
+
+            categories.forEach((cat, catIdx) => {
+                const catSection = document.createElement('div');
+                catSection.style.borderLeft = `4px solid ${cat.color}`;
+                catSection.style.paddingLeft = '1rem';
+                catSection.style.marginBottom = '0.5rem';
+                
+                catSection.innerHTML = `
+                    <h3 style="color:${cat.color}; font-size:1.05rem; margin-bottom:0.5rem; font-weight:600;">${cat.name}</h3>
+                    <div class="f5-cat-items" style="display:flex; flex-direction:column; gap:0.5rem;">
+                    </div>
+                `;
+
+                const itemsContainer = catSection.querySelector('.f5-cat-items');
+                cat.items.forEach((itemText, itemIdx) => {
+                    const globalIdx = catIdx * 5 + itemIdx;
+                    const itemDiv = document.createElement('div');
+                    itemDiv.style.display = 'flex';
+                    itemDiv.style.alignItems = 'flex-start';
+                    itemDiv.style.gap = '0.75rem';
+                    itemDiv.style.cursor = 'pointer';
+
+                    const isChecked = checklistState[globalIdx];
+                    itemDiv.innerHTML = `
+                        <input type="checkbox" id="f5-item-${globalIdx}" ${isChecked ? 'checked' : ''} style="margin-top:0.25rem; width:16px; height:16px; cursor:pointer;" />
+                        <label for="f5-item-${globalIdx}" style="font-size:0.9rem; color:var(--text-primary); cursor:pointer; line-height:1.3;">${itemText}</label>
+                    `;
+
+                    // Handle checking change
+                    const chk = itemDiv.querySelector('input');
+                    chk.addEventListener('change', () => {
+                        updateFiveSModalScores();
+                    });
+
+                    // Make label clickable
+                    const lbl = itemDiv.querySelector('label');
+                    lbl.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        chk.checked = !chk.checked;
+                        updateFiveSModalScores();
+                    });
+
+                    itemsContainer.appendChild(itemDiv);
+                });
+
+                container.appendChild(catSection);
+            });
+        }
+
+        updateFiveSModalScores();
+        modal.classList.add('show');
+    };
+
+    const updateFiveSModalScores = () => {
+        const scores = [];
+        for (let catIdx = 0; catIdx < 5; catIdx++) {
+            let checkedCount = 0;
+            for (let itemIdx = 0; itemIdx < 5; itemIdx++) {
+                const globalIdx = catIdx * 5 + itemIdx;
+                const chk = document.getElementById(`f5-item-${globalIdx}`);
+                if (chk && chk.checked) {
+                    checkedCount++;
+                }
+            }
+            scores.push(Math.max(1, checkedCount));
+        }
+
+        const sum = scores.reduce((a, b) => a + b, 0);
+        const overall = sum / 5.0;
+
+        const scoreText = document.getElementById('f5-modal-overall-score');
+        if (scoreText) scoreText.textContent = `${overall.toFixed(1)} / 5`;
+
+        const badge = document.getElementById('f5-modal-status-badge');
+        if (badge) {
+            badge.className = 'five-s-badge';
+            if (overall >= 4.5) {
+                badge.textContent = 'Excellent';
+                badge.classList.add('badge-excellent');
+            } else if (overall >= 3.5) {
+                badge.textContent = 'Good';
+                badge.classList.add('badge-good');
+            } else if (overall >= 2.5) {
+                badge.textContent = 'Fair';
+                badge.classList.add('badge-fair');
+            } else {
+                badge.textContent = 'Action Needed';
+                badge.classList.add('badge-action');
+            }
+        }
+    };
+
+    const saveFiveSModalAudit = () => {
+        const dateInput = document.getElementById('f5-audit-date');
+        const auditorSelect = document.getElementById('f5-audit-auditor');
+        const remarksText = document.getElementById('f5-audit-remarks');
+
+        const date = (dateInput ? dateInput.value.trim() : '') || 'Today';
+        const auditor = auditorSelect ? auditorSelect.value : 'Zubair';
+        const remarks = remarksText ? remarksText.value.trim() : '';
+
+        const scores = [];
+        const checklistState = [];
+        for (let catIdx = 0; catIdx < 5; catIdx++) {
+            let checkedCount = 0;
+            for (let itemIdx = 0; itemIdx < 5; itemIdx++) {
+                const globalIdx = catIdx * 5 + itemIdx;
+                const chk = document.getElementById(`f5-item-${globalIdx}`);
+                const isChecked = chk ? chk.checked : false;
+                checklistState.push(isChecked);
+                if (isChecked) {
+                    checkedCount++;
+                }
+            }
+            scores.push(Math.max(1, checkedCount));
+        }
+
+        if (activeFiveSAuditId) {
+            const log = fiveSLogs.find(x => x.id === activeFiveSAuditId);
+            if (log) {
+                log.date = date;
+                log.auditorName = auditor;
+                log.remarks = remarks;
+                log.sortScore = scores[0];
+                log.setOrderScore = scores[1];
+                log.shineScore = scores[2];
+                log.standardizeScore = scores[3];
+                log.sustainScore = scores[4];
+                log.checklistState = checklistState;
+            }
+            showToast('✓ Audit checklist updated');
+        } else {
+            fiveSLogs.push({
+                id: Date.now(),
+                date: date,
+                auditorName: auditor,
+                areaName: currentFiveSDept,
+                sortScore: scores[0],
+                setOrderScore: scores[1],
+                shineScore: scores[2],
+                standardizeScore: scores[3],
+                sustainScore: scores[4],
+                remarks: remarks,
+                locked: false,
+                checklistState: checklistState
+            });
+            showToast('✓ Added new 5S checklist audit');
+        }
+
+        saveFiveSLogs();
+        renderFiveSLogsTable();
+        closeFiveSModal();
+    };
+
+    const closeFiveSModal = () => {
+        const modal = document.getElementById('five-s-checklist-modal');
+        if (modal) modal.classList.remove('show');
+        activeFiveSAuditId = null;
+    };
+
+    const initFiveSEvents = () => {
+        const btnAdd = document.getElementById('btn-add-five-s-log');
+        if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+                if (!currentFiveSDept) return;
+                openFiveSChecklistModal();
+            });
+        }
+
+        const btnBack = document.getElementById('btn-five-s-back');
+        if (btnBack) {
+            btnBack.addEventListener('click', () => {
+                showFiveSDashboard();
+            });
+        }
+
+        // Checklist Modal Event Listeners
+        const modalClose = document.getElementById('f5-modal-close');
+        if (modalClose) {
+            modalClose.addEventListener('click', closeFiveSModal);
+        }
+
+        const btnCancel = document.getElementById('btn-cancel-f5-modal');
+        if (btnCancel) {
+            btnCancel.addEventListener('click', closeFiveSModal);
+        }
+
+        const btnSave = document.getElementById('btn-save-f5-modal');
+        if (btnSave) {
+            btnSave.addEventListener('click', saveFiveSModalAudit);
+        }
+    };
+
+    // ─── Daily Checklist module ────────────────────────────────────────────────
+    const DAILY_CHECKLIST_QUESTIONS = {
+        'Old Godown': [
+            'All incoming bags are inspected for leakage and weight.',
+            'Moisture levels of grain bags are checked and logged.',
+            'Stacking heights do not exceed the safe limit (15 bags).',
+            'Aisles and emergency exits are completely unobstructed.',
+            'Rodent traps and bait stations are inspected.',
+            'Daily dispatch and receipt ledger is updated.'
+        ],
+        'Mechanical': [
+            'All machines are lubricated and oil levels checked.',
+            'Guards and safety covers are securely in place.',
+            'Pre-start inspection completed for hammer mills and mixers.',
+            'No abnormal noise or vibration detected during idle run.',
+            'Workshop tools are accounted for and sorted.',
+            'Pneumatic lines are checked for leaks and pressure.'
+        ],
+        'Electrical': [
+            'Motor control centers (MCC) checked for overheating/burning smell.',
+            'Power factor panels are operating at target (>0.90).',
+            'Backup generator has sufficient fuel and battery voltage.',
+            'Emergency stop buttons on all major machines are tested/functional.',
+            'Electrical panels are locked and keys secured.',
+            'Cable trays and conduits inspected for damage or exposure.'
+        ],
+        'Control Room': [
+            'SCADA system communication with PLC is stable.',
+            'All bin/silo level sensors show active readings.',
+            'Feeder speed controls and batching scales are calibrated.',
+            'Interlock system status verified and fully active.',
+            'Batch production logs are printed/backed up.',
+            'Control room temperature is within limits (AC functioning).'
+        ],
+        'Premix': [
+            'Micro-ingredient scales are calibrated and zeroed.',
+            'Pre-weighed premix batches verified against formulation sheet.',
+            'Premix dispenser and dumping hopper suction fans are on.',
+            'No cross-contamination risk in the preparation area.',
+            'Inventory of high-value vitamins/minerals checked.',
+            'Hand addition log sheet is signed and completed.'
+        ],
+        'Other Department': [
+            'Office computers, lights, and AC are turned off after shift.',
+            'Sufficient supply of printing paper and office stationery.',
+            'Admin files and records are organized and stored securely.',
+            'Sewerage and water supply pumps are checked and working.',
+            'Visitor log and gate pass register are up to date.',
+            'General cleanliness of office areas and toilets.'
+        ]
+    };
+
+    const DEPT_HEADS = {
+        'Old Godown': ['Zubair', 'Asif', 'Imran', 'Waqas', 'Tahir', 'Shoaib'],
+        'Mechanical': ['Asif', 'Zubair', 'Imran', 'Waqas', 'Tahir', 'Shoaib'],
+        'Electrical': ['Imran', 'Zubair', 'Asif', 'Waqas', 'Tahir', 'Shoaib'],
+        'Control Room': ['Waqas', 'Zubair', 'Asif', 'Imran', 'Tahir', 'Shoaib'],
+        'Premix': ['Tahir', 'Zubair', 'Asif', 'Imran', 'Waqas', 'Shoaib'],
+        'Other Department': ['Shoaib', 'Zubair', 'Asif', 'Imran', 'Waqas', 'Tahir']
+    };
+
+    let activeDcDeptName = null;
+
+    // ─── Tab switcher for the merged 5S & Daily Checklist section ─────────────
+    const switchQSTab = (tabName) => {
+        // Update tab button styles
+        const tabFiveS = document.getElementById('tab-five-s');
+        const tabDC    = document.getElementById('tab-daily-checklist');
+        const panelFiveS = document.getElementById('qs-panel-five-s');
+        const panelDC    = document.getElementById('qs-panel-daily-checklist');
+
+        if (tabName === 'five-s') {
+            if (tabFiveS) tabFiveS.classList.add('active');
+            if (tabDC)    tabDC.classList.remove('active');
+            if (panelFiveS) panelFiveS.style.display = 'block';
+            if (panelDC)    panelDC.style.display    = 'none';
+        } else {
+            if (tabDC)    tabDC.classList.add('active');
+            if (tabFiveS) tabFiveS.classList.remove('active');
+            if (panelDC)    panelDC.style.display    = 'block';
+            if (panelFiveS) panelFiveS.style.display = 'none';
+            // Lazily init the checklist dashboard when the tab is first opened
+            initDailyChecklistDashboard();
+        }
+    };
+    // Expose globally for HTML onclick attributes
+    window.switchQSTab = switchQSTab;
+
+    const initDailyChecklistDashboard = () => {
+        const dateInput = document.getElementById('dc-date-select');
+        if (dateInput && !dateInput.value) {
+            const today = new Date();
+            const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+            dateInput.value = d;
+            currentChecklistDate = d;
+        } else if (dateInput) {
+            currentChecklistDate = dateInput.value.trim();
+        }
+        renderDailyChecklistDashboard();
+    };
+
+    const renderDailyChecklistDashboard = () => {
+        const grid = document.querySelector('.dc-dept-grid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        const selectedDate = currentChecklistDate || '';
+        
+        DEPARTMENTS.forEach(dept => {
+            const log = dailyChecklists.find(l => l.date === selectedDate && l.departmentName === dept.name);
+            const isCompleted = !!log;
+            const filledBy = log ? log.filledBy : 'Not Filled';
+            
+            const headsForDept = DEPT_HEADS[dept.name] || [];
+            const defaultHead = headsForDept[0] || '';
+            const headName = defaultHead;
+            
+            let scoreText = '';
+            if (log && log.checkedItems) {
+                const checkedCount = log.checkedItems.filter(Boolean).length;
+                scoreText = `${checkedCount} / ${log.checkedItems.length} checked`;
+            }
+            
+            const card = document.createElement('div');
+            card.className = `dc-dept-card ${dept.class}`;
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <span style="font-size:1.5rem;">${dept.icon}</span>
+                        <span style="font-weight:700; font-size:1.1rem; color:var(--text-primary);">${dept.name}</span>
+                    </div>
+                    <span class="badge ${isCompleted ? 'badge-completed' : 'badge-pending'}" style="font-size:0.75rem; font-weight:700; padding:0.25rem 0.5rem; border-radius:12px;">
+                        ${isCompleted ? 'Completed ✅' : 'Pending ⚠️'}
+                    </span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.35rem; font-size:0.85rem; color:var(--text-secondary); margin-top: auto;">
+                    <div><strong style="color:var(--text-primary);">Department Head:</strong> ${headName}</div>
+                    <div><strong style="color:var(--text-primary);">Filled By:</strong> ${log ? filledBy : '<span style="color:var(--text-secondary); opacity:0.6;">Pending</span>'}</div>
+                    ${isCompleted ? `<div><strong style="color:var(--text-primary);">Checks Completed:</strong> <span style="font-weight:600; color:var(--text-primary);">${scoreText}</span></div>` : ''}
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                openDailyChecklistForm(dept.name);
+            });
+            
+            grid.appendChild(card);
+        });
+    };
+
+    const openDailyChecklistForm = (deptName) => {
+        activeDcDeptName = deptName;
+        const modal = document.getElementById('daily-checklist-modal');
+        if (!modal) return;
+        
+        const titleEl = document.getElementById('dc-modal-title');
+        if (titleEl) {
+            titleEl.textContent = `${deptName} Daily Checklist - ${currentChecklistDate}`;
+        }
+        
+        const headSelect = document.getElementById('dc-modal-head');
+        if (headSelect) {
+            headSelect.innerHTML = '';
+            const heads = DEPT_HEADS[deptName] || [];
+            heads.forEach(h => {
+                const opt = document.createElement('option');
+                opt.value = h;
+                opt.textContent = h;
+                headSelect.appendChild(opt);
+            });
+        }
+        
+        const log = dailyChecklists.find(l => l.date === currentChecklistDate && l.departmentName === deptName);
+        
+        if (log && headSelect) {
+            headSelect.value = log.filledBy;
+        }
+        
+        const remarksText = document.getElementById('dc-modal-remarks');
+        if (remarksText) {
+            remarksText.value = log ? log.remarks : '';
+        }
+        
+        const questionsContainer = document.getElementById('dc-questions-container');
+        if (questionsContainer) {
+            questionsContainer.innerHTML = '';
+            const questions = DAILY_CHECKLIST_QUESTIONS[deptName] || [];
+            
+            questions.forEach((q, idx) => {
+                const isChecked = log && log.checkedItems ? !!log.checkedItems[idx] : false;
+                
+                const label = document.createElement('label');
+                label.style.display = 'flex';
+                label.style.alignItems = 'flex-start';
+                label.style.gap = '0.75rem';
+                label.style.cursor = 'pointer';
+                label.style.fontSize = '0.95rem';
+                label.style.color = 'var(--text-primary)';
+                label.style.padding = '0.5rem';
+                label.style.borderRadius = '6px';
+                label.style.transition = 'background 0.2s';
+                label.addEventListener('mouseenter', () => label.style.background = 'rgba(255,255,255,0.05)');
+                label.addEventListener('mouseleave', () => label.style.background = 'transparent');
+                
+                label.innerHTML = `
+                    <input type="checkbox" class="dc-question-checkbox" data-index="${idx}" ${isChecked ? 'checked' : ''} style="margin-top: 0.2rem; width: 1.1rem; height: 1.1rem; cursor: pointer; accent-color: var(--accent-color);" />
+                    <span>${q}</span>
+                `;
+                questionsContainer.appendChild(label);
+            });
+        }
+        
+        modal.classList.add('show');
+    };
+
+    const closeDailyChecklistModal = () => {
+        const modal = document.getElementById('daily-checklist-modal');
+        if (modal) modal.classList.remove('show');
+        activeDcDeptName = null;
+    };
+
+    const saveDailyChecklistModal = async () => {
+        if (!activeDcDeptName) return;
+        
+        const headSelect = document.getElementById('dc-modal-head');
+        const remarksText = document.getElementById('dc-modal-remarks');
+        
+        const filledBy = headSelect ? headSelect.value : '';
+        const remarks = remarksText ? remarksText.value.trim() : '';
+        
+        const checkboxes = document.querySelectorAll('.dc-question-checkbox');
+        const checkedItems = Array.from(checkboxes)
+            .sort((a, b) => parseInt(a.dataset.index) - parseInt(b.dataset.index))
+            .map(cb => cb.checked);
+            
+        let log = dailyChecklists.find(l => l.date === currentChecklistDate && l.departmentName === activeDcDeptName);
+        
+        if (log) {
+            log.filledBy = filledBy;
+            log.checkedItems = checkedItems;
+            log.remarks = remarks;
+        } else {
+            log = {
+                id: Date.now(),
+                date: currentChecklistDate,
+                departmentName: activeDcDeptName,
+                filledBy: filledBy,
+                checkedItems: checkedItems,
+                remarks: remarks
+            };
+            dailyChecklists.push(log);
+        }
+        
+        await saveDailyChecklists();
+        renderDailyChecklistDashboard();
+        closeDailyChecklistModal();
+    };
+
+    const saveDailyChecklists = async () => {
+        localStorage.setItem(LS_DAILY_CHECKLISTS, JSON.stringify(dailyChecklists));
+        if (isSbConnected && sbClient) {
+            try {
+                const { error } = await sbClient
+                    .from('daily_checklists')
+                    .upsert(dailyChecklists.map(mapDailyChecklistToDb));
+                if (error) throw error;
+                showToast('✓ Saved to Supabase');
+            } catch (err) {
+                console.error('Supabase save failed for daily checklists:', err);
+                showToast('✓ Saved locally (Supabase offline)');
+            }
+        } else {
+            showToast('✓ Saved');
+        }
+    };
+
+    const initDailyChecklistEvents = () => {
+        const dateInput = document.getElementById('dc-date-select');
+        if (dateInput) {
+            dateInput.addEventListener('change', () => {
+                currentChecklistDate = dateInput.value.trim();
+                renderDailyChecklistDashboard();
+            });
+            dateInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    currentChecklistDate = dateInput.value.trim();
+                    renderDailyChecklistDashboard();
+                }
+            });
+        }
+
+        const dcModalClose = document.getElementById('dc-modal-close');
+        if (dcModalClose) {
+            dcModalClose.addEventListener('click', closeDailyChecklistModal);
+        }
+
+        const btnCancelDcModal = document.getElementById('btn-cancel-dc-modal');
+        if (btnCancelDcModal) {
+            btnCancelDcModal.addEventListener('click', closeDailyChecklistModal);
+        }
+
+        const btnSaveDcModal = document.getElementById('btn-save-dc-modal');
+        if (btnSaveDcModal) {
+            btnSaveDcModal.addEventListener('click', saveDailyChecklistModal);
+        }
+    };
+
+    // ─── Production Officer Shift Report Module ────────────────────────────────
+
+    const saveShiftReports = async () => {
+        localStorage.setItem(LS_SHIFT_REPORTS, JSON.stringify(shiftReports));
+        if (isSbConnected && sbClient) {
+            try {
+                const { error } = await sbClient
+                    .from('shift_reports')
+                    .upsert(shiftReports.map(mapShiftReportToDb));
+                if (error) throw error;
+                showToast('✓ Shift Report saved to Supabase');
+            } catch (err) {
+                console.error('Supabase save failed for shift reports:', err);
+                showToast('✓ Saved locally (Supabase offline)');
+            }
+        } else {
+            showToast('✓ Shift Report saved');
+        }
+    };
+
+    const initShiftReportView = () => {
+        const filterInput = document.getElementById('sr-filter-date');
+        if (filterInput) {
+            if (!filterInput.value) {
+                const today = new Date();
+                const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+                filterInput.value = d;
+                currentSrFilterDate = d;
+            } else {
+                currentSrFilterDate = filterInput.value.trim();
+            }
+        }
+        renderShiftReports();
+    };
+
+    const getFilteredShiftReports = () => {
+        if (!currentSrFilterDate) return [...shiftReports].reverse();
+        return shiftReports.filter(r => r.date === currentSrFilterDate).reverse();
+    };
+
+    const renderShiftReports = () => {
+        const container = document.getElementById('sr-cards-container');
+        if (!container) return;
+
+        const filtered = getFilteredShiftReports();
+
+        // Update summary strip
+        const totalShifts = filtered.length;
+        const totalBatches = filtered.reduce((s, r) => s + (r.batches || 0), 0);
+        const totalBags = filtered.reduce((s, r) => s + (r.productionBags || 0), 0);
+        const totalIssues = filtered.filter(r => r.machineIssues && r.machineIssues.trim()).length;
+        const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+        el('sr-total-shifts', totalShifts);
+        el('sr-total-batches', totalBatches);
+        el('sr-total-bags', totalBags.toLocaleString());
+        el('sr-total-issues', totalIssues);
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:3rem 1rem;color:var(--text-secondary);opacity:0.65;">
+                    <div style="font-size:3rem;margin-bottom:1rem;">📋</div>
+                    <div style="font-size:1.1rem;font-weight:600;">No shift reports for this date</div>
+                    <div style="font-size:0.9rem;margin-top:0.5rem;">Click "+ New Shift Report" to add the first one.</div>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        filtered.forEach(r => {
+            const shiftClass = { A: 'shift-a', B: 'shift-b', C: 'shift-c' }[r.shift] || 'shift-a';
+            const statusBadge = r.isSubmitted
+                ? `<span class="sr-submitted-badge">✅ Submitted</span>`
+                : `<span class="sr-draft-badge">✏️ Draft</span>`;
+
+            const fieldRow = (label, value) => value ? `
+                <div class="sr-field-group">
+                    <div class="sr-field-label">${label}</div>
+                    <div class="sr-field-value">${value}</div>
+                </div>` : '';
+
+            const card = document.createElement('div');
+            card.className = 'sr-shift-card';
+            card.innerHTML = `
+                <div class="sr-card-header">
+                    <div class="sr-card-header-left">
+                        <span class="sr-shift-badge ${shiftClass}">Shift ${r.shift}</span>
+                        <div>
+                            <div class="sr-officer-name">👷 ${r.officerName}</div>
+                            <div class="sr-date-label">📅 ${r.date}</div>
+                        </div>
+                    </div>
+                    <div class="sr-card-actions">
+                        <span class="sr-stat-pill">🏭 ${r.batches} Batches</span>
+                        <span class="sr-stat-pill">👜 ${(r.productionBags || 0).toLocaleString()} Bags</span>
+                        ${statusBadge}
+                        <button class="btn btn-secondary" style="padding:0.3rem 0.75rem;font-size:0.82rem;" onclick="openSrEditModal(${r.id})">✏️ Edit</button>
+                        <button class="btn" style="padding:0.3rem 0.75rem;font-size:0.82rem;background:var(--accent-color);color:#fff;" onclick="toggleSrSubmit(${r.id})">${r.isSubmitted ? '↩ Unsubmit' : '✅ Submit'}</button>
+                        <button class="btn btn-danger" style="padding:0.3rem 0.75rem;font-size:0.82rem;" onclick="deleteSrReport(${r.id})">🗑</button>
+                    </div>
+                </div>
+                <div class="sr-card-body">
+                    ${fieldRow('Feed Produced', r.feedProduced)}
+                    ${fieldRow('Raw Material Used', r.rawMaterialUsed)}
+                    ${fieldRow('Machine / Equipment Issues', r.machineIssues || '<span style="color:var(--text-secondary);opacity:0.5;">None reported</span>')}
+                    ${fieldRow('Quality Observations', r.qualityRemarks)}
+                    ${fieldRow('General Remarks', r.generalRemarks)}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    };
+
+    // Global helpers for inline onclick in rendered cards
+    window.openSrEditModal = (id) => {
+        const r = shiftReports.find(x => x.id === id);
+        if (!r) return;
+        activeSrId = id;
+        const set = (elId, val) => { const e = document.getElementById(elId); if (e) e.value = val || ''; };
+        set('sr-modal-date', r.date);
+        set('sr-modal-shift', r.shift);
+        set('sr-modal-officer', r.officerName);
+        set('sr-modal-feed', r.feedProduced);
+        set('sr-modal-batches', r.batches);
+        set('sr-modal-bags', r.productionBags);
+        set('sr-modal-raw', r.rawMaterialUsed);
+        set('sr-modal-machine', r.machineIssues);
+        set('sr-modal-quality', r.qualityRemarks);
+        set('sr-modal-general', r.generalRemarks);
+        const title = document.getElementById('sr-modal-title');
+        if (title) title.textContent = `Edit Shift Report — ${r.date} Shift ${r.shift}`;
+        const modal = document.getElementById('shift-report-modal');
+        if (modal) modal.classList.add('show');
+    };
+
+    window.toggleSrSubmit = async (id) => {
+        const r = shiftReports.find(x => x.id === id);
+        if (!r) return;
+        r.isSubmitted = !r.isSubmitted;
+        await saveShiftReports();
+        renderShiftReports();
+    };
+
+    window.deleteSrReport = async (id) => {
+        if (!confirm('Delete this shift report?')) return;
+        shiftReports = shiftReports.filter(x => x.id !== id);
+        if (isSbConnected && sbClient) {
+            try { await sbClient.from('shift_reports').delete().eq('id', id); } catch (e) { /* ignore */ }
+        }
+        await saveShiftReports();
+        renderShiftReports();
+    };
+
+    const openSrNewModal = () => {
+        activeSrId = null;
+        const today = new Date();
+        const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+        const set = (elId, val) => { const e = document.getElementById(elId); if (e) e.value = val || ''; };
+        set('sr-modal-date', currentSrFilterDate || d);
+        set('sr-modal-shift', 'A');
+        set('sr-modal-officer', 'Zubair');
+        set('sr-modal-feed', '');
+        set('sr-modal-batches', '');
+        set('sr-modal-bags', '');
+        set('sr-modal-raw', '');
+        set('sr-modal-machine', '');
+        set('sr-modal-quality', '');
+        set('sr-modal-general', '');
+        const title = document.getElementById('sr-modal-title');
+        if (title) title.textContent = 'New Shift Report';
+        const modal = document.getElementById('shift-report-modal');
+        if (modal) modal.classList.add('show');
+    };
+
+    const closeSrModal = () => {
+        const modal = document.getElementById('shift-report-modal');
+        if (modal) modal.classList.remove('show');
+        activeSrId = null;
+    };
+
+    const saveSrModal = async () => {
+        const get = (elId) => { const e = document.getElementById(elId); return e ? e.value.trim() : ''; };
+        const date = get('sr-modal-date');
+        const shift = get('sr-modal-shift');
+        const officerName = get('sr-modal-officer');
+        if (!date || !shift || !officerName) {
+            alert('Please fill in Date, Shift, and Officer Name.');
+            return;
+        }
+        const reportData = {
+            date,
+            shift,
+            officerName,
+            feedProduced: get('sr-modal-feed'),
+            batches: parseFloat(get('sr-modal-batches')) || 0,
+            productionBags: parseFloat(get('sr-modal-bags')) || 0,
+            rawMaterialUsed: get('sr-modal-raw'),
+            machineIssues: get('sr-modal-machine'),
+            qualityRemarks: get('sr-modal-quality'),
+            generalRemarks: get('sr-modal-general'),
+            isSubmitted: false
+        };
+
+        if (activeSrId) {
+            const idx = shiftReports.findIndex(x => x.id === activeSrId);
+            if (idx !== -1) {
+                reportData.id = activeSrId;
+                reportData.isSubmitted = shiftReports[idx].isSubmitted;
+                shiftReports[idx] = reportData;
+            }
+        } else {
+            reportData.id = Date.now();
+            shiftReports.push(reportData);
+        }
+        currentSrFilterDate = date;
+        const filterEl = document.getElementById('sr-filter-date');
+        if (filterEl) filterEl.value = date;
+        await saveShiftReports();
+        renderShiftReports();
+        closeSrModal();
+    };
+
+    const initShiftReportEvents = () => {
+        const btnAdd = document.getElementById('btn-add-shift-report');
+        if (btnAdd) btnAdd.addEventListener('click', openSrNewModal);
+
+        const modalClose = document.getElementById('sr-modal-close');
+        if (modalClose) modalClose.addEventListener('click', closeSrModal);
+
+        const btnCancel = document.getElementById('btn-cancel-sr-modal');
+        if (btnCancel) btnCancel.addEventListener('click', closeSrModal);
+
+        const btnSave = document.getElementById('btn-save-sr-modal');
+        if (btnSave) btnSave.addEventListener('click', saveSrModal);
+
+        const filterInput = document.getElementById('sr-filter-date');
+        if (filterInput) {
+            filterInput.addEventListener('change', () => {
+                currentSrFilterDate = filterInput.value.trim();
+                renderShiftReports();
+            });
+            filterInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    currentSrFilterDate = filterInput.value.trim();
+                    renderShiftReports();
+                }
+            });
+        }
+    };
+
     // Start application
     initializeApplication();
+
 
     // ─── Three.js ─────────────────────────────────────────────────────────────
     function initThreeJS(containerId, isRunning, fillLevel) {
