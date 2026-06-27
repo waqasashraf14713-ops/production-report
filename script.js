@@ -2909,8 +2909,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const getFilteredShiftReports = () => {
-        if (!currentSrFilterDate) return [...shiftReports].reverse();
-        return shiftReports.filter(r => r.date === currentSrFilterDate).reverse();
+        let filtered = [...shiftReports];
+        if (currentSrFilterDate) {
+            filtered = filtered.filter(r => r.date === currentSrFilterDate);
+        }
+        // Sort alphabetically by shift (A -> B -> C) for side-by-side comparison
+        return filtered.sort((a, b) => a.shift.localeCompare(b.shift));
     };
 
     const renderShiftReports = () => {
