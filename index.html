@@ -284,17 +284,142 @@
                             <input type="text" id="sr-filter-date" placeholder="e.g., 26-Jun" style="border-radius:4px;border:1px solid var(--card-border);padding:0.4rem 0.6rem;background:var(--card-bg);color:var(--text-primary);outline:none;font-weight:600;width:110px;text-align:center;" />
                         </div>
                         <button class="btn btn-secondary" id="btn-add-shift-report">➕ New Shift Report</button>
-                        <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+                        <button class="btn btn-primary" onclick="window.print()">🖨️ Print View</button>
+                        <button class="btn btn-primary" id="btn-generate-shift-pdf" style="background:#8b5cf6;border-color:#8b5cf6;">📄 Generate Shift PDF</button>
+                    </div>
+                </div>
+                
+                <!-- Sub Reports Quick Access Dashboard -->
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:2rem;margin-top:1rem;">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); border-bottom: 2px solid var(--card-border); padding-bottom: 0.5rem; font-size:1.1rem;">📋 Reports to Fill (Status for selected date)</h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:1.5rem; justify-content:space-between;">
+                        
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <h4 style="font-size:0.95rem; color:var(--text-secondary); margin:0;">1. Raw Material</h4>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span id="badge-rm-top" class="sr-draft-badge" style="display:none;"></span>
+                                <button class="btn btn-secondary" onclick="document.getElementById('btn-add-standalone-rm').click()" style="padding:0.2rem 0.6rem; font-size:0.8rem;">➕ Fill</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <h4 style="font-size:0.95rem; color:var(--text-secondary); margin:0;">2. Performas</h4>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span id="badge-performa-top" class="sr-draft-badge" style="display:none;"></span>
+                                <button class="btn btn-secondary" onclick="document.getElementById('btn-add-performa').click()" style="padding:0.2rem 0.6rem; font-size:0.8rem;">➕ Fill</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <h4 style="font-size:0.95rem; color:var(--text-secondary); margin:0;">3. Plant Report</h4>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span id="badge-plant-top" class="sr-draft-badge" style="display:none;"></span>
+                                <button class="btn btn-secondary" onclick="document.getElementById('btn-add-plant-report').click()" style="padding:0.2rem 0.6rem; font-size:0.8rem;">➕ Fill</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <h4 style="font-size:0.95rem; color:var(--text-secondary); margin:0;">4. Quality Standards</h4>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span id="badge-qs-top" class="sr-draft-badge" style="display:none;"></span>
+                                <button class="btn btn-secondary" onclick="document.getElementById('btn-add-qs').click()" style="padding:0.2rem 0.6rem; font-size:0.8rem;">➕ Fill</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <h4 style="font-size:0.95rem; color:var(--text-secondary); margin:0;">5. Silo Dumping</h4>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span id="badge-silo-top" class="sr-draft-badge" style="display:none;"></span>
+                                <button class="btn btn-secondary" onclick="document.getElementById('btn-add-silo-dump').click()" style="padding:0.2rem 0.6rem; font-size:0.8rem;">➕ Fill</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <h4 style="font-size:0.95rem; color:var(--text-secondary); margin:0;">6. Silo Moisture</h4>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span id="badge-silo-moist-top" class="sr-draft-badge" style="display:none;"></span>
+                                <button class="btn btn-secondary" onclick="document.getElementById('btn-add-silo-moist').click()" style="padding:0.2rem 0.6rem; font-size:0.8rem;">➕ Fill</button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
+                <!-- Daily Silo Moisture Summary -->
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:2rem;">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); border-bottom: 2px solid var(--card-border); padding-bottom: 0.5rem; font-size:1.1rem;">📊 Daily Silo Moisture Summary <span style="font-size:0.85rem;color:var(--text-secondary);font-weight:normal;">(Across all shifts for selected date)</span></h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:2rem; align-items:center;">
+                        
+                        <div style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--card-border); min-width: 200px;">
+                            <span style="font-size:0.9rem; color:var(--text-secondary);">Actual Daily Average:</span>
+                            <span id="dsms-actual" style="font-size:1.5rem; font-weight:bold; color:var(--text-primary);">-- %</span>
+                            <span id="dsms-count" style="font-size:0.75rem; color:var(--text-secondary);">Based on 0 readings</span>
+                        </div>
 
+                        <div style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--card-border); min-width: 200px;">
+                            <label for="dsms-formula" style="font-size:0.9rem; color:var(--text-secondary);">Formula Moisture:</label>
+                            <div style="display:flex; gap:0.5rem; align-items:center;">
+                                <input type="number" step="any" id="dsms-formula" placeholder="Enter %" style="width:100px; border-radius:4px; border:1px solid var(--card-border); padding:0.4rem; outline:none; background:var(--card-bg); color:var(--text-primary); font-size:1.1rem; font-weight:bold;">
+                                <button class="btn btn-secondary btn-sm" id="btn-save-dsms-formula" style="padding:0.3rem 0.6rem;">Save</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--card-border); min-width: 200px; flex: 1;">
+                            <span style="font-size:0.9rem; color:var(--text-secondary);">Comparison:</span>
+                            <span id="dsms-comparison" style="font-size:1.1rem; font-weight:bold; color:var(--text-secondary);">No data to compare</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Gauge Chart -->
+                <div id="dsms-gauge-card" style="display:none; background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:1.5rem; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom:2rem;">
+                    <h3 style="margin:0 0 0.75rem 0; font-size:1rem; color:var(--text-primary); text-align:center;">🎯 Moisture Difference Gauge</h3>
+                    <div style="display:flex; justify-content:center; align-items:center;">
+                        <canvas id="dsms-gauge-canvas" width="320" height="200" style="max-width:100%;"></canvas>
+                    </div>
+                    <p id="dsms-gauge-label" style="text-align:center; margin:0.5rem 0 0 0; font-size:0.85rem; color:var(--text-secondary);">Waiting for data…</p>
+                </div>
+
+                <!-- Red Alarm Banner -->
+                <div id="dsms-alarm" style="display:none; margin-top:1rem; background:#ef4444; color:#fff; border-radius:8px; padding:0.75rem 1rem; font-weight:700; font-size:1rem; align-items:center; gap:0.75rem; box-shadow: 0 0 18px rgba(239,68,68,0.7);"></div>
+
+                <!-- Trend Chart -->
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:2rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                        <span style="font-size:0.95rem; font-weight:600; color:var(--text-primary);">&#128200; Moisture Difference Trend <span style="font-size:0.8rem; font-weight:400; color:var(--text-secondary);">(Last 7 days visible &middot; scroll/pinch to zoom &middot; drag to pan)</span></span>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button id="btn-chart-reset" class="btn btn-secondary" style="padding:0.25rem 0.6rem; font-size:0.8rem;">&#8634; Reset Zoom</button>
+                            <button id="btn-chart-fullscreen" class="btn btn-primary" style="padding:0.25rem 0.6rem; font-size:0.8rem;">&#x26F6; Full Screen</button>
+                        </div>
+                    </div>
+                    <div style="position:relative; height:240px;">
+                        <canvas id="silo-moist-trend-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Fullscreen Chart Modal -->
+                <div id="chart-fullscreen-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999; padding:1.5rem; box-sizing:border-box;">
+                    <div style="background:var(--card-bg); border-radius:16px; padding:1.5rem; height:100%; display:flex; flex-direction:column; gap:1rem; box-sizing:border-box;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="margin:0; color:var(--text-primary);">&#128200; Silo Moisture Difference Trend &mdash; All Dates (scroll/pinch to zoom)</h3>
+                            <button id="btn-chart-fullscreen-close" class="btn btn-secondary" style="padding:0.35rem 0.8rem;">&#10005; Close</button>
+                        </div>
+                        <div style="position:relative; flex:1; min-height:0;">
+                            <canvas id="silo-moist-trend-chart-full"></canvas>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Shift cards container -->
                 <div id="sr-cards-container" style="display:flex;flex-direction:column;gap:2rem;">
                     <!-- Populated by JS -->
                 </div>
 
+                <div style="margin-top: 3rem; margin-bottom: -1rem; padding: 0 0.5rem; border-bottom: 2px solid var(--card-border); padding-bottom: 0.5rem;">
+                    <h2 style="color:var(--text-primary);">📎 Attached Standalone Reports Status</h2>
+                    <p style="color:var(--text-secondary);font-size:0.95rem;margin-top:0.25rem;">Below reports are part of the Daily Shift. When filled, their status will update to <span class="sr-submitted-badge" style="font-size:0.75rem;padding:0.2rem 0.5rem;display:inline-block;">✅ Completed</span>.</p>
+                </div>
                 <div class="reports-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem; margin-top: 3rem;">
                     <!-- Raw Material Unloading Check Standalone Table -->
                     <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
@@ -423,6 +548,31 @@
                         </table>
                     </div>
                 </div>
+                </div>
+                
+                    <!-- Silo Moisture Report Standalone Table -->
+                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                        <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;">
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;">6. 💧 Silo Moisture Report <span id="badge-silo-moist" class="sr-draft-badge" style="display:none;"></span></h2>
+                        <button class="btn btn-secondary" id="btn-add-silo-moist">➕ Add Report</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table" id="silo-moist-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Shift</th>
+                                    <th>Production Officer</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS will populate -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 </div>
             </section>
         </div>
@@ -1428,11 +1578,77 @@ order by
             </div>
         </div>
     </div>
+    </div>
 
+    <!-- Silo Moisture Modal -->
+    <div id="silo-moist-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:900px;width:95%;background:#ffffff;">
+            <div class="modal-header">
+                <h2 id="silo-moist-title">💧 Silo Moisture Report</h2>
+                <button id="silo-moist-close" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem; max-height: 80vh; overflow-y: auto;">
+                <div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+                    <div class="form-group" style="width: 200px;">
+                        <label>Date</label>
+                        <input type="text" id="sm-date" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;" />
+                    </div>
+                    <div class="form-group" style="width: 200px;">
+                        <label>Shift</label>
+                        <select id="sm-shift" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);">
+                            <option value="Morning">Morning</option>
+                            <option value="Evening">Evening</option>
+                            <option value="Night">Night</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="width: 200px;">
+                        <label>Production Officer</label>
+                        <select id="sm-officer" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);">
+                            <option value="">Select Officer</option>
+                            <option value="M. Zubair">M. Zubair</option>
+                            <option value="M. Tahir">M. Tahir</option>
+                            <option value="M. Shoaib">M. Shoaib</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <table class="report-table" style="width:100%; border-collapse: collapse; margin-bottom: 1.5rem; text-align:center;">
+                    <thead>
+                        <tr>
+                            <th>Silo No.</th>
+                            <th>Material</th>
+                            <th>Moisture %</th>
+                            <th>Remarks</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sm-rows-tbody">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+                <button class="btn btn-secondary" id="btn-add-sm-row" style="margin-bottom: 1rem;">➕ Add Silo Row</button>
+                
+                <div style="display:flex;justify-content:flex-end;gap:1rem;margin-top:1.5rem;border-top:1px solid var(--card-border);padding-top:1rem;">
+                    <button class="btn btn-secondary" id="btn-cancel-sm" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-sm" style="width:auto;padding:0.5rem 2rem;">💾 Save Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden container for complete shift PDF print layout -->
+    <div id="shift-report-print-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammerjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <script src="env.js"></script>
     <script src="silo_dump.js"></script>
     <script src="quality_standards.js"></script>
     <script src="plant_report.js"></script>
+    <script src="silo_moisture.js"></script>
     <script src="script.js"></script>
+    <script src="shift_report_pdf.js"></script>
 </body>
 </html>

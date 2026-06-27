@@ -1548,3 +1548,96 @@ header h1 {
   }
 }
 
+/* ⚠️ Silo Moisture Alarm Banner ⚠️ */
+#dsms-alarm {
+  animation: pulse-red 1.5s ease-in-out infinite;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@keyframes pulse-red {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(239, 68, 68, 0.9), 0 0 48px rgba(239, 68, 68, 0.3);
+    transform: scale(1.01);
+  }
+}
+
+/* 🖨️ PDF Print Styles 🖨️ */
+@media print {
+  body.printing-shift-pdf > *:not(#shift-report-print-container) {
+    display: none !important;
+  }
+  body.printing-shift-pdf #shift-report-print-container {
+    display: block !important;
+  }
+  body.printing-shift-pdf {
+    background: white;
+    color: black;
+  }
+  
+  .pdf-report-header {
+    text-align: center;
+    border-bottom: 2px solid #000;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+  }
+  .pdf-report-header h1 { margin: 0; font-size: 24px; }
+  .pdf-report-header p { margin: 5px 0 0 0; font-size: 14px; font-weight: bold; }
+  
+  .pdf-section {
+    margin-bottom: 30px;
+    page-break-inside: avoid;
+  }
+  .pdf-section h3 {
+    background-color: #e5e7eb !important;
+    -webkit-print-color-adjust: exact;
+    color: #000;
+    padding: 8px;
+    border: 1px solid #000;
+    margin: 0;
+    font-size: 14px;
+  }
+  
+  .pdf-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .pdf-table th, .pdf-table td {
+    border: 1px solid #000;
+    padding: 6px;
+    text-align: left;
+    font-size: 12px;
+    color: #000;
+  }
+  .pdf-table th {
+    background-color: #f3f4f6 !important;
+    -webkit-print-color-adjust: exact;
+  }
+  
+  .pdf-approval-block {
+    margin-top: 50px;
+    page-break-inside: avoid;
+    border: 2px solid #000;
+    padding: 20px;
+  }
+  
+  .signature-box {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+  }
+  
+  .signature-line {
+    border-bottom: 1px solid #000;
+    width: 250px;
+    margin-bottom: 5px;
+  }
+}

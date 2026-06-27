@@ -2941,6 +2941,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         container.innerHTML = '';
+        const rmData = JSON.parse(localStorage.getItem('fm_standalone_rm_checks') || '[]') || [];
+        const performaData = JSON.parse(localStorage.getItem('fm_performas') || '[]') || [];
+        const plantReportData = JSON.parse(localStorage.getItem('fm_plant_report') || '[]') || [];
+        const qsReportData = JSON.parse(localStorage.getItem('fm_qs_report') || '[]') || [];
+        const siloDumpData = JSON.parse(localStorage.getItem('fm_silo_dump') || '[]') || [];
+        const siloMoistData = JSON.parse(localStorage.getItem('fm_silo_moisture') || '[]') || [];
+
         filtered.forEach(r => {
             const shiftClass = { A: 'shift-a', B: 'shift-b', C: 'shift-c' }[r.shift] || 'shift-a';
             const statusBadge = r.isSubmitted
@@ -2952,6 +2959,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="sr-field-label">${label}</div>
                     <div class="sr-field-value">${value}</div>
                 </div>` : '';
+
+            const hasRm = rmData.some(d => d.date === r.date && d.shift === r.shift);
+            const hasPerforma = performaData.some(d => d.date === r.date);
+            const hasPlant = plantReportData.some(d => d.date === r.date && d.shift === r.shift);
+            const hasQs = qsReportData.some(d => d.date === r.date && d.shift === r.shift);
+            const hasSilo = siloDumpData.some(d => d.date === r.date && d.shift === r.shift);
+            const hasSiloMoist = siloMoistData.some(d => d.date === r.date && d.shift === r.shift);
+
+            const subReportStatus = (name, hasReport) => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px dashed var(--card-border);">
+                    <span style="font-size:0.9rem;font-weight:500;color:var(--text-primary);">🔹 ${name}</span>
+                    ${hasReport ? '<span class="sr-submitted-badge" style="font-size:0.75rem;padding:0.2rem 0.5rem;display:inline-block;">✅ Filled</span>' : '<span class="sr-draft-badge" style="font-size:0.75rem;padding:0.2rem 0.5rem;display:inline-block;">⌛ Pending</span>'}
+                </div>
+            `;
 
             const card = document.createElement('div');
             card.className = 'sr-shift-card';
@@ -2975,11 +2996,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="sr-card-body">
                     ${fieldRow('Feed Produced', r.feedProduced)}
-                    ${fieldRow('Feed Produced', r.feedProduced)}
                     ${fieldRow('Raw Material Used', r.rawMaterialUsed)}
                     ${fieldRow('Machine / Equipment Issues', r.machineIssues || '<span style="color:var(--text-secondary);opacity:0.5;">None reported</span>')}
                     ${fieldRow('Quality Observations', r.qualityRemarks)}
                     ${fieldRow('General Remarks', r.generalRemarks)}
+                    
+                    <div style="margin-top:1.5rem;padding:1rem;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.02);">
+                        <h4 style="margin-bottom:0.75rem;font-size:1rem;color:var(--text-primary);border-bottom:2px solid var(--card-border);padding-bottom:0.4rem;display:flex;align-items:center;gap:0.5rem;">
+                            📎 Attached Reports Status
+                        </h4>
+                        ${subReportStatus('Raw Material Unloading Check', hasRm)}
+                        ${subReportStatus('Daily Performas Check List', hasPerforma)}
+                        ${subReportStatus('Shift Plant Report', hasPlant)}
+                        ${subReportStatus('Quality Standards Check List', hasQs)}
+                        ${subReportStatus('Silo Dumping Moisture Report', hasSilo)}
+                        ${subReportStatus('Silo Moisture Report', hasSiloMoist)}
+                    </div>
                 </div>
             `;
             container.appendChild(card);
@@ -2989,23 +3021,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const updateBadge = (lsKey, elId) => {
             const data = JSON.parse(localStorage.getItem(lsKey) || '[]');
             const badge = document.getElementById(elId);
-            if (!badge) return;
+            const badgeTop = document.getElementById(elId + '-top');
+            
             const hasReport = data.some(d => d.date === currentSrFilterDate);
-            if (hasReport) {
-                badge.className = 'sr-submitted-badge';
+            
+            if (badge) {
+                badge.className = hasReport ? 'sr-submitted-badge' : 'sr-draft-badge';
                 badge.style.display = 'inline-block';
-                badge.innerHTML = '✅ Completed';
-            } else {
-                badge.className = 'sr-draft-badge';
-                badge.style.display = 'inline-block';
-                badge.innerHTML = '⌛ Pending';
+                badge.innerHTML = hasReport ? '✅ Completed' : '⌛ Pending';
+            }
+            
+            if (badgeTop) {
+                badgeTop.className = hasReport ? 'sr-submitted-badge' : 'sr-draft-badge';
+                badgeTop.style.display = 'inline-block';
+                badgeTop.innerHTML = hasReport ? '✅ Completed' : '⌛ Pending';
             }
         };
-        updateBadge('fm_rm_standalone', 'badge-rm');
-        updateBadge('fm_performa', 'badge-performa');
+        updateBadge('fm_standalone_rm_checks', 'badge-rm');
+        updateBadge('fm_performas', 'badge-performa');
         updateBadge('fm_plant_report', 'badge-plant');
         updateBadge('fm_qs_report', 'badge-qs');
         updateBadge('fm_silo_dump', 'badge-silo');
+        updateBadge('fm_silo_moisture', 'badge-silo-moist');
+
+        if (typeof window.updateDailySiloMoistureSummary === 'function') {
+            window.updateDailySiloMoistureSummary(currentSrFilterDate);
+        }
     };
 
     // Global helpers for inline onclick in rendered cards
