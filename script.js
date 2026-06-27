@@ -1181,8 +1181,11 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSilos();
         initFiveSEvents();
         initDailyChecklistEvents();
+        initDailyLessExcessView();
         initShiftReportEvents();
         initBatchingAuditEvents();
+        initStandaloneRmEvents();
+        initPerformaEvents();
     };
 
     // ─── Modal Actions ──────────────────────────────────────────────────────────
@@ -2970,6 +2973,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="sr-card-body">
                     ${fieldRow('Feed Produced', r.feedProduced)}
+                    ${fieldRow('Feed Produced', r.feedProduced)}
                     ${fieldRow('Raw Material Used', r.rawMaterialUsed)}
                     ${fieldRow('Machine / Equipment Issues', r.machineIssues || '<span style="color:var(--text-secondary);opacity:0.5;">None reported</span>')}
                     ${fieldRow('Quality Observations', r.qualityRemarks)}
@@ -2991,6 +2995,8 @@ document.addEventListener('DOMContentLoaded', () => {
         set('sr-modal-officer', r.officerName);
         set('sr-modal-feed', r.feedProduced);
         set('sr-modal-batches', r.batches);
+        set('sr-modal-bags', r.productionBags);
+        
         set('sr-modal-bags', r.productionBags);
         set('sr-modal-raw', r.rawMaterialUsed);
         set('sr-modal-machine', r.machineIssues);
@@ -3020,6 +3026,311 @@ document.addEventListener('DOMContentLoaded', () => {
         renderShiftReports();
     };
 
+    // ─── Standalone Raw Material Checks Module ──────────────────────────────
+    
+    const LS_STANDALONE_RM_CHECKS = 'fm_standalone_rm_checks';
+    let standaloneRmChecks = JSON.parse(localStorage.getItem(LS_STANDALONE_RM_CHECKS) || '[]');
+    let activeStandaloneRmId = null;
+
+    const saveStandaloneRmChecks = () => {
+        localStorage.setItem(LS_STANDALONE_RM_CHECKS, JSON.stringify(standaloneRmChecks));
+        // We could also sync to Supabase if a table exists
+    };
+
+    const renderStandaloneRmChecks = () => {
+        const tbody = document.querySelector('#standalone-rm-table tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (standaloneRmChecks.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-secondary);padding:2rem;">No unloading checks found.</td></tr>';
+            return;
+        }
+        [...standaloneRmChecks].reverse().forEach(c => {
+            const tr = document.createElement('tr');
+            const staffList = [c.clerk && 'Clerk', c.qc && 'QC', c.sec && 'SEC', c.sup && 'Sup', c.sampler && 'Sampler'].filter(Boolean).join(', ') || 'None';
+            tr.innerHTML = `
+                <td>${c.date}</td>
+                <td>${c.shift}</td>
+                <td>${c.vehicle}</td>
+                <td>${c.location}</td>
+                <td>${c.moisture}</td>
+                <td>${staffList}</td>
+                <td>${c.quality}</td>
+                <td>${c.remarks}</td>
+                <td>
+                    <button class="btn btn-secondary" style="padding:0.25rem 0.5rem;font-size:0.8rem;" onclick="editStandaloneRm(${c.id})">Edit</button>
+                    <button class="btn btn-danger" style="padding:0.25rem 0.5rem;font-size:0.8rem;" onclick="deleteStandaloneRm(${c.id})">Del</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
+
+    window.editStandaloneRm = (id) => {
+        const c = standaloneRmChecks.find(x => x.id === id);
+        if (!c) return;
+        activeStandaloneRmId = id;
+        document.getElementById('rm-modal-date').value = c.date;
+        document.getElementById('rm-modal-shift').value = c.shift;
+        document.getElementById('rm-modal-vehicle').value = c.vehicle;
+        document.getElementById('rm-modal-location').value = c.location;
+        document.getElementById('rm-modal-moisture').value = c.moisture;
+        document.getElementById('rm-modal-clerk').checked = !!c.clerk;
+        document.getElementById('rm-modal-qc').checked = !!c.qc;
+        document.getElementById('rm-modal-sec').checked = !!c.sec;
+        document.getElementById('rm-modal-sup').checked = !!c.sup;
+        document.getElementById('rm-modal-sampler').checked = !!c.sampler;
+        document.getElementById('rm-modal-quality').value = c.quality;
+        document.getElementById('rm-modal-remarks').value = c.remarks;
+        document.getElementById('rm-standalone-modal').classList.add('show');
+    };
+
+    window.deleteStandaloneRm = (id) => {
+        if (!confirm('Delete this unloading check?')) return;
+        standaloneRmChecks = standaloneRmChecks.filter(x => x.id !== id);
+        saveStandaloneRmChecks();
+        renderStandaloneRmChecks();
+    };
+
+    const openStandaloneRmModal = () => {
+        activeStandaloneRmId = null;
+        const today = new Date();
+        document.getElementById('rm-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+        document.getElementById('rm-modal-shift').value = 'A';
+        document.getElementById('rm-modal-vehicle').value = '';
+        document.getElementById('rm-modal-location').value = '';
+        document.getElementById('rm-modal-moisture').value = '';
+        ['clerk', 'qc', 'sec', 'sup', 'sampler'].forEach(k => document.getElementById(`rm-modal-${k}`).checked = false);
+        document.getElementById('rm-modal-quality').value = '';
+        document.getElementById('rm-modal-remarks').value = '';
+        document.getElementById('rm-standalone-modal').classList.add('show');
+    };
+
+    const closeStandaloneRmModal = () => document.getElementById('rm-standalone-modal').classList.remove('show');
+
+    const saveStandaloneRmModal = () => {
+        const c = {
+            date: document.getElementById('rm-modal-date').value.trim(),
+            shift: document.getElementById('rm-modal-shift').value.trim(),
+            vehicle: document.getElementById('rm-modal-vehicle').value.trim(),
+            location: document.getElementById('rm-modal-location').value.trim(),
+            moisture: document.getElementById('rm-modal-moisture').value.trim(),
+            clerk: document.getElementById('rm-modal-clerk').checked,
+            qc: document.getElementById('rm-modal-qc').checked,
+            sec: document.getElementById('rm-modal-sec').checked,
+            sup: document.getElementById('rm-modal-sup').checked,
+            sampler: document.getElementById('rm-modal-sampler').checked,
+            quality: document.getElementById('rm-modal-quality').value.trim(),
+            remarks: document.getElementById('rm-modal-remarks').value.trim()
+        };
+        if (!c.date || !c.shift) return alert('Date and Shift are required.');
+        if (activeStandaloneRmId) {
+            const idx = standaloneRmChecks.findIndex(x => x.id === activeStandaloneRmId);
+            if (idx !== -1) { c.id = activeStandaloneRmId; standaloneRmChecks[idx] = c; }
+        } else {
+            c.id = Date.now();
+            standaloneRmChecks.push(c);
+        }
+        saveStandaloneRmChecks();
+        renderStandaloneRmChecks();
+        closeStandaloneRmModal();
+    };
+
+    const initStandaloneRmEvents = () => {
+        const btnAdd = document.getElementById('btn-add-standalone-rm');
+        if (btnAdd) btnAdd.addEventListener('click', openStandaloneRmModal);
+        const btnSave = document.getElementById('btn-save-rm');
+        if (btnSave) btnSave.addEventListener('click', saveStandaloneRmModal);
+        const btnClose1 = document.getElementById('rm-standalone-close');
+        if (btnClose1) btnClose1.addEventListener('click', closeStandaloneRmModal);
+        const btnClose2 = document.getElementById('btn-cancel-rm');
+        if (btnClose2) btnClose2.addEventListener('click', closeStandaloneRmModal);
+        renderStandaloneRmChecks();
+    };
+
+    // ─── Performas Check List Module ────────────────────────────────────────────
+
+    const LS_PERFORMAS = 'fm_performas';
+    let performasData = JSON.parse(localStorage.getItem(LS_PERFORMAS) || '[]');
+    let activePerformaId = null;
+
+    const performaItems = [
+        { cat: 'AUDITS', name: 'Batching Medicine Audit (Audit & Share In Whatsapp Group)', m:true, e:true, n:true },
+        { cat: 'AUDITS', name: 'Medicine Stock & Configuration/Batch Number Closing', m:true, e:false, n:false },
+        { cat: 'AUDITS', name: 'Daily Oil Audit', m:true, e:false, n:false },
+        { cat: 'AUDITS', name: 'Daily Molasses checking by Batching Clerk', m:true, e:false, n:false },
+        { cat: 'AUDITS', name: 'Premix Stock Audit', m:false, e:false, n:true },
+        
+        { cat: 'PROCESS', name: 'Receiving Avg Checking', m:true, e:true, n:true },
+        { cat: 'PROCESS', name: "Receiving Clerk's Shift Report", m:true, e:true, n:true },
+        { cat: 'PROCESS', name: "Batching Clerk's working Sheet (Medicine Ticking Sheets)", m:true, e:true, n:true },
+        { cat: 'PROCESS', name: "Batching Clerk's Shift Report", m:true, e:true, n:true },
+        { cat: 'PROCESS', name: "Pellet Mill Operator's Shift Report", m:true, e:true, n:true },
+        { cat: 'PROCESS', name: 'Maize Moisture (after each 30 Batches)', m:true, e:true, n:true },
+        { cat: 'PROCESS', name: 'Daily Packing Bardana Checking', m:true, e:true, n:true },
+        { cat: 'PROCESS', name: 'On No Change, Bags less/Excess checking', m:true, e:true, n:true },
+        { cat: 'PROCESS', name: 'Crumbler Powder checking Via Basement Worker', m:true, e:true, n:true },
+        { cat: 'PROCESS', name: 'Grain Grinding Samples', m:true, e:true, n:true },
+        { cat: 'PROCESS', name: 'Feed weight checking from different stacks of Feed(Checked Weight Physically)', m:true, e:true, n:true },
+        { cat: 'PROCESS', name: 'Physical Checking of finished feed stock(Checked Physically & sign in field)', m:true, e:true, n:true },
+        { cat: 'PROCESS', name: 'Stiching Machine Submission to Electric Department', m:true, e:true, n:true },
+        { cat: 'PROCESS', name: 'Welding Permit Filling, In case of Welding', m:true, e:false, n:false },
+        { cat: 'PROCESS', name: 'Packing Side Scales Checking', m:true, e:false, n:false },
+        { cat: 'PROCESS', name: 'Batching Area Scales Checking', m:true, e:false, n:false },
+        { cat: 'PROCESS', name: 'Premix Department Scales checking', m:true, e:false, n:false },
+        { cat: 'PROCESS', name: 'Receiving Plan', m:true, e:false, n:false },
+
+        { cat: 'HOUSE KEEPING', name: "Drum Cleaner waste checking Via 67'' Worker", m:true, e:true, n:true },
+        { cat: 'HOUSE KEEPING', name: 'Overall Factory Waste checking', m:true, e:true, n:false },
+
+        { cat: 'MACHINE EFFICIENCY AND MAINTENACE', name: 'Old Godown Hammer Mill Efficiency Checking', m:true, e:true, n:true },
+        { cat: 'MACHINE EFFICIENCY AND MAINTENACE', name: '40Ton Pellet Grease checking, If Grease on Manual', m:true, e:true, n:true },
+
+        { cat: 'RAW MATERIAL UNLOADING PROTOCOLS', name: 'Unloading Cross Check (Checked Physically & sign in field)', m:true, e:true, n:true },
+        { cat: 'RAW MATERIAL UNLOADING PROTOCOLS', name: 'Silo Inspection Report before Filling', m:true, e:true, n:true },
+        { cat: 'RAW MATERIAL UNLOADING PROTOCOLS', name: 'Silo Side A+B Line Dumping Sample checking via Worker', m:true, e:true, n:true },
+        { cat: 'RAW MATERIAL UNLOADING PROTOCOLS', name: 'Dryer to Concrete Silo Shifting Maize Sample', m:true, e:true, n:true },
+
+        { cat: 'OTHERS', name: 'Bats weights checking,Both scales Calibration checking after 15 Days,Oil system scale checking', m:true, e:true, n:true },
+        { cat: 'OTHERS', name: 'Plant Cleaning Before Breeder', m:true, e:true, n:true },
+        { cat: 'OTHERS', name: 'Both Scales Weight checking During Breeder Batching', m:true, e:true, n:true },
+        { cat: 'OTHERS', name: 'Batching Medicines weight checking (For Breeder)', m:true, e:true, n:true },
+        { cat: 'OTHERS', name: '5 WHY Performa', m:true, e:true, n:true }
+    ];
+
+    const savePerformas = () => {
+        localStorage.setItem(LS_PERFORMAS, JSON.stringify(performasData));
+    };
+
+    const renderPerformaTable = () => {
+        const tbody = document.querySelector('#performa-table tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (performasData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:2rem;">No checklists found.</td></tr>';
+            return;
+        }
+        [...performasData].reverse().forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${p.date}</td>
+                <td>${p.sign || '—'}</td>
+                <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.remarks || '—'}</td>
+                <td>
+                    <button class="btn btn-secondary" style="padding:0.25rem 0.5rem;font-size:0.8rem;" onclick="editPerforma(${p.id})">Edit</button>
+                    <button class="btn btn-danger" style="padding:0.25rem 0.5rem;font-size:0.8rem;" onclick="deletePerforma(${p.id})">Del</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
+
+    const populatePerformaModalTable = (dataMap = {}) => {
+        const tbody = document.getElementById('performa-modal-tbody');
+        if (!tbody) return;
+        let html = '';
+        let currentCat = '';
+        performaItems.forEach((item, index) => {
+            if (item.cat !== currentCat) {
+                currentCat = item.cat;
+                html += `<tr style="background:rgba(0,0,0,0.03);"><td colspan="5" style="font-weight:bold;color:var(--text-primary);padding-top:1rem;border-bottom:2px solid var(--card-border);">${currentCat}</td></tr>`;
+            }
+            
+            const cellM = item.m ? `<input type="checkbox" id="pf-chk-m-${index}" style="transform:scale(1.2); cursor:pointer;" ${dataMap[index]?.m ? 'checked' : ''}>` : '<div style="background:#000;height:100%;width:100%;min-height:24px;"></div>';
+            const cellE = item.e ? `<input type="checkbox" id="pf-chk-e-${index}" style="transform:scale(1.2); cursor:pointer;" ${dataMap[index]?.e ? 'checked' : ''}>` : '<div style="background:#000;height:100%;width:100%;min-height:24px;"></div>';
+            const cellN = item.n ? `<input type="checkbox" id="pf-chk-n-${index}" style="transform:scale(1.2); cursor:pointer;" ${dataMap[index]?.n ? 'checked' : ''}>` : '<div style="background:#000;height:100%;width:100%;min-height:24px;"></div>';
+
+            html += `
+                <tr style="border-bottom:1px solid var(--card-border);">
+                    <td style="text-align:center;color:var(--text-secondary);font-size:0.85rem;">${index + 1}</td>
+                    <td style="font-size:0.9rem;padding:0.6rem;">${item.name}</td>
+                    <td style="text-align:center;padding:0;">${cellM}</td>
+                    <td style="text-align:center;padding:0;">${cellE}</td>
+                    <td style="text-align:center;padding:0;">${cellN}</td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    };
+
+    window.editPerforma = (id) => {
+        const p = performasData.find(x => x.id === id);
+        if (!p) return;
+        activePerformaId = id;
+        document.getElementById('performa-modal-date').value = p.date || '';
+        document.getElementById('performa-modal-sign').value = p.sign || '';
+        document.getElementById('performa-modal-remarks').value = p.remarks || '';
+        
+        populatePerformaModalTable(p.checks || {});
+        document.getElementById('performa-modal').classList.add('show');
+    };
+
+    window.deletePerforma = (id) => {
+        if (!confirm('Delete this checklist?')) return;
+        performasData = performasData.filter(x => x.id !== id);
+        savePerformas();
+        renderPerformaTable();
+    };
+
+    const openPerformaModal = () => {
+        activePerformaId = null;
+        const today = new Date();
+        document.getElementById('performa-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+        document.getElementById('performa-modal-sign').value = '';
+        document.getElementById('performa-modal-remarks').value = '';
+        populatePerformaModalTable({});
+        document.getElementById('performa-modal').classList.add('show');
+    };
+
+    const closePerformaModal = () => document.getElementById('performa-modal').classList.remove('show');
+
+    const savePerformaModal = () => {
+        const date = document.getElementById('performa-modal-date').value.trim();
+        if (!date) return alert('Date is required.');
+        
+        const checks = {};
+        performaItems.forEach((item, index) => {
+            checks[index] = {
+                m: item.m ? (document.getElementById(`pf-chk-m-${index}`)?.checked || false) : false,
+                e: item.e ? (document.getElementById(`pf-chk-e-${index}`)?.checked || false) : false,
+                n: item.n ? (document.getElementById(`pf-chk-n-${index}`)?.checked || false) : false,
+            };
+        });
+
+        const p = {
+            date,
+            sign: document.getElementById('performa-modal-sign').value.trim(),
+            remarks: document.getElementById('performa-modal-remarks').value.trim(),
+            checks
+        };
+
+        if (activePerformaId) {
+            const idx = performasData.findIndex(x => x.id === activePerformaId);
+            if (idx !== -1) { p.id = activePerformaId; performasData[idx] = p; }
+        } else {
+            p.id = Date.now();
+            performasData.push(p);
+        }
+        
+        savePerformas();
+        renderPerformaTable();
+        closePerformaModal();
+    };
+
+    const initPerformaEvents = () => {
+        const btnAdd = document.getElementById('btn-add-performa');
+        if (btnAdd) btnAdd.addEventListener('click', openPerformaModal);
+        const btnSave = document.getElementById('btn-save-performa');
+        if (btnSave) btnSave.addEventListener('click', savePerformaModal);
+        const btnClose1 = document.getElementById('performa-modal-close');
+        if (btnClose1) btnClose1.addEventListener('click', closePerformaModal);
+        const btnClose2 = document.getElementById('btn-cancel-performa');
+        if (btnClose2) btnClose2.addEventListener('click', closePerformaModal);
+        renderPerformaTable();
+    };
+
+    // ─── Shift Report Form State ────────────────────────────────────────────────
+
     const openSrNewModal = () => {
         activeSrId = null;
         const today = new Date();
@@ -3031,6 +3342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         set('sr-modal-feed', '');
         set('sr-modal-batches', '');
         set('sr-modal-bags', '');
+        
         set('sr-modal-raw', '');
         set('sr-modal-machine', '');
         set('sr-modal-quality', '');
@@ -3049,6 +3361,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const saveSrModal = async () => {
         const get = (elId) => { const e = document.getElementById(elId); return e ? e.value.trim() : ''; };
+        const getCheck = (elId) => { const e = document.getElementById(elId); return e ? e.checked : false; };
         const date = get('sr-modal-date');
         const shift = get('sr-modal-shift');
         const officerName = get('sr-modal-officer');
