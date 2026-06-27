@@ -498,15 +498,25 @@ create table if not exists public.batching_audits (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Disable RLS (Row Level Security) for all tables to allow public anonymous access
-alter table public.materials disable row level security;
-alter table public.silos disable row level security;
-alter table public.daily_maize_logs disable row level security;
-alter table public.daily_less_excess_logs disable row level security;
-alter table public.five_s_logs disable row level security;
-alter table public.daily_checklists disable row level security;
-alter table public.shift_reports disable row level security;
-alter table public.batching_audits disable row level security;
+-- Enable Row Level Security (RLS)
+alter table public.materials enable row level security;
+alter table public.silos enable row level security;
+alter table public.daily_maize_logs enable row level security;
+alter table public.daily_less_excess_logs enable row level security;
+alter table public.five_s_logs enable row level security;
+alter table public.daily_checklists enable row level security;
+alter table public.shift_reports enable row level security;
+alter table public.batching_audits enable row level security;
+
+-- Create Permissive Policies for Anonymous Access
+create policy "Allow anon all on materials" on public.materials for all using (true) with check (true);
+create policy "Allow anon all on silos" on public.silos for all using (true) with check (true);
+create policy "Allow anon all on daily_maize_logs" on public.daily_maize_logs for all using (true) with check (true);
+create policy "Allow anon all on daily_less_excess_logs" on public.daily_less_excess_logs for all using (true) with check (true);
+create policy "Allow anon all on five_s_logs" on public.five_s_logs for all using (true) with check (true);
+create policy "Allow anon all on daily_checklists" on public.daily_checklists for all using (true) with check (true);
+create policy "Allow anon all on shift_reports" on public.shift_reports for all using (true) with check (true);
+create policy "Allow anon all on batching_audits" on public.batching_audits for all using (true) with check (true);
 
 -- Create daily less/excess report view
 create or replace view public.v_daily_less_excess_report as
