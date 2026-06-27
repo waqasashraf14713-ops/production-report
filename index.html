@@ -288,35 +288,18 @@
                     </div>
                 </div>
 
-                <!-- Summary strip -->
-                <div id="sr-summary-strip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin:1rem 0 1.5rem;">
-                    <div class="summary-card" style="margin-bottom:0;padding:1rem;">
-                        <h3 style="font-size:0.82rem;">Total Shifts Today</h3>
-                        <div class="value" id="sr-total-shifts" style="font-size:1.8rem;margin:0.25rem 0;">0</div>
-                    </div>
-                    <div class="summary-card" style="margin-bottom:0;padding:1rem;">
-                        <h3 style="font-size:0.82rem;">Total Batches</h3>
-                        <div class="value" id="sr-total-batches" style="font-size:1.8rem;margin:0.25rem 0;">0</div>
-                    </div>
-                    <div class="summary-card" style="margin-bottom:0;padding:1rem;">
-                        <h3 style="font-size:0.82rem;">Total Production (Bags)</h3>
-                        <div class="value" id="sr-total-bags" style="font-size:1.8rem;margin:0.25rem 0;">0</div>
-                    </div>
-                    <div class="summary-card" style="margin-bottom:0;padding:1rem;">
-                        <h3 style="font-size:0.82rem;">Machine Downtime Issues</h3>
-                        <div class="value" id="sr-total-issues" style="font-size:1.8rem;margin:0.25rem 0;">0</div>
-                    </div>
-                </div>
+
 
                 <!-- Shift cards container -->
                 <div id="sr-cards-container" style="display:flex;flex-direction:column;gap:2rem;">
                     <!-- Populated by JS -->
                 </div>
 
-                <!-- Raw Material Unloading Check Standalone Table -->
-                <div style="margin-top: 3rem;">
-                    <div class="table-header" style="margin-bottom: 1rem;">
-                        <h2>🚚 Raw Material Unloading Check</h2>
+                <div class="reports-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem; margin-top: 3rem;">
+                    <!-- Raw Material Unloading Check Standalone Table -->
+                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                        <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;">
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;">1. 🚚 Raw Material Unloading Check <span id="badge-rm" class="sr-draft-badge" style="display:none;"></span></h2>
                         <button class="btn btn-secondary" id="btn-add-standalone-rm">➕ Add Unloading Check</button>
                     </div>
                     <div class="table-responsive">
@@ -341,10 +324,12 @@
                     </div>
                 </div>
 
-                <!-- Performas Check List Standalone Table -->
-                <div style="margin-top: 3rem;">
-                    <div class="table-header" style="margin-bottom: 1rem;">
-                        <h2>📋 Daily Performas Check List</h2>
+                    </div>
+
+                    <!-- Performas Check List Standalone Table -->
+                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                        <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;">
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;">2. 📋 Daily Performas Check List <span id="badge-performa" class="sr-draft-badge" style="display:none;"></span></h2>
                         <button class="btn btn-secondary" id="btn-add-performa">➕ Add Daily Checklist</button>
                     </div>
                     <div class="table-responsive">
@@ -362,6 +347,82 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                    </div>
+
+                    <!-- Shift Plant Report Standalone Table -->
+                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                        <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;">
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;">3. 🏭 Shift Plant Report <span id="badge-plant" class="sr-draft-badge" style="display:none;"></span></h2>
+                        <button class="btn btn-secondary" id="btn-add-plant-report">➕ Add Plant Report</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table" id="plant-report-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Shift</th>
+                                    <th>Production Officer</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS will populate -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                    </div>
+
+                    <!-- Quality Standards Check List Standalone Table -->
+                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                        <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;">
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;">4. ✔️ Quality Standards Check List <span id="badge-qs" class="sr-draft-badge" style="display:none;"></span></h2>
+                        <button class="btn btn-secondary" id="btn-add-qs">➕ Add Check List</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table" id="qs-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Shift</th>
+                                    <th>Production Officer</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS will populate -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                    </div>
+
+                    <!-- Silo Dumping Moisture Report Standalone Table -->
+                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                        <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;">
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;">5. 🌾 Silo Dumping Moisture Report <span id="badge-silo" class="sr-draft-badge" style="display:none;"></span></h2>
+                        <button class="btn btn-secondary" id="btn-add-silo-dump">➕ Add Report</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table" id="silo-dump-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Shift</th>
+                                    <th>Production Officer</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS will populate -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 </div>
             </section>
         </div>
@@ -1016,7 +1077,7 @@ order by
 
     <!-- Performa Check List Modal -->
     <div id="performa-modal" class="modal-overlay">
-        <div class="modal-card" style="max-width:950px;width:95%;">
+        <div class="modal-card" style="max-width:950px;width:95%;background:#ffffff;">
             <div class="modal-header">
                 <h2 id="performa-modal-title">Performas Check List</h2>
                 <button id="performa-modal-close" class="modal-close-btn">&times;</button>
@@ -1061,7 +1122,317 @@ order by
         </div>
     </div>
 
+    <!-- Daily Plant Report Modal -->
+    <div id="plant-report-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:1100px;width:95%;background:#ffffff;">
+            <div class="modal-header">
+                <h2 id="plant-report-title">Shift Plant Report</h2>
+                <button id="plant-report-close" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem; max-height: 80vh; overflow-y: auto;">
+                <div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+                    <div class="form-group" style="width: 250px;">
+                        <label>Date</label>
+                        <input type="text" id="pr-date" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;" />
+                    </div>
+                    <div class="form-group" style="width: 250px;">
+                        <label>Shift</label>
+                        <select id="pr-shift-select" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);">
+                            <option value="Morning">Morning (06 AM - 02 PM)</option>
+                            <option value="Evening">Evening (02 PM - 10 PM)</option>
+                            <option value="Night">Night (10 PM - 06 AM)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Tabs Removed -->
+
+                <!-- Tab 1: Shift Details -->
+                <div id="pr-tab-shift" class="pr-tab-content">
+                    <h3 style="margin-bottom:1rem;color:var(--text-primary);">Shift Details</h3>
+                    <table class="report-table" style="width:100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+                        <thead>
+                            <tr>
+                                <th>Production Officer</th>
+                                <th>Plant Operator</th>
+                                <th>Start Time</th>
+                                <th>Finish Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pr-shift-tbody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Tab 2: 5'S & Receiving -->
+                <div id="pr-tab-5s" class="pr-tab-content" style="margin-top:2rem;">
+                    <h3 style="margin-bottom:1rem;color:var(--text-primary);">5'S Checklists Sign</h3>
+                    <table class="report-table" style="width:100%; border-collapse: collapse; margin-bottom: 2rem;">
+                        <thead>
+                            <tr>
+                                <th>Control ROOMS</th>
+                                <th>Pellet Mills</th>
+                                <th>Batching</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pr-5s-tbody"></tbody>
+                    </table>
+
+                    <h3 style="margin-bottom:1rem;color:var(--text-primary);">Receiving</h3>
+                    <table class="report-table" style="width:100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+                        <thead>
+                            <tr>
+                                <th>Workforce (Persons)</th>
+                                <th>Receiving Avg. (Bags/min)</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pr-receiving-tbody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Tab 3: QC & Grinding -->
+                <div id="pr-tab-qc" class="pr-tab-content" style="margin-top:2rem;">
+                    <h3 style="margin-bottom:1rem;color:var(--text-primary);">Quality Control</h3>
+                    <table class="report-table" style="width:100%; border-collapse: collapse; margin-bottom: 2rem;">
+                        <thead>
+                            <tr>
+                                <th>Time (hh:mm)</th>
+                                <th>Feed Moisture (%)</th>
+                                <th>Micro-ingredient weights</th>
+                                <th>Feed bag weight (kg)</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pr-qc-tbody"></tbody>
+                    </table>
+
+                    <h3 style="margin-bottom:1rem;color:var(--text-primary);">Grinding</h3>
+                    <table class="report-table" style="width:100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+                        <thead>
+                            <tr>
+                                <th>Grinder</th>
+                                <th>Time (hh:mm)</th>
+                                <th>Material</th>
+                                <th>Feeder Hz.</th>
+                                <th>Motor Amps (Actual/Max)</th>
+                                <th>Overs (%)</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pr-grinding-tbody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Tab 4: Pelleting -->
+                <div id="pr-tab-pelleting" class="pr-tab-content" style="margin-top:2rem;">
+                    <h3 style="margin-bottom:1rem;color:var(--text-primary);">Pelleting</h3>
+                    <div style="overflow-x:auto;">
+                        <table class="report-table" style="width:100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+                            <thead>
+                                <tr>
+                                    <th>Pellet Mill</th>
+                                    <th>Time</th>
+                                    <th>Feed #</th>
+                                    <th>Feeder Hz.</th>
+                                    <th>Amps (Act/Max)</th>
+                                    <th>Powder (%)</th>
+                                    <th>Temp (°C)</th>
+                                    <th>Sifter Mash</th>
+                                    <th>Dumper Open</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pr-pelleting-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 5: Physical Visit -->
+                <div id="pr-tab-physical" class="pr-tab-content" style="margin-top:2rem;">
+                    <h3 style="margin-bottom:1rem;color:var(--text-primary);">Physical Visit (Checkboxes)</h3>
+                    <div style="overflow-x:auto;">
+                        <table class="report-table" style="width:100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size:0.85rem;">
+                            <thead>
+                                <tr>
+                                    <th style="min-width:180px;">Checking Parameters</th>
+                                    <th>Basement</th>
+                                    <th>Ground Flr</th>
+                                    <th>1st Flr (19)</th>
+                                    <th>2nd Flr (51)</th>
+                                    <th>3rd Flr (67)</th>
+                                    <th>4th Flr (91)</th>
+                                    <th>Roof (110)</th>
+                                    <th>Silos Top</th>
+                                    <th>Silos Tower</th>
+                                    <th>Dryer Side</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pr-physical-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="margin-top:1.5rem;display:flex;justify-content:flex-end;gap:1rem;border-top:1px solid var(--card-border);padding-top:1rem;">
+                    <button class="btn btn-secondary" id="btn-cancel-pr" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-pr" style="width:auto;padding:0.5rem 2rem;">💾 Save Plant Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Quality Standards Modal -->
+    <div id="qs-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:900px;width:95%;background:#ffffff;direction:rtl;text-align:right;">
+            <div class="modal-header" style="flex-direction:row-reverse;">
+                <h2 id="qs-title">کوالٹی اسٹینڈرڈز چیک لسٹ</h2>
+                <button id="qs-close" class="modal-close-btn" style="margin-right:auto;margin-left:0;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem; max-height: 80vh; overflow-y: auto;">
+                <div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+                    <div class="form-group" style="width: 200px;">
+                        <label style="display:block;margin-bottom:0.5rem;font-weight:600;">Date</label>
+                        <input type="text" id="qs-date" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;" />
+                    </div>
+                    <div class="form-group" style="width: 200px;">
+                        <label style="display:block;margin-bottom:0.5rem;font-weight:600;">Shift</label>
+                        <select id="qs-shift" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);">
+                            <option value="Morning">Morning</option>
+                            <option value="Evening">Evening</option>
+                            <option value="Night">Night</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="width: 200px;">
+                        <label style="display:block;margin-bottom:0.5rem;font-weight:600;">Production Officer</label>
+                        <select id="qs-officer" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);">
+                            <option value="">Select Officer</option>
+                            <option value="M. Zubair">M. Zubair</option>
+                            <option value="M. Tahir">M. Tahir</option>
+                            <option value="M. Shoaib">M. Shoaib</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom:1rem;color:var(--text-primary);border-bottom:1px solid var(--card-border);padding-bottom:0.5rem;">کوالٹی اسٹینڈرڈز (بیچنگ اینڈ کنٹرول روم)</h3>
+                <div style="overflow-x:auto;margin-bottom:2rem;">
+                    <table class="report-table" style="width:100%; border-collapse: collapse; font-size:0.9rem;">
+                        <thead>
+                            <tr>
+                                <th style="width:50px;text-align:center;">Sr#</th>
+                                <th style="text-align:right;">Checklist Item</th>
+                                <th style="width:80px;text-align:center;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="qs-batching-tbody"></tbody>
+                    </table>
+                </div>
+
+                <h3 style="margin-bottom:1rem;color:var(--text-primary);border-bottom:1px solid var(--card-border);padding-bottom:0.5rem;">پیلٹ اسٹینڈرڈ</h3>
+                <div style="overflow-x:auto;">
+                    <table class="report-table" style="width:100%; border-collapse: collapse; font-size:0.9rem;">
+                        <thead>
+                            <tr>
+                                <th style="width:50px;text-align:center;">Sr#</th>
+                                <th style="text-align:right;">Checklist Item</th>
+                                <th style="width:80px;text-align:center;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="qs-pellet-tbody"></tbody>
+                    </table>
+                </div>
+
+                <div class="modal-actions" style="margin-top:1.5rem;display:flex;justify-content:flex-start;gap:1rem;border-top:1px solid var(--card-border);padding-top:1rem;direction:ltr;">
+                    <button class="btn btn-secondary" id="btn-cancel-qs" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-qs" style="width:auto;padding:0.5rem 2rem;">💾 Save Check List</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Silo Dump Modal -->
+    <div id="silo-dump-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:1200px;width:98%;background:#ffffff;">
+            <div class="modal-header">
+                <h2 id="silo-dump-title">Silo Dumping Moisture & Condition Cross Check</h2>
+                <button id="silo-dump-close" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem; max-height: 80vh; overflow-y: auto;">
+                
+                <div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+                    <div class="form-group" style="width: 250px;">
+                        <label>Date</label>
+                        <input type="text" id="sd-date" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;" />
+                    </div>
+                    <div class="form-group" style="width: 250px;">
+                        <label>Shift</label>
+                        <select id="sd-shift" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);">
+                            <option value="Morning">Morning</option>
+                            <option value="Evening">Evening</option>
+                            <option value="Night">Night</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="width: 250px;">
+                        <label>Production Officer</label>
+                        <select id="sd-officer" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);">
+                            <option value="">Select Officer</option>
+                            <option value="M. Zubair">M. Zubair</option>
+                            <option value="M. Tahir">M. Tahir</option>
+                            <option value="M. Shoaib">M. Shoaib</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="report-table" style="width:100%; border-collapse: collapse; margin-bottom: 1.5rem; text-align:center;">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Time</th>
+                                <th rowspan="2">Material</th>
+                                <th colspan="4" style="border-left:2px solid #ccc; border-right:2px solid #ccc;">A Line</th>
+                                <th colspan="4">B Line</th>
+                            </tr>
+                            <tr>
+                                <th style="border-left:2px solid #ccc;">Moisture</th>
+                                <th>C.R Moisture Meter Reading</th>
+                                <th>Condition</th>
+                                <th style="border-right:2px solid #ccc;">Silo Top sample Cleaning & condition</th>
+                                <th>Moisture</th>
+                                <th>C.R Moisture Meter Reading</th>
+                                <th>Condition</th>
+                                <th>Silo Top sample Cleaning & condition</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sd-tbody">
+                            <!-- JS will populate rows dynamically based on Shift -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label>Remarks</label>
+                    <textarea id="sd-remarks" rows="2" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;resize:vertical;"></textarea>
+                </div>
+                
+                <div class="form-group" style="margin-bottom:2rem; width: 300px;">
+                    <label>Assistant Production Manager Sign</label>
+                    <input type="text" id="sd-apm" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;" />
+                </div>
+
+                <div class="modal-actions" style="display:flex;justify-content:flex-end;gap:1rem;border-top:1px solid var(--card-border);padding-top:1rem;">
+                    <button class="btn btn-secondary" id="btn-cancel-sd" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-sd" style="width:auto;padding:0.5rem 2rem;">💾 Save Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="env.js"></script>
+    <script src="silo_dump.js"></script>
+    <script src="quality_standards.js"></script>
+    <script src="plant_report.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

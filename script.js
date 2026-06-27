@@ -1181,11 +1181,13 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSilos();
         initFiveSEvents();
         initDailyChecklistEvents();
-        initDailyLessExcessView();
         initShiftReportEvents();
         initBatchingAuditEvents();
         initStandaloneRmEvents();
         initPerformaEvents();
+        if (window.initPlantReportEvents) window.initPlantReportEvents();
+        if (window.initQualityStandardsEvents) window.initQualityStandardsEvents();
+        if (window.initSiloDumpEvents) window.initSiloDumpEvents();
     };
 
     // ─── Modal Actions ──────────────────────────────────────────────────────────
@@ -2982,6 +2984,28 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             container.appendChild(card);
         });
+
+        // Update completion badges for standalone reports
+        const updateBadge = (lsKey, elId) => {
+            const data = JSON.parse(localStorage.getItem(lsKey) || '[]');
+            const badge = document.getElementById(elId);
+            if (!badge) return;
+            const hasReport = data.some(d => d.date === currentSrFilterDate);
+            if (hasReport) {
+                badge.className = 'sr-submitted-badge';
+                badge.style.display = 'inline-block';
+                badge.innerHTML = '✅ Completed';
+            } else {
+                badge.className = 'sr-draft-badge';
+                badge.style.display = 'inline-block';
+                badge.innerHTML = '⌛ Pending';
+            }
+        };
+        updateBadge('fm_rm_standalone', 'badge-rm');
+        updateBadge('fm_performa', 'badge-performa');
+        updateBadge('fm_plant_report', 'badge-plant');
+        updateBadge('fm_qs_report', 'badge-qs');
+        updateBadge('fm_silo_dump', 'badge-silo');
     };
 
     // Global helpers for inline onclick in rendered cards
@@ -3236,9 +3260,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `<tr style="background:rgba(0,0,0,0.03);"><td colspan="5" style="font-weight:bold;color:var(--text-primary);padding-top:1rem;border-bottom:2px solid var(--card-border);">${currentCat}</td></tr>`;
             }
             
-            const cellM = item.m ? `<input type="checkbox" id="pf-chk-m-${index}" style="transform:scale(1.2); cursor:pointer;" ${dataMap[index]?.m ? 'checked' : ''}>` : '<div style="background:#000;height:100%;width:100%;min-height:24px;"></div>';
-            const cellE = item.e ? `<input type="checkbox" id="pf-chk-e-${index}" style="transform:scale(1.2); cursor:pointer;" ${dataMap[index]?.e ? 'checked' : ''}>` : '<div style="background:#000;height:100%;width:100%;min-height:24px;"></div>';
-            const cellN = item.n ? `<input type="checkbox" id="pf-chk-n-${index}" style="transform:scale(1.2); cursor:pointer;" ${dataMap[index]?.n ? 'checked' : ''}>` : '<div style="background:#000;height:100%;width:100%;min-height:24px;"></div>';
+            const cellM = item.m ? `<input type="checkbox" id="pf-chk-m-${index}" style="transform:scale(1.2); cursor:pointer;" ${dataMap[index]?.m ? 'checked' : ''}>` : '<div style="background:var(--card-border);height:100%;width:100%;min-height:24px;border-radius:4px;"></div>';
+            const cellE = item.e ? `<input type="checkbox" id="pf-chk-e-${index}" style="transform:scale(1.2); cursor:pointer;" ${dataMap[index]?.e ? 'checked' : ''}>` : '<div style="background:var(--card-border);height:100%;width:100%;min-height:24px;border-radius:4px;"></div>';
+            const cellN = item.n ? `<input type="checkbox" id="pf-chk-n-${index}" style="transform:scale(1.2); cursor:pointer;" ${dataMap[index]?.n ? 'checked' : ''}>` : '<div style="background:var(--card-border);height:100%;width:100%;min-height:24px;border-radius:4px;"></div>';
 
             html += `
                 <tr style="border-bottom:1px solid var(--card-border);">

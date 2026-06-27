@@ -1,0 +1,289 @@
+// ─── Shift Plant Report Module ────────────────────────────────────────────
+(() => {
+const LS_PLANT_REPORT = 'fm_plant_report';
+let plantReportsData = JSON.parse(localStorage.getItem(LS_PLANT_REPORT) || '[]');
+let activePlantReportId = null;
+
+const pLocations = ['Basement', 'Ground Flr', '1st Flr (19)', '2nd Flr (51)', '3rd Flr (67)', '4th Flr (91)', 'Roof (110)', 'Silos Top', 'Silos Tower', 'Dryer Side'];
+const pParams = [
+    'Floor & Walls Cleaning',
+    'Machine Cleaning',
+    'Leakage',
+    'Abnormal Machine Sound',
+    'Unnecessary item'
+];
+
+const inp = (id, w = '100%') => `<input type="text" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;">`;
+const num = (id, w = '100%') => `<input type="number" step="any" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;">`;
+const chk = (id) => `<input type="checkbox" id="${id}" style="transform:scale(1.2);cursor:pointer;">`;
+
+const offSel = (id) => `<select id="${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;background:var(--card-bg);color:var(--text-primary);"><option value="">Select Officer</option><option value="M. Zubair">M. Zubair</option><option value="M. Tahir">M. Tahir</option><option value="M. Shoaib">M. Shoaib</option></select>`;
+
+const getShiftTimes = (shiftName) => {
+    if(shiftName === 'Morning') return {st:'06:00 AM', fn:'02:00 PM'};
+    if(shiftName === 'Evening') return {st:'02:00 PM', fn:'10:00 PM'};
+    if(shiftName === 'Night') return {st:'10:00 PM', fn:'06:00 AM'};
+    return {st:'', fn:''};
+};
+
+const buildShiftDetailsUI = () => {
+    let html = `<tr>
+        <td>${offSel('pr-shift-officer')}</td>
+        <td>${inp('pr-shift-op')}</td>
+        <td style="text-align:center;color:var(--text-secondary);" id="pr-shift-st-text">06:00 AM</td>
+        <td style="text-align:center;color:var(--text-secondary);" id="pr-shift-fn-text">02:00 PM</td>
+    </tr>`;
+    const el = document.getElementById('pr-shift-tbody');
+    if (el) el.innerHTML = html;
+};
+
+const build5SUI = () => {
+    let s5 = `<tr>
+        <td>${inp('pr-5s-control')}</td>
+        <td>${inp('pr-5s-pellet')}</td>
+        <td>${inp('pr-5s-batch')}</td>
+        <td>${inp('pr-5s-rem')}</td>
+    </tr>`;
+    const el = document.getElementById('pr-5s-tbody');
+    if (el) el.innerHTML = s5;
+
+    let rec = `<tr>
+        <td>${num('pr-rec-work')}</td>
+        <td>${num('pr-rec-avg')}</td>
+        <td>${inp('pr-rec-rem')}</td>
+    </tr>`;
+    const recEl = document.getElementById('pr-receiving-tbody');
+    if (recEl) recEl.innerHTML = rec;
+};
+
+const buildQCGrindingUI = () => {
+    let qc = `<tr>
+        <td>${inp('pr-qc-time', '80px')}</td>
+        <td>${num('pr-qc-moist')}</td>
+        <td>${inp('pr-qc-micro')}</td>
+        <td>${num('pr-qc-bag')}</td>
+        <td>${inp('pr-qc-rem')}</td>
+    </tr>`;
+    const qcEl = document.getElementById('pr-qc-tbody');
+    if (qcEl) qcEl.innerHTML = qc;
+
+    let grd = `<tr>
+        <td>${inp('pr-grd-grinder', '80px')}</td>
+        <td>${inp('pr-grd-time', '80px')}</td>
+        <td>${inp('pr-grd-mat')}</td>
+        <td>${num('pr-grd-hz')}</td>
+        <td style="display:flex;gap:0.25rem;">${num('pr-grd-amp-act', '50%')} ${num('pr-grd-amp-max', '50%')}</td>
+        <td>${num('pr-grd-overs')}</td>
+        <td>${inp('pr-grd-rem')}</td>
+    </tr>`;
+    const grdEl = document.getElementById('pr-grinding-tbody');
+    if (grdEl) grdEl.innerHTML = grd;
+};
+
+const buildPelletingUI = () => {
+    let p = `<tr>
+        <td>${inp('pr-pel-mill', '80px')}</td>
+        <td>${inp('pr-pel-time', '80px')}</td>
+        <td>${inp('pr-pel-feed', '80px')}</td>
+        <td>${num('pr-pel-hz', '70px')}</td>
+        <td style="display:flex;gap:0.25rem;min-width:110px;">${num('pr-pel-amp-act', '50%')} ${num('pr-pel-amp-max', '50%')}</td>
+        <td>${num('pr-pel-pow', '60px')}</td>
+        <td>${num('pr-pel-temp', '60px')}</td>
+        <td>${inp('pr-pel-sifter', '70px')}</td>
+        <td>${inp('pr-pel-dumper', '70px')}</td>
+        <td>${inp('pr-pel-rem')}</td>
+    </tr>`;
+    const pelEl = document.getElementById('pr-pelleting-tbody');
+    if (pelEl) pelEl.innerHTML = p;
+};
+
+const buildPhysicalVisitUI = () => {
+    let pv = '';
+    pParams.forEach((param, pIdx) => {
+        pv += `<tr style="border-bottom:1px solid var(--card-border);">`;
+        pv += `<td style="padding:0.4rem;font-size:0.8rem;font-weight:bold;">${param}</td>`;
+        pLocations.forEach((loc, lIdx) => {
+            pv += `<td style="text-align:center;">${chk(`pr-pv-${pIdx}-${lIdx}`)}</td>`;
+        });
+        pv += `</tr>`;
+    });
+    const pvEl = document.getElementById('pr-physical-tbody');
+    if (pvEl) pvEl.innerHTML = pv;
+};
+
+const buildAllTabsUI = () => {
+    buildShiftDetailsUI();
+    build5SUI();
+    buildQCGrindingUI();
+    buildPelletingUI();
+    buildPhysicalVisitUI();
+};
+
+const clearPlantReportForm = () => {
+    const today = new Date();
+    document.getElementById('pr-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+    document.getElementById('pr-shift-select').value = 'Morning';
+    updateShiftTimes();
+    document.querySelectorAll('#plant-report-modal input[type="text"], #plant-report-modal input[type="number"], #plant-report-modal select').forEach(el => {
+        if(el.id !== 'pr-shift-select' && el.id !== 'pr-date') el.value = '';
+    });
+    document.querySelectorAll('#plant-report-modal input[type="checkbox"]').forEach(el => el.checked = false);
+};
+
+const updateShiftTimes = () => {
+    const s = document.getElementById('pr-shift-select').value;
+    const t = getShiftTimes(s);
+    if(document.getElementById('pr-shift-st-text')) document.getElementById('pr-shift-st-text').textContent = t.st;
+    if(document.getElementById('pr-shift-fn-text')) document.getElementById('pr-shift-fn-text').textContent = t.fn;
+};
+
+const getVal = id => document.getElementById(id) ? document.getElementById(id).value : '';
+const getChk = id => document.getElementById(id) ? document.getElementById(id).checked : false;
+const setVal = (id, val) => { if (document.getElementById(id)) document.getElementById(id).value = val || ''; };
+const setChk = (id, val) => { if (document.getElementById(id)) document.getElementById(id).checked = !!val; };
+
+const savePlantReport = () => {
+    const date = getVal('pr-date');
+    const shift = getVal('pr-shift-select');
+    if (!date) return alert('Date is required!');
+
+    const data = {
+        date,
+        shift,
+        shiftDetails: { off: getVal('pr-shift-officer'), op: getVal('pr-shift-op'), st: getShiftTimes(shift).st, fn: getShiftTimes(shift).fn },
+        fiveS: { cr: getVal('pr-5s-control'), pm: getVal('pr-5s-pellet'), b: getVal('pr-5s-batch'), rm: getVal('pr-5s-rem') },
+        rec: { wf: getVal('pr-rec-work'), avg: getVal('pr-rec-avg'), rm: getVal('pr-rec-rem') },
+        qc: { t: getVal('pr-qc-time'), m: getVal('pr-qc-moist'), mi: getVal('pr-qc-micro'), b: getVal('pr-qc-bag'), rm: getVal('pr-qc-rem') },
+        grd: { g: getVal('pr-grd-grinder'), t: getVal('pr-grd-time'), m: getVal('pr-grd-mat'), hz: getVal('pr-grd-hz'), aa: getVal('pr-grd-amp-act'), am: getVal('pr-grd-amp-max'), ov: getVal('pr-grd-overs'), rm: getVal('pr-grd-rem') },
+        pel: { m: getVal('pr-pel-mill'), t: getVal('pr-pel-time'), f: getVal('pr-pel-feed'), hz: getVal('pr-pel-hz'), aa: getVal('pr-pel-amp-act'), am: getVal('pr-pel-amp-max'), p: getVal('pr-pel-pow'), tm: getVal('pr-pel-temp'), sm: getVal('pr-pel-sifter'), d: getVal('pr-pel-dumper'), rm: getVal('pr-pel-rem') },
+        pv: pParams.map((_, pIdx) => pLocations.map((__, lIdx) => getChk(`pr-pv-${pIdx}-${lIdx}`)))
+    };
+
+    if (activePlantReportId) {
+        const idx = plantReportsData.findIndex(x => x.id === activePlantReportId);
+        if (idx !== -1) { data.id = activePlantReportId; plantReportsData[idx] = data; }
+    } else {
+        data.id = Date.now();
+        plantReportsData.push(data);
+    }
+    
+    localStorage.setItem(LS_PLANT_REPORT, JSON.stringify(plantReportsData));
+    window.renderPlantReportTable();
+    document.getElementById('plant-report-modal').classList.remove('show');
+};
+
+const loadPlantReportToForm = (data) => {
+    setVal('pr-date', data.date);
+    setVal('pr-shift-select', data.shift);
+    updateShiftTimes();
+    
+    setVal('pr-shift-officer', data.shiftDetails?.off);
+    setVal('pr-shift-op', data.shiftDetails?.op);
+
+    setVal('pr-5s-control', data.fiveS?.cr);
+    setVal('pr-5s-pellet', data.fiveS?.pm);
+    setVal('pr-5s-batch', data.fiveS?.b);
+    setVal('pr-5s-rem', data.fiveS?.rm);
+
+    setVal('pr-rec-work', data.rec?.wf);
+    setVal('pr-rec-avg', data.rec?.avg);
+    setVal('pr-rec-rem', data.rec?.rm);
+
+    setVal('pr-qc-time', data.qc?.t);
+    setVal('pr-qc-moist', data.qc?.m);
+    setVal('pr-qc-micro', data.qc?.mi);
+    setVal('pr-qc-bag', data.qc?.b);
+    setVal('pr-qc-rem', data.qc?.rm);
+
+    setVal('pr-grd-grinder', data.grd?.g);
+    setVal('pr-grd-time', data.grd?.t);
+    setVal('pr-grd-mat', data.grd?.m);
+    setVal('pr-grd-hz', data.grd?.hz);
+    setVal('pr-grd-amp-act', data.grd?.aa);
+    setVal('pr-grd-amp-max', data.grd?.am);
+    setVal('pr-grd-overs', data.grd?.ov);
+    setVal('pr-grd-rem', data.grd?.rm);
+
+    setVal('pr-pel-mill', data.pel?.m);
+    setVal('pr-pel-time', data.pel?.t);
+    setVal('pr-pel-feed', data.pel?.f);
+    setVal('pr-pel-hz', data.pel?.hz);
+    setVal('pr-pel-amp-act', data.pel?.aa);
+    setVal('pr-pel-amp-max', data.pel?.am);
+    setVal('pr-pel-pow', data.pel?.p);
+    setVal('pr-pel-temp', data.pel?.tm);
+    setVal('pr-pel-sifter', data.pel?.sm);
+    setVal('pr-pel-dumper', data.pel?.d);
+    setVal('pr-pel-rem', data.pel?.rm);
+
+    pParams.forEach((_, pIdx) => {
+        pLocations.forEach((__, lIdx) => {
+            setChk(`pr-pv-${pIdx}-${lIdx}`, data.pv?.[pIdx]?.[lIdx]);
+        });
+    });
+};
+
+window.renderPlantReportTable = () => {
+    const tbody = document.querySelector('#plant-report-table tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (plantReportsData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:2rem;">No plant reports found.</td></tr>';
+        return;
+    }
+    [...plantReportsData].reverse().forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${p.date}</td>
+            <td><span style="background:var(--accent-glow);color:var(--accent-color);padding:0.2rem 0.5rem;border-radius:4px;font-weight:600;font-size:0.85rem;">${p.shift}</span></td>
+            <td>${p.shiftDetails?.off || '—'}</td>
+            <td>
+                <button class="btn btn-secondary" style="padding:0.25rem 0.5rem;font-size:0.8rem;" onclick="editPlantReport(${p.id})">Edit</button>
+                <button class="btn btn-danger" style="padding:0.25rem 0.5rem;font-size:0.8rem;" onclick="deletePlantReport(${p.id})">Del</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+};
+
+window.editPlantReport = (id) => {
+    const d = plantReportsData.find(x => x.id === id);
+    if (!d) return;
+    activePlantReportId = id;
+    loadPlantReportToForm(d);
+    document.getElementById('plant-report-modal').classList.add('show');
+};
+
+window.deletePlantReport = (id) => {
+    if (!confirm('Delete this plant report?')) return;
+    plantReportsData = plantReportsData.filter(x => x.id !== id);
+    localStorage.setItem(LS_PLANT_REPORT, JSON.stringify(plantReportsData));
+    window.renderPlantReportTable();
+};
+
+window.initPlantReportEvents = () => {
+    buildAllTabsUI();
+    
+    document.getElementById('pr-shift-select').addEventListener('change', updateShiftTimes);
+
+    const btnAdd = document.getElementById('btn-add-plant-report');
+    if (btnAdd) {
+        btnAdd.addEventListener('click', () => {
+            activePlantReportId = null;
+            clearPlantReportForm();
+            document.getElementById('plant-report-modal').classList.add('show');
+        });
+    }
+
+    const btnSave = document.getElementById('btn-save-pr');
+    if (btnSave) btnSave.addEventListener('click', savePlantReport);
+
+    const btnClose1 = document.getElementById('plant-report-close');
+    if (btnClose1) btnClose1.addEventListener('click', () => document.getElementById('plant-report-modal').classList.remove('show'));
+    
+    const btnClose2 = document.getElementById('btn-cancel-pr');
+    if (btnClose2) btnClose2.addEventListener('click', () => document.getElementById('plant-report-modal').classList.remove('show'));
+
+    window.renderPlantReportTable();
+};
+})();
