@@ -127,6 +127,7 @@ const saveQs = () => {
     localStorage.setItem(LS_QS, JSON.stringify(qsData));
     renderQsTable();
     document.getElementById('qs-modal').classList.remove('show');
+    if (window.updateAllSubreportBadges) window.updateAllSubreportBadges();
 };
 
 const loadQsToForm = (data) => {

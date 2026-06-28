@@ -164,6 +164,7 @@
         saveSiloMoistData();
         renderSiloMoistTable();
         closeSmModal();
+        if (window.updateAllSubreportBadges) window.updateAllSubreportBadges();
 
         // Update summary if the added report matches current filter
         const filterDateInput = document.getElementById('sr-filter-date');

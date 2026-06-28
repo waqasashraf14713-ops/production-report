@@ -170,6 +170,7 @@ const savePlantReport = () => {
     localStorage.setItem(LS_PLANT_REPORT, JSON.stringify(plantReportsData));
     window.renderPlantReportTable();
     document.getElementById('plant-report-modal').classList.remove('show');
+    if (window.updateAllSubreportBadges) window.updateAllSubreportBadges();
 };
 
 const loadPlantReportToForm = (data) => {

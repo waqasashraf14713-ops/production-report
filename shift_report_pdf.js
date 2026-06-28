@@ -8,7 +8,7 @@
             return;
         }
 
-        // Fetch data for the selected date from localStorage
+        const shiftReportsData = JSON.parse(localStorage.getItem('fmpr_shiftReports') || '[]').filter(r => r.date === selectedDate);
         const rmData = JSON.parse(localStorage.getItem('fm_standalone_rm_checks') || '[]').filter(r => r.date === selectedDate);
         const performaData = JSON.parse(localStorage.getItem('fm_performas') || '[]').filter(r => r.date === selectedDate);
         const plantReportData = JSON.parse(localStorage.getItem('fm_plant_report') || '[]').filter(r => r.date === selectedDate);
@@ -20,6 +20,7 @@
         const sortByShift = (arr) => {
             arr.sort((a, b) => (a.shift || '').localeCompare(b.shift || ''));
         };
+        sortByShift(shiftReportsData);
         sortByShift(rmData);
         sortByShift(performaData);
         sortByShift(plantReportData);
@@ -34,25 +35,46 @@
             </div>
         `;
 
+        // 0. Main Shift Reports
+        html += `<div class="pdf-section"><h3>Production Officer Shift Reports</h3>`;
+        if (shiftReportsData.length > 0) {
+            html += `<table class="pdf-table"><thead><tr>
+                <th>Shift</th><th>Officer</th><th>Batches</th><th>Bags</th><th>Feed Produced</th><th>RM Used</th><th>Machine Issues</th><th>Quality Remarks</th><th>General Remarks</th>
+            </tr></thead><tbody>`;
+            shiftReportsData.forEach(r => {
+                html += `<tr>
+                    <td><strong>${r.shift || '-'}</strong></td>
+                    <td>${r.officerName || '-'}</td>
+                    <td>${r.batches || '0'}</td>
+                    <td>${(r.productionBags || 0).toLocaleString()}</td>
+                    <td>${r.feedProduced || '-'}</td>
+                    <td>${r.rawMaterialUsed || '-'}</td>
+                    <td>${r.machineIssues || '-'}</td>
+                    <td>${r.qualityRemarks || '-'}</td>
+                    <td>${r.generalRemarks || '-'}</td>
+                </tr>`;
+            });
+            html += `</tbody></table>`;
+        } else {
+            html += `<p style="font-style:italic;color:#666;">No main shift reports for this date.</p>`;
+        }
+        html += `</div>`;
+
         // 1. Raw Material
         html += `<div class="pdf-section"><h3>1. Raw Material Checks (Combined)</h3>`;
-        if (rmData.length > 0 && rmData.some(r => r.rows && r.rows.length > 0)) {
+        if (rmData.length > 0) {
             html += `<table class="pdf-table"><thead><tr>
-                <th>Shift</th><th>Officer</th><th>Vehicle No</th><th>Material</th><th>Supplier</th><th>Moisture %</th><th>Time</th><th>Status</th>
+                <th>Shift</th><th>Vehicle No</th><th>Location</th><th>Moisture %</th><th>Quality</th><th>Remarks</th>
             </tr></thead><tbody>`;
-            rmData.forEach(r => {
-                (r.rows || []).forEach(row => {
-                    html += `<tr>
-                        <td><strong>${r.shift || '-'}</strong></td>
-                        <td>${r.officerName || '-'}</td>
-                        <td>${row.vehicleNo || '-'}</td>
-                        <td>${row.material || '-'}</td>
-                        <td>${row.supplier || '-'}</td>
-                        <td>${row.moisture || '-'}</td>
-                        <td>${row.time || '-'}</td>
-                        <td>${row.status || '-'}</td>
-                    </tr>`;
-                });
+            rmData.forEach(row => {
+                html += `<tr>
+                    <td><strong>${row.shift || '-'}</strong></td>
+                    <td>${row.vehicle || '-'}</td>
+                    <td>${row.location || '-'}</td>
+                    <td>${row.moisture || '-'}</td>
+                    <td>${row.quality || '-'}</td>
+                    <td>${row.remarks || '-'}</td>
+                </tr>`;
             });
             html += `</tbody></table>`;
         } else {
@@ -62,21 +84,15 @@
 
         // 2. Performas
         html += `<div class="pdf-section"><h3>2. Performas (Combined)</h3>`;
-        if (performaData.length > 0 && performaData.some(r => r.rows && r.rows.length > 0)) {
+        if (performaData.length > 0) {
             html += `<table class="pdf-table"><thead><tr>
-                <th>Shift</th><th>Officer</th><th>Type</th><th>Material</th><th>Value</th><th>Remarks</th>
+                <th>Signature</th><th>Remarks</th>
             </tr></thead><tbody>`;
-            performaData.forEach(r => {
-                (r.rows || []).forEach(row => {
-                    html += `<tr>
-                        <td><strong>${r.shift || '-'}</strong></td>
-                        <td>${r.officerName || '-'}</td>
-                        <td>${row.type || '-'}</td>
-                        <td>${row.material || '-'}</td>
-                        <td>${row.value || '-'}</td>
-                        <td>${row.remarks || '-'}</td>
-                    </tr>`;
-                });
+            performaData.forEach(row => {
+                html += `<tr>
+                    <td>${row.sign || '-'}</td>
+                    <td>${row.remarks || '-'}</td>
+                </tr>`;
             });
             html += `</tbody></table>`;
         } else {
@@ -86,22 +102,16 @@
 
         // 3. Plant Report
         html += `<div class="pdf-section"><h3>3. Plant Report (Combined)</h3>`;
-        if (plantReportData.length > 0 && plantReportData.some(r => r.rows && r.rows.length > 0)) {
+        if (plantReportData.length > 0) {
             html += `<table class="pdf-table"><thead><tr>
-                <th>Shift</th><th>Officer</th><th>Line</th><th>Product</th><th>Output (Tons)</th><th>Downtime (hrs)</th><th>Reason</th>
+                <th>Shift</th><th>Officer</th><th>Operator</th>
             </tr></thead><tbody>`;
-            plantReportData.forEach(r => {
-                (r.rows || []).forEach(row => {
-                    html += `<tr>
-                        <td><strong>${r.shift || '-'}</strong></td>
-                        <td>${r.officerName || '-'}</td>
-                        <td>${row.line || '-'}</td>
-                        <td>${row.product || '-'}</td>
-                        <td>${row.output || '-'}</td>
-                        <td>${row.downtime || '-'}</td>
-                        <td>${row.reason || '-'}</td>
-                    </tr>`;
-                });
+            plantReportData.forEach(row => {
+                html += `<tr>
+                    <td><strong>${row.shift || '-'}</strong></td>
+                    <td>${row.shiftDetails?.off || '-'}</td>
+                    <td>${row.shiftDetails?.op || '-'}</td>
+                </tr>`;
             });
             html += `</tbody></table>`;
         } else {
@@ -111,21 +121,15 @@
 
         // 4. Quality Standards
         html += `<div class="pdf-section"><h3>4. Quality Standards (Combined)</h3>`;
-        if (qsReportData.length > 0 && qsReportData.some(r => r.rows && r.rows.length > 0)) {
+        if (qsReportData.length > 0) {
             html += `<table class="pdf-table"><thead><tr>
-                <th>Shift</th><th>Officer</th><th>Parameter</th><th>Standard</th><th>Actual</th><th>Status</th>
+                <th>Shift</th><th>Officer</th>
             </tr></thead><tbody>`;
-            qsReportData.forEach(r => {
-                (r.rows || []).forEach(row => {
-                    html += `<tr>
-                        <td><strong>${r.shift || '-'}</strong></td>
-                        <td>${r.officerName || '-'}</td>
-                        <td>${row.parameter || '-'}</td>
-                        <td>${row.standard || '-'}</td>
-                        <td>${row.actual || '-'}</td>
-                        <td>${row.status || '-'}</td>
-                    </tr>`;
-                });
+            qsReportData.forEach(row => {
+                html += `<tr>
+                    <td><strong>${row.shift || '-'}</strong></td>
+                    <td>${row.officer || '-'}</td>
+                </tr>`;
             });
             html += `</tbody></table>`;
         } else {
@@ -137,17 +141,16 @@
         html += `<div class="pdf-section"><h3>5. Silo Dumping (Combined)</h3>`;
         if (siloDumpData.length > 0 && siloDumpData.some(r => r.rows && r.rows.length > 0)) {
             html += `<table class="pdf-table"><thead><tr>
-                <th>Shift</th><th>Officer</th><th>Silo No</th><th>Material</th><th>Quantity (Tons)</th><th>Time</th>
+                <th>Shift</th><th>Officer</th><th>Silo</th><th>Material</th><th>Remarks</th>
             </tr></thead><tbody>`;
             siloDumpData.forEach(r => {
                 (r.rows || []).forEach(row => {
                     html += `<tr>
                         <td><strong>${r.shift || '-'}</strong></td>
-                        <td>${r.officerName || '-'}</td>
-                        <td>${row.siloNo || '-'}</td>
+                        <td>${r.officer || '-'}</td>
+                        <td>${row.silo || '-'}</td>
                         <td>${row.material || '-'}</td>
-                        <td>${row.qty || '-'}</td>
-                        <td>${row.time || '-'}</td>
+                        <td>${row.remarks || '-'}</td>
                     </tr>`;
                 });
             });
@@ -161,7 +164,7 @@
         html += `<div class="pdf-section"><h3>6. Silo Moisture (Combined)</h3>`;
         if (siloMoistData.length > 0 && siloMoistData.some(r => r.rows && r.rows.length > 0)) {
             html += `<table class="pdf-table"><thead><tr>
-                <th>Shift</th><th>Officer</th><th>Silo No</th><th>Moisture %</th><th>Time</th>
+                <th>Shift</th><th>Officer</th><th>Silo No</th><th>Material</th><th>Moisture %</th><th>Remarks</th>
             </tr></thead><tbody>`;
             
             let sum = 0, count = 0;
@@ -170,9 +173,10 @@
                     html += `<tr>
                         <td><strong>${r.shift || '-'}</strong></td>
                         <td>${r.officerName || '-'}</td>
-                        <td>${row.siloNo || '-'}</td>
+                        <td>${row.silo || '-'}</td>
+                        <td>${row.material || '-'}</td>
                         <td>${row.moisture || '-'}</td>
-                        <td>${row.time || '-'}</td>
+                        <td>${row.remarks || '-'}</td>
                     </tr>`;
                     const m = parseFloat(row.moisture);
                     if (!isNaN(m)) { sum += m; count++; }

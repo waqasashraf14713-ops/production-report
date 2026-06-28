@@ -133,6 +133,7 @@ const saveSd = () => {
     localStorage.setItem(LS_SD, JSON.stringify(sdData));
     renderSdTable();
     document.getElementById('silo-dump-modal').classList.remove('show');
+    if (window.updateAllSubreportBadges) window.updateAllSubreportBadges();
 };
 
 const loadSdToForm = (data) => {

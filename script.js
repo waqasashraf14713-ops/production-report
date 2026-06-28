@@ -1899,6 +1899,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             card.innerHTML = `
                 <div class="glass-silo-container" id="silo-glass-${silo.id}">
+                    <div class="silo-particles">
+                        <span class="silo-particle" style="left:15%;animation-delay:0s;"></span>
+                        <span class="silo-particle" style="left:35%;animation-delay:0.8s;"></span>
+                        <span class="silo-particle" style="left:55%;animation-delay:1.5s;"></span>
+                        <span class="silo-particle" style="left:75%;animation-delay:0.4s;"></span>
+                        <span class="silo-particle" style="left:85%;animation-delay:2s;"></span>
+                    </div>
                     <div class="glass-silo-body">
                         <div class="glass-silo-maize" style="height: ${silo.fillLevel}%"></div>
                         <div class="glass-silo-reflection"></div>
@@ -1914,7 +1921,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                     </div>
-                    <div style="position: absolute; top: 10px; right: 10px; z-index: 4; background: rgba(255,255,255,0.8); padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.8rem; color: var(--text-primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Fill: ${silo.fillLevel}%</div>
+                    <div style="position:absolute;top:10px;right:10px;z-index:10;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);padding:5px 12px;border-radius:20px;font-weight:700;font-size:0.75rem;color:#38bdf8;border:1px solid rgba(56,189,248,0.3);box-shadow:0 2px 10px rgba(0,0,0,0.3),0 0 15px rgba(56,189,248,0.1);letter-spacing:0.5px;">
+                        <span style="color:rgba(255,255,255,0.6);font-weight:500;">FILL</span> ${silo.fillLevel}%
+                    </div>
+                    <div style="position:absolute;top:10px;left:10px;z-index:10;background:${silo.fanStatus==='On'?'rgba(34,197,94,0.15)':'rgba(239,68,68,0.15)'};backdrop-filter:blur(8px);padding:5px 10px;border-radius:20px;font-weight:700;font-size:0.7rem;color:${silo.fanStatus==='On'?'#4ade80':'#f87171'};border:1px solid ${silo.fanStatus==='On'?'rgba(34,197,94,0.3)':'rgba(239,68,68,0.3)'};box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+                        ${silo.fanStatus==='On'?'⚡ FAN ON':'⏸ FAN OFF'}
+                    </div>
                 </div>
                 <div class="silo-card-content">
                     <div class="silo-header">
@@ -2934,6 +2946,36 @@ document.addEventListener('DOMContentLoaded', () => {
         el('sr-total-bags', totalBags.toLocaleString());
         el('sr-total-issues', totalIssues);
 
+        // Update completion badges for standalone reports
+        window.updateAllSubreportBadges = () => {
+            const updateBadge = (lsKey, elId) => {
+                const data = JSON.parse(localStorage.getItem(lsKey) || '[]');
+                const badge = document.getElementById(elId);
+                const badgeTop = document.getElementById(elId + '-top');
+                
+                const hasReport = data.some(d => d.date === currentSrFilterDate);
+                
+                if (badge) {
+                    badge.className = hasReport ? 'sr-submitted-badge' : 'sr-draft-badge';
+                    badge.style.display = 'inline-block';
+                    badge.innerHTML = hasReport ? '✅ Filled' : '⌛ Pending';
+                }
+                
+                if (badgeTop) {
+                    badgeTop.className = hasReport ? 'sr-submitted-badge' : 'sr-draft-badge';
+                    badgeTop.style.display = 'inline-block';
+                    badgeTop.innerHTML = hasReport ? '✅ Filled' : '⌛ Pending';
+                }
+            };
+            updateBadge('fm_standalone_rm_checks', 'badge-rm');
+            updateBadge('fm_performas', 'badge-performa');
+            updateBadge('fm_plant_report', 'badge-plant');
+            updateBadge('fm_qs_report', 'badge-qs');
+            updateBadge('fm_silo_dump', 'badge-silo');
+            updateBadge('fm_silo_moisture', 'badge-silo-moist');
+        };
+        window.updateAllSubreportBadges();
+
         if (filtered.length === 0) {
             container.innerHTML = `
                 <div style="text-align:center;padding:3rem 1rem;color:var(--text-secondary);opacity:0.65;">
@@ -3020,33 +3062,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             container.appendChild(card);
         });
-
-        // Update completion badges for standalone reports
-        const updateBadge = (lsKey, elId) => {
-            const data = JSON.parse(localStorage.getItem(lsKey) || '[]');
-            const badge = document.getElementById(elId);
-            const badgeTop = document.getElementById(elId + '-top');
-            
-            const hasReport = data.some(d => d.date === currentSrFilterDate);
-            
-            if (badge) {
-                badge.className = hasReport ? 'sr-submitted-badge' : 'sr-draft-badge';
-                badge.style.display = 'inline-block';
-                badge.innerHTML = hasReport ? '✅ Completed' : '⌛ Pending';
-            }
-            
-            if (badgeTop) {
-                badgeTop.className = hasReport ? 'sr-submitted-badge' : 'sr-draft-badge';
-                badgeTop.style.display = 'inline-block';
-                badgeTop.innerHTML = hasReport ? '✅ Completed' : '⌛ Pending';
-            }
-        };
-        updateBadge('fm_standalone_rm_checks', 'badge-rm');
-        updateBadge('fm_performas', 'badge-performa');
-        updateBadge('fm_plant_report', 'badge-plant');
-        updateBadge('fm_qs_report', 'badge-qs');
-        updateBadge('fm_silo_dump', 'badge-silo');
-        updateBadge('fm_silo_moisture', 'badge-silo-moist');
 
         if (typeof window.updateDailySiloMoistureSummary === 'function') {
             window.updateDailySiloMoistureSummary(currentSrFilterDate);
@@ -3203,6 +3218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveStandaloneRmChecks();
         renderStandaloneRmChecks();
         closeStandaloneRmModal();
+        if (window.updateAllSubreportBadges) window.updateAllSubreportBadges();
     };
 
     const initStandaloneRmEvents = () => {
@@ -3384,6 +3400,7 @@ document.addEventListener('DOMContentLoaded', () => {
         savePerformas();
         renderPerformaTable();
         closePerformaModal();
+        if (window.updateAllSubreportBadges) window.updateAllSubreportBadges();
     };
 
     const initPerformaEvents = () => {
