@@ -69,18 +69,43 @@
                 </header>
 
         <div id="view-dashboard" class="view-section">
-            <section class="summary-cards">
-                <div class="summary-card">
-                    <h3>Total Active Silos</h3>
-                    <div class="value" id="active-silos-count">0</div>
+
+            <!-- Quick Access Dashboard Cards -->
+            <section class="dash-quick-grid">
+                <div class="dash-quick-card" onclick="document.getElementById('nav-silo-status').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#6366f1,#818cf8);">🏭</div>
+                    <div class="dash-quick-label">Silo Status</div>
+                    <div class="dash-quick-desc">Monitor all silos live</div>
                 </div>
-                <div class="summary-card">
-                    <h3>Avg. Moisture Level</h3>
-                    <div class="value" id="avg-moisture">0%</div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-daily-report').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">📋</div>
+                    <div class="dash-quick-label">Daily Report</div>
+                    <div class="dash-quick-desc">Daily silo record</div>
                 </div>
-                <div class="summary-card">
-                    <h3>Total Run Time (Today)</h3>
-                    <div class="value" id="total-runtime">0h</div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-maize-moisture').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#10b981,#34d399);">🌽</div>
+                    <div class="dash-quick-label">Maize Moisture</div>
+                    <div class="dash-quick-desc">Daily moisture log</div>
+                </div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-daily-less-excess').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#ef4444,#f87171);">⚖️</div>
+                    <div class="dash-quick-label">Less / Excess</div>
+                    <div class="dash-quick-desc">Daily less/excess report</div>
+                </div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-five-s').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#14b8a6,#5eead4);">✅</div>
+                    <div class="dash-quick-label">5S & Checklist</div>
+                    <div class="dash-quick-desc">5S audit & daily checks</div>
+                </div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-shift-report').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">📝</div>
+                    <div class="dash-quick-label">Shift Report</div>
+                    <div class="dash-quick-desc">Production officer reports</div>
+                </div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-batching-audit').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#ec4899,#f472b6);">💊</div>
+                    <div class="dash-quick-label">Batching Audit</div>
+                    <div class="dash-quick-desc">Batch audit records</div>
                 </div>
             </section>
         </div>
@@ -148,7 +173,9 @@
             <section class="table-container">
                 <div class="table-header">
                     <h2>Daily Less / Excess Report</h2>
-                    <div class="header-actions" style="display:flex;gap:1rem;">
+                    <div class="header-actions" style="display:flex;gap:1rem;align-items:center;">
+                        <input type="date" id="le-filter-date" style="padding:0.45rem;border-radius:6px;border:1px solid var(--card-border);outline:none;background:var(--card-bg);color:var(--text-primary);font-size:0.9rem;font-weight:500;">
+                        <button class="btn btn-primary" id="btn-generate-le-pdf" style="background:#8b5cf6;border-color:#8b5cf6;">📄 Generate PDF</button>
                         <button class="btn btn-secondary" id="btn-add-less-excess-log">➕ Start New Shift</button>
                         <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
                     </div>
@@ -1638,6 +1665,7 @@ order by
 
     <!-- Hidden container for complete shift PDF print layout -->
     <div id="shift-report-print-container"></div>
+    <div id="less-excess-print-container"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammerjs.min.js"></script>
@@ -1650,5 +1678,6 @@ order by
     <script src="silo_moisture.js"></script>
     <script src="script.js"></script>
     <script src="shift_report_pdf.js"></script>
+    <script src="less_excess_pdf.js"></script>
 </body>
 </html>

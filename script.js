@@ -674,6 +674,8 @@ document.addEventListener('DOMContentLoaded', () => {
             let expectedCap = 5000;
             if (silo.id === 3 || silo.id === 6) expectedCap = 500;
             else if (silo.id >= 9 && silo.id <= 12) expectedCap = 2500;
+            else if (silo.id >= 17 && silo.id <= 19) expectedCap = 400;
+            else if (silo.id >= 20 && silo.id <= 21) expectedCap = 250;
 
             if (silo.capacity !== expectedCap) {
                 silo.capacity = expectedCap;
@@ -710,15 +712,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (dbSilos && dbSilos.length > 0) {
                     silosData = dbSilos.map(mapSiloFromDb);
-                    if (silosData.length < 16) {
-                        const newSilos = generateSiloData(16).slice(silosData.length);
+                    if (silosData.length < 21) {
+                        const newSilos = generateSiloData(21).slice(silosData.length);
                         const dbRows = newSilos.map(mapSiloToDb);
                         await sbClient.from('silos').insert(dbRows);
                         silosData = [...silosData, ...newSilos];
                     }
                 } else {
                     // Seed default silos
-                    const defaultSilos = generateSiloData(16);
+                    const defaultSilos = generateSiloData(21);
                     const dbRows = defaultSilos.map(mapSiloToDb);
                     await sbClient.from('silos').insert(dbRows);
                     silosData = defaultSilos;
@@ -827,11 +829,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ensureDefaultMaterials();
         silosData = JSON.parse(localStorage.getItem(LS_SILOS));
         if (!silosData) {
-            silosData = generateSiloData(16);
+            silosData = generateSiloData(21);
             localStorage.setItem(LS_SILOS, JSON.stringify(silosData));
             localStorage.setItem(LS_MATERIALS, JSON.stringify(availableMaterials));
-        } else if (silosData.length < 16) {
-            const newSilos = generateSiloData(16);
+        } else if (silosData.length < 21) {
+            const newSilos = generateSiloData(21);
             silosData = [...silosData, ...newSilos.slice(silosData.length)];
             localStorage.setItem(LS_SILOS, JSON.stringify(silosData));
         }
@@ -958,7 +960,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 availableMaterials = [];
                 ensureDefaultMaterials();
-                silosData = generateSiloData(16);
+                silosData = generateSiloData(21);
                 fiveSLogs = [];
                 dailyChecklists = [];
                 shiftReports = [];
@@ -980,7 +982,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem(LS_BATCHING_AUDITS);
             availableMaterials = [];
             ensureDefaultMaterials();
-            silosData = generateSiloData(16);
+            silosData = generateSiloData(21);
             fiveSLogs = [];
             dailyChecklists = [];
             shiftReports = [];
@@ -1056,6 +1058,13 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('✓ Started new shift');
     });
 
+    const leFilterDateInput = document.getElementById('le-filter-date');
+    if (leFilterDateInput) {
+        leFilterDateInput.addEventListener('change', () => {
+            renderLessExcessTable();
+        });
+    }
+
     const shareWhatsAppBtn = document.getElementById('btn-share-whatsapp');
     if (shareWhatsAppBtn) {
         shareWhatsAppBtn.addEventListener('click', () => {
@@ -1128,8 +1137,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const fanStatus     = isRunning ? 'On' : 'Off';
             const material      = availableMaterials[Math.floor(Math.random() * availableMaterials.length)];
             let capacity = 5000;
+            let name = `Silo ${i.toString().padStart(2, '0')}`;
+            
             if (i === 3 || i === 6) capacity = 500;
             else if (i >= 9 && i <= 12) capacity = 2500;
+            else if (i >= 17 && i <= 19) {
+                capacity = 400;
+                name = `Wet Bin ${(i - 16).toString().padStart(2, '0')}`;
+            } else if (i >= 20 && i <= 21) {
+                capacity = 250;
+                name = `Cooling Bin ${(i - 19).toString().padStart(2, '0')}`;
+            }
             
             const fillLevel     = Math.floor(10 + Math.random() * 80);
             const currentFillTons = Math.round((fillLevel / 100) * capacity);
@@ -1140,7 +1158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             silos.push({
                 id: i,
-                name:             `Silo ${i.toString().padStart(2, '0')}`,
+                name:             name,
                 status:           isRunning ? 'Running' : 'Stopped',
                 runTime:          isRunning ? runtimeHours : 0,
                 currentMoisture,
@@ -1173,6 +1191,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             updateSbStatusUI();
         }
+
+
 
         // Fetch initial data
         await loadAllData();
@@ -1696,7 +1716,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container) return;
         container.innerHTML = '';
 
-        const reversedLogs = [...lessExcessLogs].reverse();
+        // Filter by date if a date filter is selected
+        const filterInput = document.getElementById('le-filter-date');
+        let selectedDate = filterInput ? filterInput.value : '';
+        
+        let filteredLogs = [...lessExcessLogs];
+        if (selectedDate) {
+            // Convert YYYY-MM-DD to d-MMM
+            const parts = selectedDate.split('-');
+            if (parts.length === 3) {
+                const day = parseInt(parts[2], 10);
+                const monthIndex = parseInt(parts[1], 10) - 1;
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                if (monthIndex >= 0 && monthIndex < 12) {
+                    const formattedDate = day + '-' + months[monthIndex];
+                    filteredLogs = filteredLogs.filter(r => r.date === formattedDate);
+                }
+            }
+        }
+
+        const reversedLogs = filteredLogs.reverse();
         let currentGroupKey = null;
         let currentTableBody = null;
 
@@ -1870,156 +1909,166 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Render Silo Cards ────────────────────────────────────────────────────
     const renderSilos = () => {
+        // Fail-safe: ensure we have 21 silos
+        if (!silosData || silosData.length < 21) {
+            const newSilos = generateSiloData(21);
+            if (!silosData) {
+                silosData = newSilos;
+            } else {
+                silosData = [...silosData, ...newSilos.slice(silosData.length)];
+            }
+            localStorage.setItem(LS_SILOS, JSON.stringify(silosData));
+        }
+
         const grid = document.getElementById('silo-grid');
         grid.innerHTML = '';
 
-        silosData.forEach(silo => {
-            if (silo.id === 1) {
-                const header = document.createElement('div');
-                header.style.gridColumn = '1 / -1';
-                header.innerHTML = `<h2 style="color: var(--text-primary); padding: 1rem 0 0.5rem; border-bottom: 2px solid var(--accent-color); font-size: 1.8rem; margin-top: -1rem;">Main Silos</h2>`;
-                grid.appendChild(header);
-            } else if (silo.id === 9) {
-                const header = document.createElement('div');
-                header.style.gridColumn = '1 / -1';
-                header.innerHTML = `<h2 style="color: var(--text-primary); padding: 1rem 0 0.5rem; border-bottom: 2px solid var(--accent-color); font-size: 1.8rem; margin-top: 1rem;">Dryer Side Silos</h2>`;
-                grid.appendChild(header);
-            } else if (silo.id === 13) {
-                const header = document.createElement('div');
-                header.style.gridColumn = '1 / -1';
-                header.innerHTML = `<h2 style="color: var(--text-primary); padding: 1rem 0 0.5rem; border-bottom: 2px solid var(--accent-color); font-size: 1.8rem; margin-top: 1rem;">Solvent Silos</h2>`;
-                grid.appendChild(header);
-            }
+        const groups = [
+            { name: 'Concrete Silos', ids: [1, 2, 3, 4, 5, 6, 7, 8] },
+            { name: 'Steel Silos', ids: [9, 10, 11, 12] },
+            { name: 'Wet Bins', ids: [17, 18, 19] },
+            { name: 'Cooling Bins', ids: [20, 21] },
+            { name: 'Solvent Silos', ids: [13, 14, 15, 16] }
+        ];
 
-            const mc  = getMoistureColor(silo.currentMoisture);
-            const mPct = Math.min((silo.currentMoisture / 20) * 100, 100);
+        groups.forEach(group => {
+            const header = document.createElement('div');
+            header.style.gridColumn = '1 / -1';
+            header.innerHTML = `<h2 style="color: var(--text-primary); padding: 1rem 0 0.5rem; border-bottom: 2px solid var(--accent-color); font-size: 1.8rem; margin-top: ${group.name === 'Concrete Silos' ? '-1rem' : '1.5rem'};">${group.name}</h2>`;
+            grid.appendChild(header);
 
-            const card = document.createElement('div');
-            card.className = 'silo-card';
+            group.ids.forEach(id => {
+                const silo = silosData.find(s => s.id === id);
+                if (!silo) return;
 
-            card.innerHTML = `
-                <div class="glass-silo-container" id="silo-glass-${silo.id}">
-                    <div class="silo-particles">
-                        <span class="silo-particle" style="left:15%;animation-delay:0s;"></span>
-                        <span class="silo-particle" style="left:35%;animation-delay:0.8s;"></span>
-                        <span class="silo-particle" style="left:55%;animation-delay:1.5s;"></span>
-                        <span class="silo-particle" style="left:75%;animation-delay:0.4s;"></span>
-                        <span class="silo-particle" style="left:85%;animation-delay:2s;"></span>
+                const mc  = getMoistureColor(silo.currentMoisture);
+                const mPct = Math.min((silo.currentMoisture / 20) * 100, 100);
+
+                const card = document.createElement('div');
+                card.className = 'silo-card';
+
+                card.innerHTML = `
+                    <div class="glass-silo-container" id="silo-glass-${silo.id}">
+                        <div class="silo-particles">
+                            <span class="silo-particle" style="left:15%;animation-delay:0s;"></span>
+                            <span class="silo-particle" style="left:35%;animation-delay:0.8s;"></span>
+                            <span class="silo-particle" style="left:55%;animation-delay:1.5s;"></span>
+                            <span class="silo-particle" style="left:75%;animation-delay:0.4s;"></span>
+                            <span class="silo-particle" style="left:85%;animation-delay:2s;"></span>
+                        </div>
+                        <div class="glass-silo-body">
+                            <div class="glass-silo-maize" style="height: ${silo.fillLevel}%"></div>
+                            <div class="glass-silo-reflection"></div>
+                        </div>
+                        <div class="glass-silo-legs-container">
+                            <div class="glass-silo-leg left"></div>
+                            <div class="glass-silo-leg right"></div>
+                            <div class="glass-silo-fan">
+                                <div class="fan-blades ${silo.fanStatus === 'On' ? 'spin' : 'fan-off'}">
+                                    <div class="fan-blade h"></div>
+                                    <div class="fan-blade v"></div>
+                                    <div class="fan-center"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="position:absolute;top:10px;right:10px;z-index:10;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);padding:5px 12px;border-radius:20px;font-weight:700;font-size:0.75rem;color:#38bdf8;border:1px solid rgba(56,189,248,0.3);box-shadow:0 2px 10px rgba(0,0,0,0.3),0 0 15px rgba(56,189,248,0.1);letter-spacing:0.5px;">
+                            <span style="color:rgba(255,255,255,0.6);font-weight:500;">FILL</span> ${silo.fillLevel}%
+                        </div>
+                        <div style="position:absolute;top:10px;left:10px;z-index:10;background:${silo.fanStatus==='On'?'rgba(34,197,94,0.15)':'rgba(239,68,68,0.15)'};backdrop-filter:blur(8px);padding:5px 10px;border-radius:20px;font-weight:700;font-size:0.7rem;color:${silo.fanStatus==='On'?'#4ade80':'#f87171'};border:1px solid ${silo.fanStatus==='On'?'rgba(34,197,94,0.3)':'rgba(239,68,68,0.3)'};box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+                            ${silo.fanStatus==='On'?'⚡ FAN ON':'⏸ FAN OFF'}
+                        </div>
                     </div>
-                    <div class="glass-silo-body">
-                        <div class="glass-silo-maize" style="height: ${silo.fillLevel}%"></div>
-                        <div class="glass-silo-reflection"></div>
-                    </div>
-                    <div class="glass-silo-legs-container">
-                        <div class="glass-silo-leg left"></div>
-                        <div class="glass-silo-leg right"></div>
-                        <div class="glass-silo-fan">
-                            <div class="fan-blades ${silo.fanStatus === 'On' ? 'spin' : 'fan-off'}">
-                                <div class="fan-blade h"></div>
-                                <div class="fan-blade v"></div>
-                                <div class="fan-center"></div>
+                    <div class="silo-card-content">
+                        <div class="silo-header">
+                            <div class="silo-title" id="name-${silo.id}">${silo.name}</div>
+                            <div class="status-indicator status-${silo.status.toLowerCase()}"
+                                 id="status-${silo.id}">
+                                <span class="status-dot"></span>
+                                <span class="status-text">${silo.status}</span>
+                            </div>
+                        </div>
+
+                        <!-- Material -->
+                        <div class="metric">
+                            <div class="metric-label">
+                                <span>Material Type</span>
+                                <span class="metric-value">${silo.materialType}</span>
+                            </div>
+                        </div>
+
+                        <!-- Capacity -->
+                        <div class="metric">
+                            <div class="metric-label">
+                                <span>Capacity</span>
+                                <span class="metric-value" id="cap-${silo.id}">${silo.capacity} Tons</span>
+                            </div>
+                        </div>
+
+                        <!-- Fill -->
+                        <div class="metric">
+                            <div class="metric-label">
+                                <span>Current Fill</span>
+                                <span class="metric-value" id="fill-${silo.id}">${silo.currentFillTons} Tons (${silo.fillLevel}%)</span>
+                            </div>
+                        </div>
+
+                        <!-- Fan -->
+                        <div class="metric">
+                            <div class="metric-label">
+                                <span>Fan Status</span>
+                                <span class="metric-value" id="fan-${silo.id}"
+                                      style="color:${silo.fanStatus==='On'?'var(--success-color)':'var(--text-secondary)'}">
+                                    ${silo.fanStatus}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Filling Start -->
+                        <div class="metric">
+                            <div class="metric-label">
+                                <span>Filling Start</span>
+                                <span class="metric-value" id="fstart-${silo.id}" style="font-size:0.8rem;">${silo.fillingStart}</span>
+                            </div>
+                        </div>
+
+                        <!-- Filling End -->
+                        <div class="metric">
+                            <div class="metric-label">
+                                <span>Filling End</span>
+                                <span class="metric-value" id="fend-${silo.id}" style="font-size:0.8rem;">${silo.fillingEnd}</span>
+                            </div>
+                        </div>
+
+                        <!-- Purchase Moisture -->
+                        <div class="metric">
+                            <div class="metric-label">
+                                <span>Purchase Moisture</span>
+                                <span class="metric-value" id="pmoist-${silo.id}">${silo.purchaseMoisture}%</span>
+                            </div>
+                        </div>
+
+                        <!-- Current Moisture -->
+                        <div class="metric">
+                            <div class="metric-label">
+                                <span>Current Moisture</span>
+                                <span class="metric-value" id="cmoist-${silo.id}" style="color:${mc}">${silo.currentMoisture}%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="mbar-${silo.id}" style="width:${mPct}%;background-color:${mc};"></div>
+                            </div>
+                        </div>
+
+                        <!-- Run Time -->
+                        <div class="metric" style="margin-top:1rem;border-top:1px solid var(--card-border);padding-top:0.5rem;">
+                            <div class="metric-label">
+                                <span>Run Time (Today)</span>
+                                <span class="metric-value" id="runtime-${silo.id}">${silo.runTime} Hours</span>
                             </div>
                         </div>
                     </div>
-                    <div style="position:absolute;top:10px;right:10px;z-index:10;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);padding:5px 12px;border-radius:20px;font-weight:700;font-size:0.75rem;color:#38bdf8;border:1px solid rgba(56,189,248,0.3);box-shadow:0 2px 10px rgba(0,0,0,0.3),0 0 15px rgba(56,189,248,0.1);letter-spacing:0.5px;">
-                        <span style="color:rgba(255,255,255,0.6);font-weight:500;">FILL</span> ${silo.fillLevel}%
-                    </div>
-                    <div style="position:absolute;top:10px;left:10px;z-index:10;background:${silo.fanStatus==='On'?'rgba(34,197,94,0.15)':'rgba(239,68,68,0.15)'};backdrop-filter:blur(8px);padding:5px 10px;border-radius:20px;font-weight:700;font-size:0.7rem;color:${silo.fanStatus==='On'?'#4ade80':'#f87171'};border:1px solid ${silo.fanStatus==='On'?'rgba(34,197,94,0.3)':'rgba(239,68,68,0.3)'};box-shadow:0 2px 8px rgba(0,0,0,0.3);">
-                        ${silo.fanStatus==='On'?'⚡ FAN ON':'⏸ FAN OFF'}
-                    </div>
-                </div>
-                <div class="silo-card-content">
-                    <div class="silo-header">
-                        <div class="silo-title" id="name-${silo.id}">${silo.name}</div>
-                        <div class="status-indicator status-${silo.status.toLowerCase()}"
-                             id="status-${silo.id}">
-                            <span class="status-dot"></span>
-                            <span class="status-text">${silo.status}</span>
-                        </div>
-                    </div>
-
-                    <!-- Material -->
-                    <div class="metric">
-                        <div class="metric-label">
-                            <span>Material Type</span>
-                            <span class="metric-value">${silo.materialType}</span>
-                        </div>
-                    </div>
-
-                    <!-- Capacity -->
-                    <div class="metric">
-                        <div class="metric-label">
-                            <span>Capacity</span>
-                            <span class="metric-value" id="cap-${silo.id}">${silo.capacity} Tons</span>
-                        </div>
-                    </div>
-
-                    <!-- Fill -->
-                    <div class="metric">
-                        <div class="metric-label">
-                            <span>Current Fill</span>
-                            <span class="metric-value" id="fill-${silo.id}">${silo.currentFillTons} Tons (${silo.fillLevel}%)</span>
-                        </div>
-                    </div>
-
-                    <!-- Fan -->
-                    <div class="metric">
-                        <div class="metric-label">
-                            <span>Fan Status</span>
-                            <span class="metric-value" id="fan-${silo.id}"
-                                  style="color:${silo.fanStatus==='On'?'var(--success-color)':'var(--text-secondary)'}">
-                                ${silo.fanStatus}
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Filling Start -->
-                    <div class="metric">
-                        <div class="metric-label">
-                            <span>Filling Start</span>
-                            <span class="metric-value" id="fstart-${silo.id}" style="font-size:0.8rem;">${silo.fillingStart}</span>
-                        </div>
-                    </div>
-
-                    <!-- Filling End -->
-                    <div class="metric">
-                        <div class="metric-label">
-                            <span>Filling End</span>
-                            <span class="metric-value" id="fend-${silo.id}" style="font-size:0.8rem;">${silo.fillingEnd}</span>
-                        </div>
-                    </div>
-
-                    <!-- Purchase Moisture -->
-                    <div class="metric">
-                        <div class="metric-label">
-                            <span>Purchase Moisture</span>
-                            <span class="metric-value" id="pmoist-${silo.id}">${silo.purchaseMoisture}%</span>
-                        </div>
-                    </div>
-
-                    <!-- Current Moisture -->
-                    <div class="metric">
-                        <div class="metric-label">
-                            <span>Current Moisture</span>
-                            <span class="metric-value" id="cmoist-${silo.id}" style="color:${mc}">${silo.currentMoisture}%</span>
-                        </div>
-                        <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" id="mbar-${silo.id}" style="width:${mPct}%;background-color:${mc};"></div>
-                        </div>
-                    </div>
-
-                    <!-- Run Time -->
-                    <div class="metric" style="margin-top:1rem;border-top:1px solid var(--card-border);padding-top:0.5rem;">
-                        <div class="metric-label">
-                            <span>Run Time (Today)</span>
-                            <span class="metric-value" id="runtime-${silo.id}">${silo.runTime} Hours</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            grid.appendChild(card);
-
-            // Read-only in this view. Data is editable in the Daily Report table.
+                `;
+                grid.appendChild(card);
+            });
         });
 
         renderSummary();

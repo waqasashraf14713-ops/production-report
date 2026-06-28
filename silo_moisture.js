@@ -8,9 +8,19 @@
     const num = (id, w = '100%') => `<input type="number" step="any" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;">`;
     const btn = (icon, color) => `<button class="btn" style="background:transparent;color:${color};font-size:1.2rem;padding:0;box-shadow:none;">${icon}</button>`;
     
+    const getSiloOptionList = () => {
+        const list = [];
+        for (let i = 1; i <= 8; i++) list.push(`Silo ${i.toString().padStart(2, '0')}`);
+        for (let i = 9; i <= 12; i++) list.push(`Silo ${i.toString().padStart(2, '0')}`);
+        for (let i = 1; i <= 3; i++) list.push(`Wet Bin ${i.toString().padStart(2, '0')}`);
+        for (let i = 1; i <= 2; i++) list.push(`Cooling Bin ${i.toString().padStart(2, '0')}`);
+        for (let i = 13; i <= 16; i++) list.push(`Silo ${i.toString().padStart(2, '0')}`);
+        return list;
+    };
+    
     const siloSel = (id) => `<select id="${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;background:var(--card-bg);color:var(--text-primary);">
         <option value="">Select Silo</option>
-        ${[1, 2, 3, 4, 5, 6, 7, 8].map(n => `<option value="Silo ${n}">Silo ${n}</option>`).join('')}
+        ${getSiloOptionList().map(name => `<option value="${name}">${name}</option>`).join('')}
     </select>`;
 
     const matInp = (id) => `
