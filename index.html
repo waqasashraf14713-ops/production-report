@@ -564,7 +564,7 @@
                     <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;display:flex;justify-content:space-between;align-items:center;width:100%;">
                         <h2 style="display:flex;align-items:center;gap:0.75rem;margin:0;">⚖️ Batching Scale Records <span id="badge-batching-scale" class="sr-draft-badge" style="display:none;"></span></h2>
                         <div class="header-actions" style="display:flex;gap:1rem;align-items:center;">
-                            <button class="btn btn-secondary" id="btn-add-batching-scale">➕ Add Batching Scale</button>
+                            <button class="btn btn-secondary" id="btn-add-batching-scale" onclick="document.getElementById('batching-scale-modal').classList.add('show'); document.getElementById('batching-modal-date').value=new Date().toISOString().split('T')[0];">➕ Add Batching Scale</button>
                             <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
                         </div>
                     </div>
@@ -1737,7 +1737,7 @@ order by
         <div class="modal-card" style="max-width:900px;width:95%;background:#ffffff;">
             <div class="modal-header">
                 <h2 id="batching-scale-title">New Calibration Checking Record</h2>
-                <button id="batching-scale-close" class="modal-close-btn">&times;</button>
+                <button id="batching-scale-close" class="modal-close-btn" onclick="document.getElementById('batching-scale-modal').classList.remove('show')">&times;</button>
             </div>
             <div class="modal-body" style="padding:1.5rem; max-height:80vh; overflow-y:auto;">
                 <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
@@ -1796,7 +1796,7 @@ order by
                     <textarea id="batching-modal-remarks" rows="3" placeholder="Any calibration notes..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);resize:vertical;"></textarea>
                 </div>
                 <div style="display:flex;justify-content:flex-end;gap:1rem;border-top:1px solid var(--card-border);padding-top:1rem;">
-                    <button class="btn btn-secondary" id="btn-cancel-batching-scale" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-secondary" id="btn-cancel-batching-scale" style="width:auto;padding:0.5rem 1.5rem;" onclick="document.getElementById('batching-scale-modal').classList.remove('show')">Cancel</button>
                     <button class="btn btn-primary" id="btn-save-batching-scale" style="width:auto;padding:0.5rem 2rem;">💾 Save Record</button>
                 </div>
             </div>
@@ -1812,14 +1812,14 @@ order by
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
-    <script src="env.js?v=3"></script>
-    <script src="silo_dump.js?v=3"></script>
-    <script src="quality_standards.js?v=3"></script>
-    <script src="plant_report.js?v=3"></script>
-    <script src="silo_moisture.js?v=3"></script>
-    <script src="batching_scale.js?v=3"></script>
-    <script src="script.js?v=3"></script>
-    <script src="shift_report_pdf.js?v=3"></script>
-    <script src="less_excess_pdf.js?v=3"></script>
+    <script src="env.js?v=4"></script>
+    <script src="silo_dump.js?v=4"></script>
+    <script src="quality_standards.js?v=4"></script>
+    <script src="plant_report.js?v=4"></script>
+    <script src="silo_moisture.js?v=4"></script>
+    <script src="batching_scale.js?v=4"></script>
+    <script src="script.js?v=4"></script>
+    <script src="shift_report_pdf.js?v=4"></script>
+    <script src="less_excess_pdf.js?v=4"></script>
 </body>
 </html>
