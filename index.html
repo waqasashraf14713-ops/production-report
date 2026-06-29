@@ -193,6 +193,73 @@
         </div>
 
         <div id="view-maize-moisture" class="view-section" style="display: none;">
+            <div style="padding: 1.5rem 1.5rem 0 1.5rem;">
+                <!-- Daily Silo Moisture Summary -->
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:2rem;">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); border-bottom: 2px solid var(--card-border); padding-bottom: 0.5rem; font-size:1.1rem;margin-top:0;">📊 Daily Silo Moisture Summary <span style="font-size:0.85rem;color:var(--text-secondary);font-weight:normal;">(Across all shifts for selected date)</span></h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:2rem; align-items:center;">
+                        
+                        <div style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--card-border); min-width: 200px;">
+                            <span style="font-size:0.9rem; color:var(--text-secondary);">Actual Daily Average:</span>
+                            <span id="dsms-actual" style="font-size:1.5rem; font-weight:bold; color:var(--text-primary);">-- %</span>
+                            <span id="dsms-count" style="font-size:0.75rem; color:var(--text-secondary);">Based on 0 readings</span>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--card-border); min-width: 200px;">
+                            <label for="dsms-formula" style="font-size:0.9rem; color:var(--text-secondary);">Formula Moisture:</label>
+                            <div style="display:flex; gap:0.5rem; align-items:center;">
+                                <input type="number" step="any" id="dsms-formula" placeholder="Enter %" style="width:100px; border-radius:4px; border:1px solid var(--card-border); padding:0.4rem; outline:none; background:var(--card-bg); color:var(--text-primary); font-size:1.1rem; font-weight:bold;">
+                                <button class="btn btn-secondary btn-sm" id="btn-save-dsms-formula" style="padding:0.3rem 0.6rem;">Save</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--card-border); min-width: 200px; flex: 1;">
+                            <span style="font-size:0.9rem; color:var(--text-secondary);">Comparison:</span>
+                            <span id="dsms-comparison" style="font-size:1.1rem; font-weight:bold; color:var(--text-secondary);">No data to compare</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Gauge Chart -->
+                <div id="dsms-gauge-card" style="display:none; background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:1.5rem; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom:2rem;">
+                    <h3 style="margin:0 0 0.75rem 0; font-size:1rem; color:var(--text-primary); text-align:center;">🎯 Moisture Difference Gauge</h3>
+                    <div style="display:flex; justify-content:center; align-items:center;">
+                        <canvas id="dsms-gauge-canvas" width="320" height="200" style="max-width:100%;"></canvas>
+                    </div>
+                    <p id="dsms-gauge-label" style="text-align:center; margin:0.5rem 0 0 0; font-size:0.85rem; color:var(--text-secondary);">Waiting for data…</p>
+                </div>
+
+                <!-- Red Alarm Banner -->
+                <div id="dsms-alarm" style="display:none; margin-top:1rem; background:#ef4444; color:#fff; border-radius:8px; padding:0.75rem 1rem; font-weight:700; font-size:1rem; align-items:center; gap:0.75rem; box-shadow: 0 0 18px rgba(239,68,68,0.7);"></div>
+
+                <!-- Trend Chart -->
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:2rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                        <span style="font-size:0.95rem; font-weight:600; color:var(--text-primary);">&#128200; Moisture Difference Trend <span style="font-size:0.8rem; font-weight:400; color:var(--text-secondary);">(Last 7 days visible &middot; scroll/pinch to zoom &middot; drag to pan)</span></span>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button id="btn-chart-reset" class="btn btn-secondary" style="padding:0.25rem 0.6rem; font-size:0.8rem;">&#8634; Reset Zoom</button>
+                            <button id="btn-chart-fullscreen" class="btn btn-primary" style="padding:0.25rem 0.6rem; font-size:0.8rem;">&#x26F6; Full Screen</button>
+                        </div>
+                    </div>
+                    <div style="position:relative; height:240px;">
+                        <canvas id="silo-moist-trend-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Fullscreen Chart Modal -->
+                <div id="chart-fullscreen-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999; padding:1.5rem; box-sizing:border-box;">
+                    <div style="background:var(--card-bg); border-radius:16px; padding:1.5rem; height:100%; display:flex; flex-direction:column; gap:1rem; box-sizing:border-box;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="margin:0; color:var(--text-primary);">&#128200; Silo Moisture Difference Trend &mdash; All Dates (scroll/pinch to zoom)</h3>
+                            <button id="btn-chart-fullscreen-close" class="btn btn-secondary" style="padding:0.35rem 0.8rem;">&#10005; Close</button>
+                        </div>
+                        <div style="position:relative; flex:1; min-height:0;">
+                            <canvas id="silo-moist-trend-chart-full"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <section class="table-container">
                 <div class="table-header">
                     <h2>Daily Maize Moisture Log</h2>
@@ -421,72 +488,6 @@
                             </div>
                         </div>
 
-                    </div>
-                </div>
-
-                <!-- Daily Silo Moisture Summary -->
-                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:2rem;">
-                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); border-bottom: 2px solid var(--card-border); padding-bottom: 0.5rem; font-size:1.1rem;">📊 Daily Silo Moisture Summary <span style="font-size:0.85rem;color:var(--text-secondary);font-weight:normal;">(Across all shifts for selected date)</span></h3>
-                    <div style="display:flex; flex-wrap:wrap; gap:2rem; align-items:center;">
-                        
-                        <div style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--card-border); min-width: 200px;">
-                            <span style="font-size:0.9rem; color:var(--text-secondary);">Actual Daily Average:</span>
-                            <span id="dsms-actual" style="font-size:1.5rem; font-weight:bold; color:var(--text-primary);">-- %</span>
-                            <span id="dsms-count" style="font-size:0.75rem; color:var(--text-secondary);">Based on 0 readings</span>
-                        </div>
-
-                        <div style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--card-border); min-width: 200px;">
-                            <label for="dsms-formula" style="font-size:0.9rem; color:var(--text-secondary);">Formula Moisture:</label>
-                            <div style="display:flex; gap:0.5rem; align-items:center;">
-                                <input type="number" step="any" id="dsms-formula" placeholder="Enter %" style="width:100px; border-radius:4px; border:1px solid var(--card-border); padding:0.4rem; outline:none; background:var(--card-bg); color:var(--text-primary); font-size:1.1rem; font-weight:bold;">
-                                <button class="btn btn-secondary btn-sm" id="btn-save-dsms-formula" style="padding:0.3rem 0.6rem;">Save</button>
-                            </div>
-                        </div>
-
-                        <div style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--card-border); min-width: 200px; flex: 1;">
-                            <span style="font-size:0.9rem; color:var(--text-secondary);">Comparison:</span>
-                            <span id="dsms-comparison" style="font-size:1.1rem; font-weight:bold; color:var(--text-secondary);">No data to compare</span>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Gauge Chart -->
-                <div id="dsms-gauge-card" style="display:none; background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:1.5rem; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom:2rem;">
-                    <h3 style="margin:0 0 0.75rem 0; font-size:1rem; color:var(--text-primary); text-align:center;">🎯 Moisture Difference Gauge</h3>
-                    <div style="display:flex; justify-content:center; align-items:center;">
-                        <canvas id="dsms-gauge-canvas" width="320" height="200" style="max-width:100%;"></canvas>
-                    </div>
-                    <p id="dsms-gauge-label" style="text-align:center; margin:0.5rem 0 0 0; font-size:0.85rem; color:var(--text-secondary);">Waiting for data…</p>
-                </div>
-
-                <!-- Red Alarm Banner -->
-                <div id="dsms-alarm" style="display:none; margin-top:1rem; background:#ef4444; color:#fff; border-radius:8px; padding:0.75rem 1rem; font-weight:700; font-size:1rem; align-items:center; gap:0.75rem; box-shadow: 0 0 18px rgba(239,68,68,0.7);"></div>
-
-                <!-- Trend Chart -->
-                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:2rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
-                        <span style="font-size:0.95rem; font-weight:600; color:var(--text-primary);">&#128200; Moisture Difference Trend <span style="font-size:0.8rem; font-weight:400; color:var(--text-secondary);">(Last 7 days visible &middot; scroll/pinch to zoom &middot; drag to pan)</span></span>
-                        <div style="display:flex; gap:0.5rem;">
-                            <button id="btn-chart-reset" class="btn btn-secondary" style="padding:0.25rem 0.6rem; font-size:0.8rem;">&#8634; Reset Zoom</button>
-                            <button id="btn-chart-fullscreen" class="btn btn-primary" style="padding:0.25rem 0.6rem; font-size:0.8rem;">&#x26F6; Full Screen</button>
-                        </div>
-                    </div>
-                    <div style="position:relative; height:240px;">
-                        <canvas id="silo-moist-trend-chart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Fullscreen Chart Modal -->
-                <div id="chart-fullscreen-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999; padding:1.5rem; box-sizing:border-box;">
-                    <div style="background:var(--card-bg); border-radius:16px; padding:1.5rem; height:100%; display:flex; flex-direction:column; gap:1rem; box-sizing:border-box;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3 style="margin:0; color:var(--text-primary);">&#128200; Silo Moisture Difference Trend &mdash; All Dates (scroll/pinch to zoom)</h3>
-                            <button id="btn-chart-fullscreen-close" class="btn btn-secondary" style="padding:0.35rem 0.8rem;">&#10005; Close</button>
-                        </div>
-                        <div style="position:relative; flex:1; min-height:0;">
-                            <canvas id="silo-moist-trend-chart-full"></canvas>
-                        </div>
                     </div>
                 </div>
 
