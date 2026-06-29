@@ -1,7 +1,7 @@
 // batching_scale.js
 // Handles logic for the Batching Scale section
 
-document.addEventListener('DOMContentLoaded', () => {
+const initBatchingScale = () => {
     const LS_BATCHING_SCALE = 'fm_batching_scale';
     let batchingScaleData = JSON.parse(localStorage.getItem(LS_BATCHING_SCALE) || '[]');
     let activeBatchingScaleId = null;
@@ -142,4 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial render
     renderTable();
-});
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBatchingScale);
+} else {
+    initBatchingScale();
+}
