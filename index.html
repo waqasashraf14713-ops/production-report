@@ -575,6 +575,7 @@
                                     <th>Date</th>
                                     <th>Production Officer</th>
                                     <th>Operator(s)</th>
+                                    <th>Status</th>
                                     <th>Remarks</th>
                                     <th>Actions</th>
                                 </tr>
@@ -1779,7 +1780,12 @@ order by
                 <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(350px, 1fr));gap:2rem;margin-bottom:1rem;min-width:0;">
                     <!-- 202 Big Scale -->
                     <div>
-                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);">202 Big Scale (+- 4kg)</h3>
+                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);display:flex;justify-content:space-between;align-items:center;">
+                            <span>202 Big Scale (+- 4kg)</span>
+                            <label style="font-size:0.75rem;font-weight:normal;display:flex;align-items:center;gap:0.25rem;cursor:pointer;color:var(--text-secondary);">
+                                <input type="checkbox" id="recal-big" style="cursor:pointer;" /> Re-calibrated (OK)
+                            </label>
+                        </h3>
                         <div style="max-height:350px;overflow-y:auto;border:1px solid var(--card-border);border-radius:6px;">
                             <table style="width:100%;border-collapse:collapse;font-size:0.85rem;" class="report-table">
                                 <thead>
@@ -1787,6 +1793,7 @@ order by
                                         <th style="padding:0.4rem;text-align:left;">Target</th>
                                         <th style="padding:0.4rem;text-align:left;">PLC</th>
                                         <th style="padding:0.4rem;text-align:left;">HMI</th>
+                                        <th style="padding:0.4rem;text-align:left;">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="batching-modal-big-scale-body">
@@ -1798,7 +1805,12 @@ order by
 
                     <!-- 204 Small Scale -->
                     <div>
-                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);">204 Small Scale (+- 4kg)</h3>
+                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);display:flex;justify-content:space-between;align-items:center;">
+                            <span>204 Small Scale (+- 4kg)</span>
+                            <label style="font-size:0.75rem;font-weight:normal;display:flex;align-items:center;gap:0.25rem;cursor:pointer;color:var(--text-secondary);">
+                                <input type="checkbox" id="recal-small" style="cursor:pointer;" /> Re-calibrated (OK)
+                            </label>
+                        </h3>
                         <div style="max-height:350px;overflow-y:auto;border:1px solid var(--card-border);border-radius:6px;">
                             <table style="width:100%;border-collapse:collapse;font-size:0.85rem;" class="report-table">
                                 <thead>
@@ -1806,6 +1818,7 @@ order by
                                         <th style="padding:0.4rem;text-align:left;">Target</th>
                                         <th style="padding:0.4rem;text-align:left;">PLC</th>
                                         <th style="padding:0.4rem;text-align:left;">HMI</th>
+                                        <th style="padding:0.4rem;text-align:left;">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="batching-modal-small-scale-body">
@@ -1819,7 +1832,12 @@ order by
                 <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:1.5rem;margin-bottom:1rem;min-width:0;border-top:1px dashed var(--card-border);padding-top:1rem;">
                     <!-- 216 Premix Dump Scale -->
                     <div>
-                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);">216 Premix Dump (+- 1kg)</h3>
+                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);display:flex;justify-content:space-between;align-items:center;">
+                            <span>216 Premix Dump (+- 1kg)</span>
+                            <label style="font-size:0.75rem;font-weight:normal;display:flex;align-items:center;gap:0.25rem;cursor:pointer;color:var(--text-secondary);">
+                                <input type="checkbox" id="recal-premix" style="cursor:pointer;" /> Re-cal (OK)
+                            </label>
+                        </h3>
                         <div style="max-height:220px;overflow-y:auto;border:1px solid var(--card-border);border-radius:6px;">
                             <table style="width:100%;border-collapse:collapse;font-size:0.85rem;" class="report-table">
                                 <thead>
@@ -1827,6 +1845,7 @@ order by
                                         <th style="padding:0.4rem;text-align:left;">Target</th>
                                         <th style="padding:0.4rem;text-align:left;">PLC</th>
                                         <th style="padding:0.4rem;text-align:left;">HMI</th>
+                                        <th style="padding:0.4rem;text-align:left;">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="batching-modal-premix-scale-body">
@@ -1838,7 +1857,12 @@ order by
 
                     <!-- 251 Oil Weight Scale -->
                     <div>
-                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);">251 Oil Weight (+- 1kg)</h3>
+                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);display:flex;justify-content:space-between;align-items:center;">
+                            <span>251 Oil Weight (+- 1kg)</span>
+                            <label style="font-size:0.75rem;font-weight:normal;display:flex;align-items:center;gap:0.25rem;cursor:pointer;color:var(--text-secondary);">
+                                <input type="checkbox" id="recal-oil-wt" style="cursor:pointer;" /> Re-cal (OK)
+                            </label>
+                        </h3>
                         <div style="max-height:220px;overflow-y:auto;border:1px solid var(--card-border);border-radius:6px;">
                             <table style="width:100%;border-collapse:collapse;font-size:0.85rem;" class="report-table">
                                 <thead>
@@ -1846,6 +1870,7 @@ order by
                                         <th style="padding:0.4rem;text-align:left;">Target</th>
                                         <th style="padding:0.4rem;text-align:left;">PLC</th>
                                         <th style="padding:0.4rem;text-align:left;">HMI</th>
+                                        <th style="padding:0.4rem;text-align:left;">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="batching-modal-oil-wt-scale-body">
@@ -1857,7 +1882,12 @@ order by
 
                     <!-- 253 Oil Discharge Scale -->
                     <div>
-                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);">253 Oil Discharge (+- 2kg)</h3>
+                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);display:flex;justify-content:space-between;align-items:center;">
+                            <span>253 Oil Discharge (+- 2kg)</span>
+                            <label style="font-size:0.75rem;font-weight:normal;display:flex;align-items:center;gap:0.25rem;cursor:pointer;color:var(--text-secondary);">
+                                <input type="checkbox" id="recal-oil-ds" style="cursor:pointer;" /> Re-cal (OK)
+                            </label>
+                        </h3>
                         <div style="max-height:220px;overflow-y:auto;border:1px solid var(--card-border);border-radius:6px;">
                             <table style="width:100%;border-collapse:collapse;font-size:0.85rem;" class="report-table">
                                 <thead>
@@ -1865,6 +1895,7 @@ order by
                                         <th style="padding:0.4rem;text-align:left;">Target</th>
                                         <th style="padding:0.4rem;text-align:left;">PLC</th>
                                         <th style="padding:0.4rem;text-align:left;">HMI</th>
+                                        <th style="padding:0.4rem;text-align:left;">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="batching-modal-oil-ds-scale-body">
@@ -1921,12 +1952,71 @@ order by
         function save()  { localStorage.setItem(LS_KEY, JSON.stringify(records)); }
         function toast(m){ if(window.showToast) window.showToast(m); }
 
+        function getRowStatusText(target, plcVal, hmiVal, isReCal) {
+            if (plcVal === '' || hmiVal === '') return '<span style="color:var(--text-secondary);">Pending</span>';
+            const p = parseFloat(plcVal);
+            const h = parseFloat(hmiVal);
+            if (isNaN(p) || isNaN(h)) return '<span style="color:var(--text-secondary);">Pending</span>';
+
+            const diffPlc = Math.abs(p - target);
+            const diffHmi = Math.abs(h - target);
+            const tolerance = target === 0 ? 0.001 : target * 0.00001; // 0.001% limit, minimum 0.001 tolerance if target is 0
+
+            if (diffPlc <= tolerance && diffHmi <= tolerance) {
+                return '<span style="background:var(--success-color);color:#ffffff;padding:0.15rem 0.35rem;border-radius:4px;font-size:0.75rem;font-weight:600;">OK</span>';
+            } else {
+                if (isReCal) {
+                    return '<span style="background:#f59e0b;color:#ffffff;padding:0.15rem 0.35rem;border-radius:4px;font-size:0.75rem;font-weight:600;white-space:nowrap;">Re-cal (OK)</span>';
+                } else {
+                    return '<span style="background:var(--danger-color);color:#ffffff;padding:0.15rem 0.35rem;border-radius:4px;font-size:0.75rem;font-weight:600;white-space:nowrap;">Refer Calibration</span>';
+                }
+            }
+        }
+
+        function getOverallRecordStatus(r) {
+            let hasRefer = false;
+            let hasRecal = false;
+
+            const checkScaleStatus = (targets, data, isReCal) => {
+                if (!data) return;
+                targets.forEach((t, i) => {
+                    const row = data[i];
+                    if (row && row.plc !== '' && row.hmi !== '') {
+                        const p = parseFloat(row.plc);
+                        const h = parseFloat(row.hmi);
+                        if (!isNaN(p) && !isNaN(h)) {
+                            const diffPlc = Math.abs(p - t);
+                            const diffHmi = Math.abs(h - t);
+                            const tolerance = t === 0 ? 0.001 : t * 0.00001;
+                            if (diffPlc > tolerance || diffHmi > tolerance) {
+                                if (isReCal) {
+                                    hasRecal = true;
+                                } else {
+                                    hasRefer = true;
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            checkScaleStatus(BIG_TARGETS,      r.bigScale,      r.recalBig);
+            checkScaleStatus(SMALL_TARGETS,    r.smallScale,    r.recalSmall);
+            checkScaleStatus(PREMIX_TARGETS,   r.premixScale,   r.recalPremix);
+            checkScaleStatus(OIL_WT_TARGETS,   r.oilWtScale,    r.recalOilWt);
+            checkScaleStatus(OIL_DS_TARGETS,   r.oilDsScale,    r.recalOilDs);
+
+            if (hasRefer) return '<span class="badge" style="background:var(--danger-color);color:#fff;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.8rem;font-weight:600;white-space:nowrap;">⚠️ Refer Calibration</span>';
+            if (hasRecal) return '<span class="badge" style="background:#f59e0b;color:#fff;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.8rem;font-weight:600;white-space:nowrap;">⚙️ Re-calibrated & OK</span>';
+            return '<span class="badge" style="background:var(--success-color);color:#fff;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.8rem;font-weight:600;white-space:nowrap;">✓ OK</span>';
+        }
+
         function renderTable() {
             const tbody = document.querySelector('#batching-scale-table tbody');
             if (!tbody) return;
             tbody.innerHTML = '';
             if (!records.length) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-secondary);padding:2rem;">No records found. Click ➕ Add Batching Scale to begin.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:2rem;">No records found. Click ➕ Add Batching Scale to begin.</td></tr>';
                 return;
             }
             [...records].reverse().forEach(r => {
@@ -1935,7 +2025,8 @@ order by
                     <td>${r.date || '—'}</td>
                     <td>${r.officer || '—'}</td>
                     <td>${r.operator || '—'}</td>
-                    <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.remarks || '—'}</td>
+                    <td>${getOverallRecordStatus(r)}</td>
+                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.remarks || ''}">${r.remarks || '—'}</td>
                     <td style="white-space:nowrap;">
                         <button class="btn btn-secondary" style="padding:0.25rem 0.6rem;font-size:0.8rem;margin-right:0.3rem;" onclick="bsEdit(${r.id})">✏️ Edit</button>
                         <button class="btn btn-danger"    style="padding:0.25rem 0.6rem;font-size:0.8rem;" onclick="bsDel(${r.id})">🗑️ Del</button>
@@ -1948,6 +2039,9 @@ order by
             const body = document.getElementById(`batching-modal-${prefix}-scale-body`);
             if (!body) return;
             body.innerHTML = '';
+            
+            const reCalChk = document.getElementById(`recal-${prefix}`);
+
             targets.forEach((t, i) => {
                 const row = (data && data[i]) ? data[i] : { target: t, plc: '', hmi: '' };
                 const tr = document.createElement('tr');
@@ -1962,8 +2056,27 @@ order by
                         <input type="number" step="any" class="${prefix}-hmi-inp" data-i="${i}"
                             value="${row.hmi !== '' && row.hmi != null ? row.hmi : ''}"
                             style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.3rem 0.4rem;outline:none;background:var(--card-bg);color:var(--text-primary);font-size:0.9rem;"/>
+                    </td>
+                    <td style="padding:0.2rem 0.4rem;text-align:center;vertical-align:middle;" id="${prefix}-status-cell-${i}">
+                        <!-- Dynamically Updated -->
                     </td>`;
                 body.appendChild(tr);
+
+                const plcInp = tr.querySelector(`.${prefix}-plc-inp`);
+                const hmiInp = tr.querySelector(`.${prefix}-hmi-inp`);
+                const statusCell = tr.querySelector(`#${prefix}-status-cell-${i}`);
+
+                const updateStatus = () => {
+                    const recalCurrent = reCalChk ? reCalChk.checked : false;
+                    statusCell.innerHTML = getRowStatusText(t, plcInp.value, hmiInp.value, recalCurrent);
+                };
+
+                plcInp.addEventListener('input', updateStatus);
+                hmiInp.addEventListener('input', updateStatus);
+                if (reCalChk) {
+                    reCalChk.addEventListener('change', updateStatus);
+                }
+                updateStatus();
             });
         }
 
@@ -1990,6 +2103,18 @@ order by
                 if (op1El) op1El.selectedIndex = 0;
                 if (op2El) op2El.selectedIndex = 1;
             }
+
+            const chkBig = document.getElementById('recal-big');
+            const chkSmall = document.getElementById('recal-small');
+            const chkPremix = document.getElementById('recal-premix');
+            const chkOilWt = document.getElementById('recal-oil-wt');
+            const chkOilDs = document.getElementById('recal-oil-ds');
+            
+            if (chkBig) chkBig.checked = record ? !!record.recalBig : false;
+            if (chkSmall) chkSmall.checked = record ? !!record.recalSmall : false;
+            if (chkPremix) chkPremix.checked = record ? !!record.recalPremix : false;
+            if (chkOilWt) chkOilWt.checked = record ? !!record.recalOilWt : false;
+            if (chkOilDs) chkOilDs.checked = record ? !!record.recalOilDs : false;
 
             buildScaleRows(BIG_TARGETS,      record ? record.bigScale      : null, 'big');
             buildScaleRows(SMALL_TARGETS,    record ? record.smallScale    : null, 'small');
@@ -2033,6 +2158,11 @@ order by
                 officer:    offEl ? offEl.value : '',
                 operator:   operatorStr,
                 remarks:    rEl ? rEl.value.trim()  : '',
+                recalBig:   document.getElementById('recal-big') ? document.getElementById('recal-big').checked : false,
+                recalSmall: document.getElementById('recal-small') ? document.getElementById('recal-small').checked : false,
+                recalPremix:document.getElementById('recal-premix') ? document.getElementById('recal-premix').checked : false,
+                recalOilWt: document.getElementById('recal-oil-wt') ? document.getElementById('recal-oil-wt').checked : false,
+                recalOilDs: document.getElementById('recal-oil-ds') ? document.getElementById('recal-oil-ds').checked : false,
                 bigScale:   collectScale('big',   BIG_TARGETS),
                 smallScale: collectScale('small', SMALL_TARGETS),
                 premixScale: collectScale('premix', PREMIX_TARGETS),
