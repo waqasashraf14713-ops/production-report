@@ -1,7 +1,12 @@
 // ─── Silo Moisture Report Module ────────────────────────────────────────────
 (() => {
     const LS_SILO_MOISTURE = 'fm_silo_moisture';
-    let siloMoistData = JSON.parse(localStorage.getItem(LS_SILO_MOISTURE) || '[]');
+    let siloMoistData = [];
+    try {
+        siloMoistData = JSON.parse(localStorage.getItem(LS_SILO_MOISTURE) || '[]');
+    } catch (e) {
+        console.error("Failed to parse silo moisture data from localStorage:", e);
+    }
     let activeMoistReportId = null;
 
     const inp = (id, w = '100%') => `<input type="text" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;">`;

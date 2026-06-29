@@ -1,7 +1,12 @@
 // ─── Shift Plant Report Module ────────────────────────────────────────────
 (() => {
 const LS_PLANT_REPORT = 'fm_plant_report';
-let plantReportsData = JSON.parse(localStorage.getItem(LS_PLANT_REPORT) || '[]');
+let plantReportsData = [];
+try {
+    plantReportsData = JSON.parse(localStorage.getItem(LS_PLANT_REPORT) || '[]');
+} catch (e) {
+    console.error("Failed to parse plant report data from localStorage:", e);
+}
 let activePlantReportId = null;
 
 const pLocations = ['Basement', 'Ground Flr', '1st Flr (19)', '2nd Flr (51)', '3rd Flr (67)', '4th Flr (91)', 'Roof (110)', 'Silos Top', 'Silos Tower', 'Dryer Side'];

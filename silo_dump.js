@@ -2,7 +2,12 @@
 
 (() => {
 const LS_SD = 'fm_silo_dump';
-let sdData = JSON.parse(localStorage.getItem(LS_SD) || '[]');
+let sdData = [];
+try {
+    sdData = JSON.parse(localStorage.getItem(LS_SD) || '[]');
+} catch (e) {
+    console.error("Failed to parse silo dump data from localStorage:", e);
+}
 let activeSdId = null;
 
 const inp = (id, w = '100%') => `<input type="text" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;">`;

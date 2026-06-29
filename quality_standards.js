@@ -1,7 +1,12 @@
 // ─── Quality Standards Check List Module ──────────────────────────────────
 (() => {
 const LS_QS = 'fm_qs_report';
-let qsData = JSON.parse(localStorage.getItem(LS_QS) || '[]');
+let qsData = [];
+try {
+    qsData = JSON.parse(localStorage.getItem(LS_QS) || '[]');
+} catch (e) {
+    console.error("Failed to parse quality standards data from localStorage:", e);
+}
 let activeQsId = null;
 
 const qsBatchingItems = [

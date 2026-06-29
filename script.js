@@ -824,10 +824,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const safeParse = (key, fallback) => {
+        try {
+            const item = localStorage.getItem(key);
+            if (!item) return fallback;
+            return JSON.parse(item);
+        } catch (e) {
+            console.error(`Error parsing localStorage key "${key}":`, e);
+            return fallback;
+        }
+    };
+
     const loadFromLocalStorage = () => {
-        availableMaterials = JSON.parse(localStorage.getItem(LS_MATERIALS));
+        availableMaterials = safeParse(LS_MATERIALS, null);
         ensureDefaultMaterials();
-        silosData = JSON.parse(localStorage.getItem(LS_SILOS));
+        silosData = safeParse(LS_SILOS, null);
         if (!silosData) {
             silosData = generateSiloData(21);
             localStorage.setItem(LS_SILOS, JSON.stringify(silosData));
@@ -837,15 +848,15 @@ document.addEventListener('DOMContentLoaded', () => {
             silosData = [...silosData, ...newSilos.slice(silosData.length)];
             localStorage.setItem(LS_SILOS, JSON.stringify(silosData));
         }
-        maizeLogs = JSON.parse(localStorage.getItem(LS_MAIZE_LOGS)) || [];
-        lessExcessLogs = JSON.parse(localStorage.getItem(LS_LESS_EXCESS_LOGS)) || [];
-        fiveSLogs = JSON.parse(localStorage.getItem(LS_FIVE_S_LOGS)) || [];
+        maizeLogs = safeParse(LS_MAIZE_LOGS, []);
+        lessExcessLogs = safeParse(LS_LESS_EXCESS_LOGS, []);
+        fiveSLogs = safeParse(LS_FIVE_S_LOGS, []);
         if (fiveSLogs.length === 0) {
             seedDefaultFiveSLogs();
         }
-        dailyChecklists = JSON.parse(localStorage.getItem(LS_DAILY_CHECKLISTS)) || [];
-        shiftReports = JSON.parse(localStorage.getItem(LS_SHIFT_REPORTS)) || [];
-        batchingAudits = JSON.parse(localStorage.getItem(LS_BATCHING_AUDITS)) || [];
+        dailyChecklists = safeParse(LS_DAILY_CHECKLISTS, []);
+        shiftReports = safeParse(LS_SHIFT_REPORTS, []);
+        batchingAudits = safeParse(LS_BATCHING_AUDITS, []);
         enforceFixedCapacities();
     };
 
