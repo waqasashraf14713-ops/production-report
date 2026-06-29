@@ -3364,7 +3364,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tbody) return;
         tbody.innerHTML = '';
         if (standaloneRmChecks.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-secondary);padding:2rem;">No unloading checks found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text-secondary);padding:2rem;">No unloading checks found.</td></tr>';
             return;
         }
         [...standaloneRmChecks].reverse().forEach(c => {
@@ -3373,6 +3373,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `
                 <td>${c.date}</td>
                 <td>${c.shift}</td>
+                <td>👷 ${c.officer || '—'}</td>
                 <td>${c.vehicle}</td>
                 <td>${c.location}</td>
                 <td>${c.moisture}</td>
@@ -3394,6 +3395,7 @@ document.addEventListener('DOMContentLoaded', () => {
         activeStandaloneRmId = id;
         document.getElementById('rm-modal-date').value = c.date;
         document.getElementById('rm-modal-shift').value = c.shift;
+        document.getElementById('rm-modal-officer').value = c.officer || 'M. Zubair';
         document.getElementById('rm-modal-vehicle').value = c.vehicle;
         document.getElementById('rm-modal-location').value = c.location;
         document.getElementById('rm-modal-moisture').value = c.moisture;
@@ -3419,6 +3421,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const today = new Date();
         document.getElementById('rm-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
         document.getElementById('rm-modal-shift').value = 'A';
+        document.getElementById('rm-modal-officer').value = 'M. Zubair';
         document.getElementById('rm-modal-vehicle').value = '';
         document.getElementById('rm-modal-location').value = '';
         document.getElementById('rm-modal-moisture').value = '';
@@ -3434,6 +3437,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const c = {
             date: document.getElementById('rm-modal-date').value.trim(),
             shift: document.getElementById('rm-modal-shift').value.trim(),
+            officer: document.getElementById('rm-modal-officer').value.trim(),
             vehicle: document.getElementById('rm-modal-vehicle').value.trim(),
             location: document.getElementById('rm-modal-location').value.trim(),
             moisture: document.getElementById('rm-modal-moisture').value.trim(),
