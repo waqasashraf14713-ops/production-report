@@ -600,6 +600,36 @@
                             </tbody>
                         </table>
                     </div>
+                    </div>
+                </div>
+
+                    </div>
+
+                    <!-- Batching Scale Standalone Table -->
+                    <div style="display: flex; background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);flex-direction:column;">
+                        <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;">
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;">⚖️ Batching Scale <span id="badge-batching-scale" class="sr-draft-badge" style="display:none;"></span></h2>
+                        <button class="btn btn-secondary" id="btn-add-batching-scale">➕ Add Batching Scale</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table" id="batching-scale-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Shift</th>
+                                    <th>Recipe / Product</th>
+                                    <th>Target Weight</th>
+                                    <th>Actual Weight</th>
+                                    <th>Variance</th>
+                                    <th>Remarks</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS will populate -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                     </div>
@@ -1800,7 +1830,56 @@ order by
         </div>
     </div>
 
+    <!-- Batching Scale Modal -->
+    <div id="batching-scale-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:550px;width:95%;background:#ffffff;">
+            <div class="modal-header">
+                <h2 id="batching-scale-title">New Batching Scale Record</h2>
+                <button id="batching-scale-close" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem; max-height:80vh; overflow-y:auto;">
+                <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                    <div class="form-group" style="flex:1;min-width:160px;">
+                        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Date</label>
+                        <input type="date" id="batching-modal-date" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);" />
+                    </div>
+                    <div class="form-group" style="flex:1;min-width:160px;">
+                        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Shift</label>
+                        <select id="batching-modal-shift" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);">
+                            <option value="A">A (Morning)</option>
+                            <option value="B">B (Evening)</option>
+                            <option value="C">C (Night)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Recipe / Product</label>
+                    <input type="text" id="batching-modal-recipe" placeholder="e.g., Broiler Starter" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);" />
+                </div>
+                <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                    <div class="form-group" style="flex:1;min-width:140px;">
+                        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Target Weight (kg)</label>
+                        <input type="number" step="0.01" id="batching-modal-target" placeholder="0.00" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);" />
+                    </div>
+                    <div class="form-group" style="flex:1;min-width:140px;">
+                        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Actual Weight (kg)</label>
+                        <input type="number" step="0.01" id="batching-modal-actual" placeholder="0.00" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);" />
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Remarks</label>
+                    <textarea id="batching-modal-remarks" rows="3" placeholder="Any notes..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);resize:vertical;"></textarea>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:1rem;border-top:1px solid var(--card-border);padding-top:1rem;">
+                    <button class="btn btn-secondary" id="btn-cancel-batching-scale" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-batching-scale" style="width:auto;padding:0.5rem 2rem;">💾 Save Record</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Hidden container for complete shift PDF print layout -->
+
     <div id="shift-report-print-container"></div>
     <div id="less-excess-print-container"></div>
 
@@ -1808,13 +1887,14 @@ order by
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
-    <script src="env.js"></script>
-    <script src="silo_dump.js"></script>
-    <script src="quality_standards.js"></script>
-    <script src="plant_report.js"></script>
-    <script src="silo_moisture.js"></script>
-    <script src="script.js"></script>
-    <script src="shift_report_pdf.js"></script>
-    <script src="less_excess_pdf.js"></script>
+    <script src="env.js?v=2"></script>
+    <script src="silo_dump.js?v=2"></script>
+    <script src="quality_standards.js?v=2"></script>
+    <script src="plant_report.js?v=2"></script>
+    <script src="silo_moisture.js?v=2"></script>
+    <script src="batching_scale.js?v=2"></script>
+    <script src="script.js?v=2"></script>
+    <script src="shift_report_pdf.js?v=2"></script>
+    <script src="less_excess_pdf.js?v=2"></script>
 </body>
 </html>

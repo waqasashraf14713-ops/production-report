@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Test</title>
+    <style>
+        body { font-family: monospace; padding: 2rem; background: #1e1e1e; color: #eee; }
+        .ok { color: #4ade80; }
+        .err { color: #f87171; }
+        .warn { color: #fbbf24; }
+        h2 { color: #60a5fa; border-bottom: 1px solid #333; padding-bottom: 0.5rem; }
+        pre { background: #111; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+<h2>🔍 Feed Mill App - Diagnostic Test</h2>
+<div id="log"></div>
+
+<script>
+    const log = document.getElementById('log');
+    function ok(msg)   { log.innerHTML += `<p class="ok">✅ ${msg}</p>`; }
+    function err(msg)  { log.innerHTML += `<p class="err">❌ ${msg}</p>`; }
+    function warn(msg) { log.innerHTML += `<p class="warn">⚠️ ${msg}</p>`; }
+    function info(msg) { log.innerHTML += `<p>${msg}</p>`; }
+
+    // Test 1: env.js
+    info('<h2>1. env.js Check</h2>');
+    try {
+        const s = document.createElement('script');
+        s.src = 'env.js?t=' + Date.now();
+        s.onload = function() {
+            if (window.env && typeof window.env.SUPABASE_URL === 'string') {
+                ok('env.js loaded OK — window.env.SUPABASE_URL = "' + window.env.SUPABASE_URL + '"');
+            } else {
+                err('env.js loaded but window.env is malformed: ' + JSON.stringify(window.env));
+            }
+            runTest2();
+        };
+        s.onerror = function() { err('env.js FAILED TO LOAD (file not found or syntax error)'); runTest2(); };
+        document.head.appendChild(s);
+    } catch(e) { err('env.js test threw: ' + e.message); runTest2(); }
+
+    function runTest2() {
+        info('<h2>2. Modal Elements in DOM</h2>');
+        const modals = [
+            'plant-report-modal',
+            'qs-modal',
+            'silo-dump-modal',
+            'silo-moist-modal',
+            'batching-scale-modal',
+            'rm-standalone-modal',
+            'performa-modal',
+            'shift-report-modal',
+            'batching-audit-modal',
+            'five-s-checklist-modal',
+            'daily-checklist-modal',
+        ];
+        modals.forEach(id => {
+            // Check in opener page via postMessage or just iframe
+            info('Modal <b>' + id + '</b>: will check in main page...');
+        });
+
+        info('<h2>3. Instructions</h2>');
+        log.innerHTML += `
+        <pre>
+STEP 1: Apna browser main index.html kholo
+STEP 2: F12 dabaao (Developer Tools)
+STEP 3: "Console" tab pe click karo
+STEP 4: Sab red errors dekho aur yahan screenshot bhejo
+
+YA:
+
+Is page pe neeche diya iframe mein apna app check karo:
+        </pre>`;
+
+        // Iframe test
+        const iframe = document.createElement('iframe');
+        iframe.src = 'index.html?t=' + Date.now();
+        iframe.style.width = '100%';
+        iframe.style.height = '600px';
+        iframe.style.border = '2px solid #60a5fa';
+        iframe.style.borderRadius = '8px';
+        iframe.style.marginTop = '1rem';
+        iframe.onload = function() {
+            try {
+                const iDoc = iframe.contentDocument;
+                const missing = [];
+                ['plant-report-modal','qs-modal','silo-dump-modal','silo-moist-modal',
+                 'batching-scale-modal','rm-standalone-modal','performa-modal',
+                 'shift-report-modal','batching-audit-modal'].forEach(id => {
+                    if (!iDoc.getElementById(id)) missing.push(id);
+                });
+
+                if (missing.length === 0) {
+                    ok('All modals present in DOM!');
+                } else {
+                    err('MISSING MODALS: ' + missing.join(', '));
+                }
+
+                // Check buttons
+                const buttons = ['btn-add-plant-report','btn-add-qs','btn-add-silo-dump',
+                    'btn-add-silo-moist','btn-add-batching-scale','btn-add-standalone-rm',
+                    'btn-add-performa','btn-add-shift-report'];
+                const missingBtns = [];
+                buttons.forEach(id => {
+                    if (!iDoc.getElementById(id)) missingBtns.push(id);
+                });
+                if (missingBtns.length === 0) {
+                    ok('All add-buttons present in DOM!');
+                } else {
+                    err('MISSING BUTTONS: ' + missingBtns.join(', '));
+                }
+
+                // Check window functions
+                const iWin = iframe.contentWindow;
+                const fns = ['initPlantReportEvents','initQualityStandardsEvents',
+                    'initSiloDumpEvents','initSiloMoistEvents'];
+                fns.forEach(fn => {
+                    if (typeof iWin[fn] === 'function') {
+                        ok('window.' + fn + ' is defined ✓');
+                    } else {
+                        err('window.' + fn + ' is MISSING or not a function');
+                    }
+                });
+
+            } catch(e) {
+                warn('Cannot inspect iframe (cross-origin or file:// restriction): ' + e.message);
+                warn('Open index.html directly and press F12 → Console tab to see errors');
+            }
+        };
+        log.appendChild(iframe);
+    }
+</script>
+</body>
+</html>

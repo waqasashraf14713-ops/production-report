@@ -18,3 +18,15 @@ CREATE TABLE daily_performas_checklist (
     remarks TEXT,                          
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE batching_scale (
+    id SERIAL PRIMARY KEY,
+    date DATE NOT NULL,
+    shift VARCHAR(50),
+    recipe_product VARCHAR(150),
+    target_weight DECIMAL(18, 2),
+    actual_weight DECIMAL(18, 2),
+    variance DECIMAL(18, 2) GENERATED ALWAYS AS (actual_weight - target_weight) STORED,
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

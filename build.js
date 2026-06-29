@@ -5,8 +5,8 @@ const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || '';
 
 const content = `window.env = {
-    SUPABASE_URL: "${supabaseUrl}",
-    SUPABASE_KEY: "${supabaseKey}"
+    SUPABASE_URL: ${JSON.stringify(supabaseUrl)},
+    SUPABASE_KEY: ${JSON.stringify(supabaseKey)}
 };`;
 
 // 1. Write env.js to the root folder (for local development fallback)
