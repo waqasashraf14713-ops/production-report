@@ -1961,15 +1961,66 @@ order by
         const LS_KEY = 'fm_batching_scale';
         let records = [];
         let activeId = null;
+        let sbClient = null;
+
         const BIG_TARGETS      = [4000,3500,3000,2500,2000,1500,1300,1100,900,700,500,300,100,0];
         const SMALL_TARGETS    = [2000,1900,1400,900,400,200,100,0];
         const PREMIX_TARGETS   = [300,200,100,50,0];
         const OIL_WT_TARGETS   = [200,100,50,0];
         const OIL_DS_TARGETS   = [200,100,50,0];
 
-        function load()  { try { records = JSON.parse(localStorage.getItem(LS_KEY)||'[]'); } catch(e){records=[];} }
+        function initSupabase() {
+            const sbUrl = localStorage.getItem('fmpr_supabaseUrl');
+            const sbKey = localStorage.getItem('fmpr_supabaseKey');
+            const sbDisabled = localStorage.getItem('fmpr_supabaseDisabled') === 'true';
+            if (sbUrl && sbKey && !sbDisabled && typeof supabase !== 'undefined') {
+                try {
+                    const cleanUrl = sbUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+                    sbClient = supabase.createClient(cleanUrl, sbKey);
+                } catch (e) {
+                    console.error('Batching scale supabase init error:', e);
+                }
+            }
+        }
+
         function save()  { localStorage.setItem(LS_KEY, JSON.stringify(records)); }
         function toast(m){ if(window.showToast) window.showToast(m); }
+
+        async function load()  { 
+            try { records = JSON.parse(localStorage.getItem(LS_KEY)||'[]'); } catch(e){records=[];} 
+            initSupabase();
+            if (sbClient) {
+                try {
+                    const { data, error } = await sbClient
+                        .from('batching_scale_calibration')
+                        .select('*');
+                    if (error) throw error;
+                    if (data && data.length) {
+                        records = data.map(dbRow => ({
+                            id: dbRow.id,
+                            date: dbRow.date,
+                            officer: dbRow.officer_name,
+                            operator: dbRow.operators,
+                            recalBig: dbRow.recal_big,
+                            recalSmall: dbRow.recal_small,
+                            recalPremix: dbRow.recal_premix,
+                            recalOilWt: dbRow.recal_oil_wt,
+                            recalOilDs: dbRow.recal_oil_ds,
+                            bigScale: dbRow.big_scale,
+                            smallScale: dbRow.small_scale,
+                            premixScale: dbRow.premix_scale,
+                            oilWtScale: dbRow.oil_wt_scale,
+                            oilDsScale: dbRow.oil_ds_scale,
+                            remarks: dbRow.remarks
+                        }));
+                        save();
+                        renderTable();
+                    }
+                } catch (e) {
+                    console.error('Supabase load calibration records fail:', e);
+                }
+            }
+        }
 
         function getRowStatusText(target, plcVal, hmiVal, isReCal) {
             if (plcVal === '' || hmiVal === '') return '<span style="color:var(--text-secondary);">Pending</span>';
@@ -2345,7 +2396,7 @@ order by
             }));
         }
 
-        function saveRecord() {
+        async function saveRecord() {
             const dEl = document.getElementById('batching-modal-date');
             const offEl = document.getElementById('batching-modal-officer');
             const op1El = document.getElementById('batching-modal-op1');
@@ -2381,7 +2432,37 @@ order by
             save();
             renderTable();
             closeModal();
-            toast('✓ Calibration record saved.');
+
+            if (sbClient) {
+                try {
+                    const { error } = await sbClient
+                        .from('batching_scale_calibration')
+                        .upsert({
+                            id: rec.id,
+                            date: rec.date,
+                            officer_name: rec.officer,
+                            operators: rec.operator,
+                            recal_big: rec.recalBig,
+                            recal_small: rec.recalSmall,
+                            recal_premix: rec.recalPremix,
+                            recal_oil_wt: rec.recalOilWt,
+                            recal_oil_ds: rec.recalOilDs,
+                            big_scale: rec.bigScale,
+                            small_scale: rec.smallScale,
+                            premix_scale: rec.premixScale,
+                            oil_wt_scale: rec.oilWtScale,
+                            oil_ds_scale: rec.oilDsScale,
+                            remarks: rec.remarks
+                        });
+                    if (error) throw error;
+                    toast('✓ Calibration record saved to Supabase.');
+                } catch (e) {
+                    console.error('Supabase calibration save error:', e);
+                    toast('✓ Saved locally (Supabase offline)');
+                }
+            } else {
+                toast('✓ Calibration record saved.');
+            }
         }
 
         function updateSidebarWarning() {
@@ -2421,12 +2502,27 @@ order by
             const rec = records.find(r => Number(r.id) === Number(id));
             if (rec) openModal(rec);
         };
-        window.bsDel = function(id) {
+        window.bsDel = async function(id) {
             if (!confirm('Delete this record?')) return;
             records = records.filter(r => Number(r.id) !== Number(id));
             save();
             renderTable();
-            toast('✓ Record deleted.');
+            
+            if (sbClient) {
+                try {
+                    const { error } = await sbClient
+                        .from('batching_scale_calibration')
+                        .delete()
+                        .eq('id', id);
+                    if (error) throw error;
+                    toast('✓ Deleted from Supabase.');
+                } catch (e) {
+                    console.error('Supabase delete error:', e);
+                    toast('✓ Record deleted locally.');
+                }
+            } else {
+                toast('✓ Record deleted.');
+            }
         };
 
         // Wire buttons
