@@ -1574,16 +1574,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return 'var(--success-color)';
     };
 
-    // ─── Summary bar ──────────────────────────────────────────────────────────
     const renderSummary = () => {
         let active = 0, moisture = 0, runtime = 0;
         silosData.forEach(s => {
             if (s.status === 'Running') { active++; runtime += parseFloat(s.runTime); }
             moisture += parseFloat(s.currentMoisture);
         });
-        document.getElementById('active-silos-count').textContent = active;
-        document.getElementById('avg-moisture').textContent       = (moisture / silosData.length).toFixed(1) + '%';
-        document.getElementById('total-runtime').textContent      = runtime.toFixed(1) + 'h';
+        const elActive = document.getElementById('active-silos-count');
+        const elMoist = document.getElementById('avg-moisture');
+        const elRuntime = document.getElementById('total-runtime');
+        if (elActive) elActive.textContent = active;
+        if (elMoist) elMoist.textContent = (moisture / silosData.length).toFixed(1) + '%';
+        if (elRuntime) elRuntime.textContent = runtime.toFixed(1) + 'h';
     };
 
     // ─── Inline edit helper ────────────────────────────────────────────────────
