@@ -573,6 +573,7 @@
                             <thead>
                                 <tr>
                                     <th>Date</th>
+                                    <th>Production Officer</th>
                                     <th>Operator(s)</th>
                                     <th>Remarks</th>
                                     <th>Actions</th>
@@ -1741,11 +1742,19 @@ order by
             </div>
             <div class="modal-body" style="padding:1.5rem; max-height:80vh; overflow-y:auto;">
                 <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
-                    <div class="form-group" style="flex:1;min-width:180px;">
+                    <div class="form-group" style="flex:1;min-width:150px;">
                         <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Date</label>
                         <input type="date" id="batching-modal-date" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);" />
                     </div>
-                    <div class="form-group" style="flex:2;min-width:280px;">
+                    <div class="form-group" style="flex:1;min-width:180px;">
+                        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Production Officer</label>
+                        <select id="batching-modal-officer" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);">
+                            <option value="M. Zubair">M. Zubair</option>
+                            <option value="M. Tahir">M. Tahir</option>
+                            <option value="M. Shoaib">M. Shoaib</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:2;min-width:260px;">
                         <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Operators (Select 2)</label>
                         <div style="display:flex;gap:0.5rem;align-items:center;">
                             <select id="batching-modal-op1" style="flex:1;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);">
@@ -1855,13 +1864,14 @@ order by
             if (!tbody) return;
             tbody.innerHTML = '';
             if (!records.length) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:2rem;">No records found. Click ➕ Add Batching Scale to begin.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-secondary);padding:2rem;">No records found. Click ➕ Add Batching Scale to begin.</td></tr>';
                 return;
             }
             [...records].reverse().forEach(r => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${r.date || '—'}</td>
+                    <td>${r.officer || '—'}</td>
                     <td>${r.operator || '—'}</td>
                     <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.remarks || '—'}</td>
                     <td style="white-space:nowrap;">
@@ -1901,10 +1911,13 @@ order by
             if (titleEl) titleEl.textContent = record ? 'Edit Calibration Record' : 'New Calibration Checking Record';
 
             const dEl = document.getElementById('batching-modal-date');
+            const offEl = document.getElementById('batching-modal-officer');
             const op1El = document.getElementById('batching-modal-op1');
             const op2El = document.getElementById('batching-modal-op2');
             const rEl = document.getElementById('batching-modal-remarks');
+            
             if (dEl) dEl.value = record ? record.date : new Date().toISOString().split('T')[0];
+            if (offEl) offEl.value = record ? (record.officer || 'M. Zubair') : 'M. Zubair';
             if (rEl) rEl.value = record ? (record.remarks||'')  : '';
 
             if (record && record.operator) {
@@ -1928,6 +1941,7 @@ order by
             if (modal) modal.classList.remove('show');
         }
 
+        // Collect PLC & HMI values safely
         function collectScale(prefix, targets) {
             const plcInputs = document.querySelectorAll(`.${prefix}-plc-inp`);
             const hmiInputs = document.querySelectorAll(`.${prefix}-hmi-inp`);
@@ -1940,6 +1954,7 @@ order by
 
         function saveRecord() {
             const dEl = document.getElementById('batching-modal-date');
+            const offEl = document.getElementById('batching-modal-officer');
             const op1El = document.getElementById('batching-modal-op1');
             const op2El = document.getElementById('batching-modal-op2');
             const rEl = document.getElementById('batching-modal-remarks');
@@ -1950,6 +1965,7 @@ order by
             const rec = {
                 id:        activeId || Date.now(),
                 date:      dEl.value,
+                officer:   offEl ? offEl.value : '',
                 operator:  operatorStr,
                 remarks:   rEl ? rEl.value.trim()  : '',
                 bigScale:   collectScale('big',   BIG_TARGETS),
