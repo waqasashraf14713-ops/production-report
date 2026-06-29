@@ -164,13 +164,16 @@ window.deleteQs = (id) => {
 window.initQualityStandardsEvents = () => {
     buildQsUI();
     
+    window.openQualityStandardsModal = () => {
+        activeQsId = null;
+        clearQsForm();
+        const modal = document.getElementById('qs-modal');
+        if (modal) modal.classList.add('show');
+    };
+
     const btnAdd = document.getElementById('btn-add-qs');
     if (btnAdd) {
-        btnAdd.addEventListener('click', () => {
-            activeQsId = null;
-            clearQsForm();
-            document.getElementById('qs-modal').classList.add('show');
-        });
+        btnAdd.addEventListener('click', window.openQualityStandardsModal);
     }
 
     const btnSave = document.getElementById('btn-save-qs');

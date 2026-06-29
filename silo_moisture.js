@@ -192,6 +192,7 @@ try {
     };
 
     const initSmEvents = () => {
+        window.openSiloMoistModal = openSmModal;
         const btnAddTop = document.getElementById('btn-add-silo-moist');
         if (btnAddTop) btnAddTop.addEventListener('click', openSmModal);
 

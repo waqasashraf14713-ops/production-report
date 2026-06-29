@@ -195,13 +195,16 @@ window.initSiloDumpEvents = () => {
         });
     }
 
+    window.openSiloDumpModal = () => {
+        activeSdId = null;
+        clearSdForm();
+        const modal = document.getElementById('silo-dump-modal');
+        if (modal) modal.classList.add('show');
+    };
+
     const btnAdd = document.getElementById('btn-add-silo-dump');
     if (btnAdd) {
-        btnAdd.addEventListener('click', () => {
-            activeSdId = null;
-            clearSdForm();
-            document.getElementById('silo-dump-modal').classList.add('show');
-        });
+        btnAdd.addEventListener('click', window.openSiloDumpModal);
     }
 
     const btnSave = document.getElementById('btn-save-sd');

@@ -275,13 +275,16 @@ window.initPlantReportEvents = () => {
     const prShiftSel = document.getElementById('pr-shift-select');
     if (prShiftSel) prShiftSel.addEventListener('change', updateShiftTimes);
 
+    window.openPlantReportModal = () => {
+        activePlantReportId = null;
+        clearPlantReportForm();
+        const modal = document.getElementById('plant-report-modal');
+        if (modal) modal.classList.add('show');
+    };
+
     const btnAdd = document.getElementById('btn-add-plant-report');
     if (btnAdd) {
-        btnAdd.addEventListener('click', () => {
-            activePlantReportId = null;
-            clearPlantReportForm();
-            document.getElementById('plant-report-modal').classList.add('show');
-        });
+        btnAdd.addEventListener('click', window.openPlantReportModal);
     }
 
     const btnSave = document.getElementById('btn-save-pr');
