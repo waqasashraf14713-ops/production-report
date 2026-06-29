@@ -588,11 +588,21 @@
                     </div>
                 </div>
 
-                <!-- Scale Accuracy Trend Chart -->
-                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-top:2rem;">
-                    <h3 style="margin-bottom:1rem;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;">📈 Scale Accuracy Trend (Average Absolute Deviation in kg)</h3>
-                    <div style="width:100%;height:320px;position:relative;">
-                        <canvas id="batching-scale-chart"></canvas>
+                <!-- Scale Accuracy Dashboard Widgets -->
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; margin-top:2rem;">
+                    <!-- Left: Current Health (Doughnut) -->
+                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                        <h3 style="margin-bottom:1rem;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;margin-top:0;">🍩 Calibration Status (Latest Check)</h3>
+                        <div style="width:100%;height:250px;position:relative;">
+                            <canvas id="batching-scale-doughnut"></canvas>
+                        </div>
+                    </div>
+                    <!-- Right: History Trend (Line/Area) -->
+                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                        <h3 style="margin-bottom:1rem;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;margin-top:0;">📈 Scale OK Trend (Historical)</h3>
+                        <div style="width:100%;height:250px;position:relative;">
+                            <canvas id="batching-scale-trend"></canvas>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -2020,20 +2030,19 @@ order by
             return '<span class="badge" style="background:var(--success-color);color:#fff;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.8rem;font-weight:600;white-space:nowrap;">✓ OK</span>';
         }
 
-        let accuracyChart = null;
+        let doughnutChart = null;
+        let trendChart = null;
 
         function updateAccuracyChart() {
-            const ctx = document.getElementById('batching-scale-chart');
-            if (!ctx) return;
+            const dnCtx = document.getElementById('batching-scale-doughnut');
+            const trCtx = document.getElementById('batching-scale-trend');
+            if (!dnCtx || !trCtx) return;
 
-            if (accuracyChart) {
-                accuracyChart.destroy();
-                accuracyChart = null;
-            }
+            if (doughnutChart) { doughnutChart.destroy(); doughnutChart = null; }
+            if (trendChart)    { trendChart.destroy();    trendChart = null; }
 
             const trendRecords = [...records]
-                .sort((a, b) => new Date(a.date) - new Date(b.date))
-                .slice(-10);
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
 
             if (!trendRecords.length) return;
 
@@ -2063,15 +2072,55 @@ order by
                 return 'ok';
             };
 
-            const okCounts = [];
-            const recalCounts = [];
-            const referCounts = [];
+            // Latest check stats for Doughnut Chart
+            const latest = trendRecords[trendRecords.length - 1];
+            let latestOk = 0, latestRecal = 0, latestRefer = 0;
+            
+            const latestScales = [
+                { t: BIG_TARGETS,      d: latest.bigScale,      rc: latest.recalBig },
+                { t: SMALL_TARGETS,    d: latest.smallScale,    rc: latest.recalSmall },
+                { t: PREMIX_TARGETS,   d: latest.premixScale,   rc: latest.recalPremix },
+                { t: OIL_WT_TARGETS,   d: latest.oilWtScale,    rc: latest.recalOilWt },
+                { t: OIL_DS_TARGETS,   d: latest.oilDsScale,    rc: latest.recalOilDs }
+            ];
 
-            trendRecords.forEach(r => {
-                let ok = 0;
-                let recal = 0;
-                let refer = 0;
+            latestScales.forEach(s => {
+                const status = getScaleStatus(s.t, s.d, s.rc);
+                if (status === 'ok') latestOk++;
+                else if (status === 'recal') latestRecal++;
+                else if (status === 'refer') latestRefer++;
+            });
 
+            doughnutChart = new Chart(dnCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['✓ OK', '⚙️ Re-cal (OK)', '⚠️ Refer Calibration'],
+                    datasets: [{
+                        data: [latestOk, latestRecal, latestRefer],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#64748b',
+                                font: { size: 11, weight: '600' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Trend calculation for Trend Line Chart
+            const last10 = trendRecords.slice(-10);
+            const trendLabels = last10.map(r => r.date);
+            const okTrendData = last10.map(r => {
+                let okCount = 0;
                 const scales = [
                     { t: BIG_TARGETS,      d: r.bigScale,      rc: r.recalBig },
                     { t: SMALL_TARGETS,    d: r.smallScale,    rc: r.recalSmall },
@@ -2079,78 +2128,46 @@ order by
                     { t: OIL_WT_TARGETS,   d: r.oilWtScale,    rc: r.recalOilWt },
                     { t: OIL_DS_TARGETS,   d: r.oilDsScale,    rc: r.recalOilDs }
                 ];
-
                 scales.forEach(s => {
                     const status = getScaleStatus(s.t, s.d, s.rc);
-                    if (status === 'ok') ok++;
-                    else if (status === 'recal') recal++;
-                    else if (status === 'refer') refer++;
+                    if (status === 'ok' || status === 'recal') okCount++;
                 });
-
-                okCounts.push(ok);
-                recalCounts.push(recal);
-                referCounts.push(refer);
+                return okCount;
             });
 
-            accuracyChart = new Chart(ctx, {
-                type: 'bar',
+            trendChart = new Chart(trCtx, {
+                type: 'line',
                 data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: '✓ OK Scales',
-                            data: okCounts,
-                            backgroundColor: '#10b981', // green
-                            stack: 'statusStack'
-                        },
-                        {
-                            label: '⚙️ Re-calibrated (OK)',
-                            data: recalCounts,
-                            backgroundColor: '#f59e0b', // orange
-                            stack: 'statusStack'
-                        },
-                        {
-                            label: '⚠️ Refer Calibration',
-                            data: referCounts,
-                            backgroundColor: '#ef4444', // red
-                            stack: 'statusStack'
-                        }
-                    ]
+                    labels: trendLabels,
+                    datasets: [{
+                        label: 'OK Scales Count (Max 5)',
+                        data: okTrendData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.04)',
+                        borderWidth: 2.5,
+                        tension: 0.3,
+                        fill: true
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                color: '#64748b',
-                                font: { size: 11, weight: '600' }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${context.raw} scale(s)`;
-                                }
-                            }
-                        }
+                        legend: { display: false }
                     },
                     scales: {
                         x: {
-                            stacked: true,
                             grid: { color: 'rgba(100, 116, 139, 0.05)' },
                             ticks: { color: '#64748b', font: { size: 10 } }
                         },
                         y: {
-                            stacked: true,
                             min: 0,
                             max: 5,
                             grid: { color: 'rgba(100, 116, 139, 0.05)' },
                             ticks: { color: '#64748b', stepSize: 1, font: { size: 10 } },
                             title: {
                                 display: true,
-                                text: 'Number of Scales',
+                                text: 'OK Scales Count',
                                 color: '#64748b',
                                 font: { size: 11, weight: '600' }
                             }
