@@ -1,4 +1,16 @@
 (function() {
+    function getSafeLocalStorageData(key) {
+        try {
+            const val = localStorage.getItem(key);
+            if (!val) return [];
+            const parsed = JSON.parse(val);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            console.error(`Error parsing localStorage key "${key}":`, e);
+            return [];
+        }
+    }
+
     function generateCompleteShiftPDF() {
         const dateInput = document.getElementById('sr-filter-date');
         const selectedDate = dateInput ? dateInput.value.trim() : '';
@@ -8,16 +20,31 @@
             return;
         }
 
-        const shiftReportsData = JSON.parse(localStorage.getItem('fmpr_shiftReports') || '[]').filter(r => r.date === selectedDate);
-        const rmData = JSON.parse(localStorage.getItem('fm_standalone_rm_checks') || '[]').filter(r => r.date === selectedDate);
-        const performaData = JSON.parse(localStorage.getItem('fm_performas') || '[]').filter(r => r.date === selectedDate);
-        const plantReportData = JSON.parse(localStorage.getItem('fm_plant_report') || '[]').filter(r => r.date === selectedDate);
-        const qsReportData = JSON.parse(localStorage.getItem('fm_qs_report') || '[]').filter(r => r.date === selectedDate);
-        const siloDumpData = JSON.parse(localStorage.getItem('fm_silo_dump') || '[]').filter(r => r.date === selectedDate);
-        const siloMoistData = JSON.parse(localStorage.getItem('fm_silo_moisture') || '[]').filter(r => r.date === selectedDate);
+        let shiftReportsData = [];
+        let rmData = [];
+        let performaData = [];
+        let plantReportData = [];
+        let qsReportData = [];
+        let siloDumpData = [];
+        let siloMoistData = [];
+        let dailyChecklistData = [];
+
+        try {
+            shiftReportsData = getSafeLocalStorageData('fmpr_shiftReports').filter(r => r.date === selectedDate);
+            rmData = getSafeLocalStorageData('fm_standalone_rm_checks').filter(r => r.date === selectedDate);
+            performaData = getSafeLocalStorageData('fm_performas').filter(r => r.date === selectedDate);
+            plantReportData = getSafeLocalStorageData('fm_plant_report').filter(r => r.date === selectedDate);
+            qsReportData = getSafeLocalStorageData('fm_qs_report').filter(r => r.date === selectedDate);
+            siloDumpData = getSafeLocalStorageData('fm_silo_dump').filter(r => r.date === selectedDate);
+            siloMoistData = getSafeLocalStorageData('fm_silo_moisture').filter(r => r.date === selectedDate);
+            dailyChecklistData = getSafeLocalStorageData('fmpr_dailyChecklists').filter(r => r.date === selectedDate);
+        } catch (err) {
+            console.error('Error filtering PDF datasets:', err);
+        }
 
         // Sort each dataset by shift (A, B, C) and then by time if possible
         const sortByShift = (arr) => {
+            if (!Array.isArray(arr)) return;
             arr.sort((a, b) => (a.shift || '').localeCompare(b.shift || ''));
         };
         sortByShift(shiftReportsData);
@@ -27,6 +54,7 @@
         sortByShift(qsReportData);
         sortByShift(siloDumpData);
         sortByShift(siloMoistData);
+        sortByShift(dailyChecklistData);
 
         let html = `
             <div class="pdf-report-header">
@@ -214,6 +242,93 @@
 
         } else {
             html += `<p style="font-style:italic;color:#666;">No silo moisture data for this date.</p>`;
+        }
+        html += `</div>`;
+
+        // 7. Department Daily Checklists
+        html += `<div class="pdf-section"><h3>7. Department Daily Checklists (Combined)</h3>`;
+        if (dailyChecklistData.length > 0) {
+            const localChecklistQuestions = window.DAILY_CHECKLIST_QUESTIONS || {
+                'Old Godown': [
+                    'All incoming bags are inspected for leakage and weight.',
+                    'Moisture levels of grain bags are checked and logged.',
+                    'Stacking heights do not exceed the safe limit (15 bags).',
+                    'Aisles and emergency exits are completely unobstructed.',
+                    'Rodent traps and bait stations are inspected.',
+                    'Daily dispatch and receipt ledger is updated.'
+                ],
+                'Mechanical': [
+                    'All machines are lubricated and oil levels checked.',
+                    'Guards and safety covers are securely in place.',
+                    'Pre-start inspection completed for hammer mills and mixers.',
+                    'No abnormal noise or vibration detected during idle run.',
+                    'Workshop tools are accounted for and sorted.',
+                    'Pneumatic lines are checked for leaks and pressure.'
+                ],
+                'Electrical': [
+                    'Motor control centers (MCC) checked for overheating/burning smell.',
+                    'Power factor panels are operating at target (>0.90).',
+                    'Backup generator has sufficient fuel and battery voltage.',
+                    'Emergency stop buttons on all major machines are tested/functional.',
+                    'Electrical panels are locked and keys secured.',
+                    'Cable trays and conduits inspected for damage or exposure.'
+                ],
+                'Control Room': [
+                    'SCADA system communication with PLC is stable.',
+                    'All bin/silo level sensors show active readings.',
+                    'Feeder speed controls and batching scales are calibrated.',
+                    'Interlock system status verified and fully active.',
+                    'Batch production logs are printed/backed up.',
+                    'Control room temperature is within limits (AC functioning).'
+                ],
+                'Premix': [
+                    'Micro-ingredient scales are calibrated and zeroed.',
+                    'Pre-weighed premix batches verified against formulation sheet.',
+                    'Premix dispenser and dumping hopper suction fans are on.',
+                    'No cross-contamination risk in the preparation area.',
+                    'Inventory of high-value vitamins/minerals checked.',
+                    'Hand addition log sheet is signed and completed.'
+                ],
+                'Other Department': [
+                    'Office computers, lights, and AC are turned off after shift.',
+                    'Sufficient supply of printing paper and office stationery.',
+                    'Admin files and records are organized and stored securely.',
+                    'Sewerage and water supply pumps are checked and working.',
+                    'Visitor log and gate pass register are up to date.',
+                    'General cleanliness of office areas and toilets.'
+                ]
+            };
+
+            dailyChecklistData.forEach(dc => {
+                html += `<div style="margin-bottom: 1.5rem; border: 1px solid #ccc; border-radius: 6px; padding: 1rem; background: #fff;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 0.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;">
+                        <strong>Department: ${dc.departmentName || '-'}</strong>
+                        <span>Filled By: ${dc.filledBy || '-'}</span>
+                    </div>
+                    <table class="pdf-table" style="margin-bottom: 0.5rem;">
+                        <thead>
+                            <tr>
+                                <th style="width: 80%;">Checklist Item</th>
+                                <th style="width: 20%; text-align: center;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                const questions = localChecklistQuestions[dc.departmentName] || [];
+                questions.forEach((q, idx) => {
+                    const isChecked = dc.checkedItems ? !!dc.checkedItems[idx] : false;
+                    html += `<tr>
+                        <td>${q}</td>
+                        <td style="text-align: center; font-weight: bold; color: ${isChecked ? 'green' : 'red'};">${isChecked ? '✅ Yes' : '❌ No'}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                if (dc.remarks) {
+                    html += `<div style="font-size: 0.9rem; color: #555; margin-top: 0.5rem;"><strong>Remarks:</strong> ${dc.remarks}</div>`;
+                }
+                html += `</div>`;
+            });
+        } else {
+            html += `<p style="font-style:italic;color:#666;">No daily checklist data for this date.</p>`;
         }
         html += `</div>`;
 

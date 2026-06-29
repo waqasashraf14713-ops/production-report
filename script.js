@@ -1177,6 +1177,163 @@ document.addEventListener('DOMContentLoaded', () => {
         return silos;
     };
 
+    const initSiloDataModalEvents = () => {
+        try {
+            const btnOpen = document.getElementById('btn-add-silo-data');
+            const modal = document.getElementById('silo-data-modal');
+            const btnClose = document.getElementById('silo-data-close');
+            const btnCancel = document.getElementById('btn-cancel-silo-data');
+            const btnSave = document.getElementById('btn-save-silo-data');
+
+            const selectSilo = document.getElementById('sd-m-silo');
+            const selectStatus = document.getElementById('sd-m-status');
+            const selectMaterial = document.getElementById('sd-m-material');
+            const inputFill = document.getElementById('sd-m-fill');
+            const inputCapacity = document.getElementById('sd-m-capacity');
+            const inputPMoist = document.getElementById('sd-m-pmoist');
+            const inputCMoist = document.getElementById('sd-m-cmoist');
+            const selectFan = document.getElementById('sd-m-fan');
+            const inputRuntime = document.getElementById('sd-m-runtime');
+            const inputFanOn = document.getElementById('sd-m-fanon');
+            const inputFanOff = document.getElementById('sd-m-fanoff');
+
+            if (!btnOpen || !modal) {
+                console.warn("btn-add-silo-data or silo-data-modal not found in DOM");
+                return;
+            }
+
+            // Populate Silo Dropdown
+            const populateSiloDropdown = () => {
+                if (!selectSilo) return;
+                selectSilo.innerHTML = '';
+                const silos = Array.isArray(silosData) ? silosData : [];
+                silos.forEach(silo => {
+                    const opt = document.createElement('option');
+                    opt.value = silo.id;
+                    opt.textContent = silo.name;
+                    selectSilo.appendChild(opt);
+                });
+            };
+
+            // Populate Materials Dropdown
+            const populateMaterialsDropdown = () => {
+                if (!selectMaterial) return;
+                selectMaterial.innerHTML = '';
+                const mats = Array.isArray(availableMaterials) ? availableMaterials : ['Maize', 'Rice'];
+                mats.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    opt.textContent = m;
+                    selectMaterial.appendChild(opt);
+                });
+                const optAddNew = document.createElement('option');
+                optAddNew.value = 'add_new';
+                optAddNew.textContent = '+ Add New...';
+                selectMaterial.appendChild(optAddNew);
+            };
+
+            // Load Selected Silo Data into form
+            const loadSiloData = () => {
+                if (!selectSilo) return;
+                const siloId = parseInt(selectSilo.value);
+                const silos = Array.isArray(silosData) ? silosData : [];
+                const silo = silos.find(s => s.id === siloId);
+                if (!silo) return;
+
+                if (selectStatus) selectStatus.value = silo.status || 'Stopped';
+                if (selectMaterial) selectMaterial.value = silo.materialType || 'Maize';
+                if (inputFill) inputFill.value = silo.currentFillTons || 0;
+                if (inputCapacity) inputCapacity.value = silo.capacity || 0;
+                if (inputPMoist) inputPMoist.value = silo.purchaseMoisture || 0;
+                if (inputCMoist) inputCMoist.value = silo.currentMoisture || 0;
+                if (selectFan) selectFan.value = silo.fanStatus || 'Off';
+                if (inputRuntime) inputRuntime.value = silo.runTime || 0;
+                if (inputFanOn) inputFanOn.value = silo.fanOnTime || '-';
+                if (inputFanOff) inputFanOff.value = silo.fanOffTime || '-';
+            };
+
+            selectSilo.addEventListener('change', loadSiloData);
+
+            // Material selection custom add
+            if (selectMaterial) {
+                selectMaterial.addEventListener('change', (e) => {
+                    if (e.target.value === 'add_new') {
+                        const newMat = prompt('Enter new material name:');
+                        if (newMat && newMat.trim()) {
+                            const name = newMat.trim();
+                            if (Array.isArray(availableMaterials)) {
+                                if (!availableMaterials.includes(name)) {
+                                    availableMaterials.push(name);
+                                }
+                            } else {
+                                availableMaterials = [name];
+                            }
+                            populateMaterialsDropdown();
+                            selectMaterial.value = name;
+                        } else {
+                            loadSiloData();
+                        }
+                    }
+                });
+            }
+
+            const openModal = () => {
+                try {
+                    populateSiloDropdown();
+                    populateMaterialsDropdown();
+                    loadSiloData();
+                    modal.classList.add('show');
+                } catch (e) {
+                    console.error("Error opening silo data modal:", e);
+                }
+            };
+            window.openSiloDataModal = openModal;
+            window.closeSiloDataModal = closeModal;
+
+            const closeModal = () => {
+                modal.classList.remove('show');
+            };
+
+            btnOpen.addEventListener('click', openModal);
+            if (btnClose) btnClose.addEventListener('click', closeModal);
+            if (btnCancel) btnCancel.addEventListener('click', closeModal);
+
+            if (btnSave) {
+                btnSave.addEventListener('click', async () => {
+                    try {
+                        const siloId = parseInt(selectSilo.value);
+                        const silos = Array.isArray(silosData) ? silosData : [];
+                        const silo = silos.find(s => s.id === siloId);
+                        if (!silo) return;
+
+                        if (selectStatus) silo.status = selectStatus.value;
+                        if (selectMaterial) silo.materialType = selectMaterial.value;
+                        if (inputFill) silo.currentFillTons = parseFloat(inputFill.value) || 0;
+                        if (silo.capacity) {
+                            silo.fillLevel = Math.round((silo.currentFillTons / silo.capacity) * 100);
+                        }
+                        if (inputPMoist) silo.purchaseMoisture = parseFloat(inputPMoist.value) || 0;
+                        if (inputCMoist) silo.currentMoisture = parseFloat(inputCMoist.value) || 0;
+                        if (selectFan) silo.fanStatus = selectFan.value;
+                        if (inputRuntime) silo.runTime = parseFloat(inputRuntime.value) || 0;
+                        if (inputFanOn) silo.fanOnTime = inputFanOn.value.trim();
+                        if (inputFanOff) silo.fanOffTime = inputFanOff.value.trim();
+
+                        saveData(silo);
+                        renderSilos();
+                        closeModal();
+                        showToast(`✓ Silo ${silo.name} updated`);
+                    } catch (e) {
+                        console.error("Error saving silo data:", e);
+                        alert("Error saving silo data: " + e.message);
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("Error in initSiloDataModalEvents:", e);
+        }
+    };
+
     // ─── Application Initialization ───────────────────────────────────────────
     const initializeApplication = async () => {
         // Set inputs in modal
@@ -1193,7 +1350,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
-
         // Fetch initial data
         await loadAllData();
 
@@ -1205,6 +1361,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initBatchingAuditEvents();
         initStandaloneRmEvents();
         initPerformaEvents();
+        initSiloDataModalEvents();
         if (window.initPlantReportEvents) window.initPlantReportEvents();
         if (window.initQualityStandardsEvents) window.initQualityStandardsEvents();
         if (window.initSiloDumpEvents) window.initSiloDumpEvents();
@@ -2678,6 +2835,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'General cleanliness of office areas and toilets.'
         ]
     };
+    window.DAILY_CHECKLIST_QUESTIONS = DAILY_CHECKLIST_QUESTIONS;
 
     const DEPT_HEADS = {
         'Old Godown': ['Zubair', 'Asif', 'Imran', 'Waqas', 'Tahir', 'Shoaib'],
@@ -3022,6 +3180,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateBadge('fm_qs_report', 'badge-qs');
             updateBadge('fm_silo_dump', 'badge-silo');
             updateBadge('fm_silo_moisture', 'badge-silo-moist');
+            updateBadge('fmpr_dailyChecklists', 'badge-dc');
         };
         window.updateAllSubreportBadges();
 
@@ -3042,6 +3201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const qsReportData = JSON.parse(localStorage.getItem('fm_qs_report') || '[]') || [];
         const siloDumpData = JSON.parse(localStorage.getItem('fm_silo_dump') || '[]') || [];
         const siloMoistData = JSON.parse(localStorage.getItem('fm_silo_moisture') || '[]') || [];
+        const dailyChecklistData = JSON.parse(localStorage.getItem('fmpr_dailyChecklists') || '[]') || [];
 
         filtered.forEach(r => {
             const shiftClass = { A: 'shift-a', B: 'shift-b', C: 'shift-c' }[r.shift] || 'shift-a';
@@ -3061,6 +3221,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasQs = qsReportData.some(d => d.date === r.date && d.shift === r.shift);
             const hasSilo = siloDumpData.some(d => d.date === r.date && d.shift === r.shift);
             const hasSiloMoist = siloMoistData.some(d => d.date === r.date && d.shift === r.shift);
+            const hasDc = dailyChecklistData.some(d => d.date === r.date);
 
             const subReportStatus = (name, hasReport) => `
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px dashed var(--card-border);">
@@ -3106,6 +3267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${subReportStatus('Quality Standards Check List', hasQs)}
                         ${subReportStatus('Silo Dumping Moisture Report', hasSilo)}
                         ${subReportStatus('Silo Moisture Report', hasSiloMoist)}
+                        ${subReportStatus('Department Daily Checklist', hasDc)}
                     </div>
                 </div>
             `;

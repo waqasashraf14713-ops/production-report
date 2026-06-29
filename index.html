@@ -120,7 +120,10 @@
             <section class="table-container">
                 <div class="table-header">
                     <h2>Daily Silo Record</h2>
-                    <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+                    <div style="display:flex;gap:1rem;">
+                        <button class="btn btn-secondary" id="btn-add-silo-data" onclick="if(window.openSiloDataModal)window.openSiloDataModal();">➕ Add/Edit Data</button>
+                        <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="report-table" id="daily-report-table">
@@ -369,6 +372,14 @@
                             </div>
                         </div>
 
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <h4 style="font-size:0.95rem; color:var(--text-secondary); margin:0;">7. Daily Checklist</h4>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span id="badge-dc-top" class="sr-draft-badge" style="display:none;"></span>
+                                <button class="btn btn-secondary" onclick="document.getElementById('nav-five-s').click(); setTimeout(() => switchQSTab('daily-checklist'), 50);" style="padding:0.2rem 0.6rem; font-size:0.8rem;">➕ Fill</button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -504,7 +515,7 @@
                     </div>
 
                     <!-- Shift Plant Report Standalone Table -->
-                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                    <div style="display: none; background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);flex-direction:column;">
                         <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;">
                         <h2 style="display:flex;align-items:center;gap:0.75rem;">3. 🏭 Shift Plant Report <span id="badge-plant" class="sr-draft-badge" style="display:none;"></span></h2>
                         <button class="btn btn-secondary" id="btn-add-plant-report">➕ Add Plant Report</button>
@@ -529,9 +540,9 @@
                     </div>
 
                     <!-- Quality Standards Check List Standalone Table -->
-                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                    <div style="display: none; background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);flex-direction:column;">
                         <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;">
-                        <h2 style="display:flex;align-items:center;gap:0.75rem;">4. ✔️ Quality Standards Check List <span id="badge-qs" class="sr-draft-badge" style="display:none;"></span></h2>
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;">3. ✔️ Quality Standards Check List <span id="badge-qs" class="sr-draft-badge" style="display:none;"></span></h2>
                         <button class="btn btn-secondary" id="btn-add-qs">➕ Add Check List</button>
                     </div>
                     <div class="table-responsive">
@@ -554,9 +565,9 @@
                     </div>
 
                     <!-- Silo Dumping Moisture Report Standalone Table -->
-                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                    <div style="display: none; background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);flex-direction:column;">
                         <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;">
-                        <h2 style="display:flex;align-items:center;gap:0.75rem;">5. 🌾 Silo Dumping Moisture Report <span id="badge-silo" class="sr-draft-badge" style="display:none;"></span></h2>
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;">3. 🌾 Silo Dumping Moisture Report <span id="badge-silo" class="sr-draft-badge" style="display:none;"></span></h2>
                         <button class="btn btn-secondary" id="btn-add-silo-dump">➕ Add Report</button>
                     </div>
                     <div class="table-responsive">
@@ -578,9 +589,9 @@
                 </div>
                 
                     <!-- Silo Moisture Report Standalone Table -->
-                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                    <div style="display: none; background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);flex-direction:column;">
                         <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;">
-                        <h2 style="display:flex;align-items:center;gap:0.75rem;">6. 💧 Silo Moisture Report <span id="badge-silo-moist" class="sr-draft-badge" style="display:none;"></span></h2>
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;">3. 💧 Silo Moisture Report <span id="badge-silo-moist" class="sr-draft-badge" style="display:none;"></span></h2>
                         <button class="btn btn-secondary" id="btn-add-silo-moist">➕ Add Report</button>
                     </div>
                     <div class="table-responsive">
@@ -1658,6 +1669,92 @@ order by
                 <div style="display:flex;justify-content:flex-end;gap:1rem;margin-top:1.5rem;border-top:1px solid var(--card-border);padding-top:1rem;">
                     <button class="btn btn-secondary" id="btn-cancel-sm" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
                     <button class="btn btn-primary" id="btn-save-sm" style="width:auto;padding:0.5rem 2rem;">💾 Save Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Silo Data Modal -->
+    <div id="silo-data-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:550px;width:95%;background:#ffffff;">
+            <div class="modal-header">
+                <h2>➕ Add/Edit Silo Record</h2>
+                <button id="silo-data-close" class="modal-close-btn" onclick="if(window.closeSiloDataModal)window.closeSiloDataModal();">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem 2rem; max-height: 80vh; overflow-y: auto;">
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="font-weight:600; margin-bottom:0.4rem; display:block; color:var(--text-primary);">Select Silo</label>
+                    <select id="sd-m-silo" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
+                        <!-- JS will populate -->
+                    </select>
+                </div>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem;">
+                    <div class="form-group">
+                        <label style="font-weight:600; margin-bottom:0.4rem; display:block; color:var(--text-primary);">Status</label>
+                        <select id="sd-m-status" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
+                            <option value="Empty">Empty</option>
+                            <option value="Active">Active</option>
+                            <option value="Running">Running</option>
+                            <option value="Stopped">Stopped</option>
+                            <option value="Aeration">Aeration</option>
+                            <option value="Recirculation">Recirculation</option>
+                            <option value="Under Fumigation">Under Fumigation</option>
+                            <option value="Maintenance">Maintenance</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:600; margin-bottom:0.4rem; display:block; color:var(--text-primary);">Material Type</label>
+                        <select id="sd-m-material" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
+                            <!-- JS will populate -->
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem;">
+                    <div class="form-group">
+                        <label style="font-weight:600; margin-bottom:0.4rem; display:block; color:var(--text-primary);">Current Fill (Tons)</label>
+                        <input type="number" step="any" id="sd-m-fill" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:600; margin-bottom:0.4rem; display:block; color:var(--text-primary);">Capacity (Tons - Read-only)</label>
+                        <input type="number" id="sd-m-capacity" readonly style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:rgba(0,0,0,0.1);color:var(--text-secondary);outline:none;" />
+                    </div>
+                </div>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem;">
+                    <div class="form-group">
+                        <label style="font-weight:600; margin-bottom:0.4rem; display:block; color:var(--text-primary);">Purchase Moisture (%)</label>
+                        <input type="number" step="any" id="sd-m-pmoist" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:600; margin-bottom:0.4rem; display:block; color:var(--text-primary);">Current Moisture (%)</label>
+                        <input type="number" step="any" id="sd-m-cmoist" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                    </div>
+                </div>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem;">
+                    <div class="form-group">
+                        <label style="font-weight:600; margin-bottom:0.4rem; display:block; color:var(--text-primary);">Fan Status</label>
+                        <select id="sd-m-fan" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
+                            <option value="Off">Off</option>
+                            <option value="On">On</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:600; margin-bottom:0.4rem; display:block; color:var(--text-primary);">Run Time (Hours)</label>
+                        <input type="number" step="any" id="sd-m-runtime" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                    </div>
+                </div>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem;">
+                    <div class="form-group">
+                        <label style="font-weight:600; margin-bottom:0.4rem; display:block; color:var(--text-primary);">Fan On Time</label>
+                        <input type="text" placeholder="e.g., 08:00 AM" id="sd-m-fanon" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:600; margin-bottom:0.4rem; display:block; color:var(--text-primary);">Fan Off Time</label>
+                        <input type="text" placeholder="e.g., 04:00 PM" id="sd-m-fanoff" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:1rem;margin-top:1.5rem;border-top:1px solid var(--card-border);padding-top:1rem;">
+                    <button class="btn btn-secondary" id="btn-cancel-silo-data" onclick="if(window.closeSiloDataModal)window.closeSiloDataModal();" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-silo-data" style="width:auto;padding:0.5rem 2rem;">💾 Save Changes</button>
                 </div>
             </div>
         </div>
