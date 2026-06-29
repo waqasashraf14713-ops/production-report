@@ -2266,10 +2266,8 @@ order by
 
             if (!records.length) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:2rem;">No records found. Click ➕ Add Batching Scale to begin.</td></tr>';
-                if (accuracyChart) {
-                    accuracyChart.destroy();
-                    accuracyChart = null;
-                }
+                if (doughnutChart) { doughnutChart.destroy(); doughnutChart = null; }
+                if (trendChart)    { trendChart.destroy();    trendChart = null; }
                 return;
             }
             [...records].reverse().forEach(r => {
