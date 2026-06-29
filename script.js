@@ -1369,19 +1369,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (urlInput) urlInput.value = supabaseUrl;
         if (keyInput) keyInput.value = supabaseKey;
 
-        // Init Supabase if credentials exist
-        if (supabaseUrl && supabaseKey) {
-            await initSupabase();
-        } else {
-            updateSbStatusUI();
-        }
-
-
-        // Fetch initial data
-        await loadAllData();
-
-        // Render UI
-        renderSilos();
+        // Initialize event listeners immediately so buttons work instantly
         initFiveSEvents();
         initDailyChecklistEvents();
         initShiftReportEvents();
@@ -1393,6 +1381,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.initQualityStandardsEvents) window.initQualityStandardsEvents();
         if (window.initSiloDumpEvents) window.initSiloDumpEvents();
         if (window.initSiloMoistEvents) window.initSiloMoistEvents();
+
+        // Init Supabase if credentials exist
+        if (supabaseUrl && supabaseKey) {
+            await initSupabase();
+        } else {
+            updateSbStatusUI();
+        }
+
+        // Fetch initial data
+        await loadAllData();
+
+        // Render UI
+        renderSilos();
+
         // Refresh module data tables after Supabase sync
         if (window.refreshSiloDumpData) window.refreshSiloDumpData();
         if (window.refreshSiloMoistData) window.refreshSiloMoistData();
