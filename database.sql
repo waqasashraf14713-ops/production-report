@@ -30,3 +30,23 @@ CREATE TABLE batching_scale (
     remarks TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Table for Batching Scale Calibration Checking (JSONB format for scale grids)
+CREATE TABLE batching_scale_calibration (
+    id SERIAL PRIMARY KEY,
+    date DATE NOT NULL,
+    officer_name VARCHAR(150),
+    operators VARCHAR(255),
+    recal_big BOOLEAN DEFAULT FALSE,
+    recal_small BOOLEAN DEFAULT FALSE,
+    recal_premix BOOLEAN DEFAULT FALSE,
+    recal_oil_wt BOOLEAN DEFAULT FALSE,
+    recal_oil_ds BOOLEAN DEFAULT FALSE,
+    big_scale JSONB,         -- Array of targets with PLC and HMI values
+    small_scale JSONB,       -- Array of targets with PLC and HMI values
+    premix_scale JSONB,      -- Array of targets with PLC and HMI values
+    oil_wt_scale JSONB,      -- Array of targets with PLC and HMI values
+    oil_ds_scale JSONB,      -- Array of targets with PLC and HMI values
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
