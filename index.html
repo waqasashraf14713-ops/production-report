@@ -1816,6 +1816,65 @@ order by
                     </div>
                 </div>
 
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:1.5rem;margin-bottom:1rem;min-width:0;border-top:1px dashed var(--card-border);padding-top:1rem;">
+                    <!-- 216 Premix Dump Scale -->
+                    <div>
+                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);">216 Premix Dump (+- 1kg)</h3>
+                        <div style="max-height:220px;overflow-y:auto;border:1px solid var(--card-border);border-radius:6px;">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.85rem;" class="report-table">
+                                <thead>
+                                    <tr style="background:var(--card-bg);position:sticky;top:0;z-index:1;">
+                                        <th style="padding:0.4rem;text-align:left;">Target</th>
+                                        <th style="padding:0.4rem;text-align:left;">PLC</th>
+                                        <th style="padding:0.4rem;text-align:left;">HMI</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="batching-modal-premix-scale-body">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 251 Oil Weight Scale -->
+                    <div>
+                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);">251 Oil Weight (+- 1kg)</h3>
+                        <div style="max-height:220px;overflow-y:auto;border:1px solid var(--card-border);border-radius:6px;">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.85rem;" class="report-table">
+                                <thead>
+                                    <tr style="background:var(--card-bg);position:sticky;top:0;z-index:1;">
+                                        <th style="padding:0.4rem;text-align:left;">Target</th>
+                                        <th style="padding:0.4rem;text-align:left;">PLC</th>
+                                        <th style="padding:0.4rem;text-align:left;">HMI</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="batching-modal-oil-wt-scale-body">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 253 Oil Discharge Scale -->
+                    <div>
+                        <h3 style="font-size:0.95rem;margin-top:0;margin-bottom:0.75rem;border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;color:var(--text-primary);">253 Oil Discharge (+- 2kg)</h3>
+                        <div style="max-height:220px;overflow-y:auto;border:1px solid var(--card-border);border-radius:6px;">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.85rem;" class="report-table">
+                                <thead>
+                                    <tr style="background:var(--card-bg);position:sticky;top:0;z-index:1;">
+                                        <th style="padding:0.4rem;text-align:left;">Target</th>
+                                        <th style="padding:0.4rem;text-align:left;">PLC</th>
+                                        <th style="padding:0.4rem;text-align:left;">HMI</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="batching-modal-oil-ds-scale-body">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group" style="margin-bottom:1rem;">
                     <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Remarks</label>
                     <textarea id="batching-modal-remarks" rows="3" placeholder="Any calibration notes..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);resize:vertical;"></textarea>
@@ -1852,8 +1911,11 @@ order by
         const LS_KEY = 'fm_batching_scale';
         let records = [];
         let activeId = null;
-        const BIG_TARGETS   = [4000,3500,3000,2500,2000,1500,1300,1100,900,700,500,300,100,0];
-        const SMALL_TARGETS = [2000,1900,1400,900,400,200,100,0];
+        const BIG_TARGETS      = [4000,3500,3000,2500,2000,1500,1300,1100,900,700,500,300,100,0];
+        const SMALL_TARGETS    = [2000,1900,1400,900,400,200,100,0];
+        const PREMIX_TARGETS   = [300,200,100,50,0];
+        const OIL_WT_TARGETS   = [200,100,50,0];
+        const OIL_DS_TARGETS   = [200,100,50,0];
 
         function load()  { try { records = JSON.parse(localStorage.getItem(LS_KEY)||'[]'); } catch(e){records=[];} }
         function save()  { localStorage.setItem(LS_KEY, JSON.stringify(records)); }
@@ -1929,8 +1991,11 @@ order by
                 if (op2El) op2El.selectedIndex = 1;
             }
 
-            buildScaleRows(BIG_TARGETS,   record ? record.bigScale   : null, 'big');
-            buildScaleRows(SMALL_TARGETS, record ? record.smallScale : null, 'small');
+            buildScaleRows(BIG_TARGETS,      record ? record.bigScale      : null, 'big');
+            buildScaleRows(SMALL_TARGETS,    record ? record.smallScale    : null, 'small');
+            buildScaleRows(PREMIX_TARGETS,   record ? record.premixScale   : null, 'premix');
+            buildScaleRows(OIL_WT_TARGETS,   record ? record.oilWtScale    : null, 'oil-wt');
+            buildScaleRows(OIL_DS_TARGETS,   record ? record.oilDsScale    : null, 'oil-ds');
 
             const modal = document.getElementById('batching-scale-modal');
             if (modal) modal.classList.add('show');
@@ -1963,13 +2028,16 @@ order by
             const operatorStr = (op1El && op2El) ? `${op1El.value} + ${op2El.value}` : '';
             
             const rec = {
-                id:        activeId || Date.now(),
-                date:      dEl.value,
-                officer:   offEl ? offEl.value : '',
-                operator:  operatorStr,
-                remarks:   rEl ? rEl.value.trim()  : '',
+                id:         activeId || Date.now(),
+                date:       dEl.value,
+                officer:    offEl ? offEl.value : '',
+                operator:   operatorStr,
+                remarks:    rEl ? rEl.value.trim()  : '',
                 bigScale:   collectScale('big',   BIG_TARGETS),
-                smallScale: collectScale('small', SMALL_TARGETS)
+                smallScale: collectScale('small', SMALL_TARGETS),
+                premixScale: collectScale('premix', PREMIX_TARGETS),
+                oilWtScale:  collectScale('oil-wt', OIL_WT_TARGETS),
+                oilDsScale:  collectScale('oil-ds', OIL_DS_TARGETS)
             };
             if (activeId) {
                 const idx = records.findIndex(r => Number(r.id) === activeId);
