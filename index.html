@@ -1960,7 +1960,7 @@ order by
 
             const diffPlc = Math.abs(p - target);
             const diffHmi = Math.abs(h - target);
-            const tolerance = target === 0 ? 0.001 : target * 0.00001; // 0.001% limit, minimum 0.001 tolerance if target is 0
+            const tolerance = target === 0 ? 0.085 : target * 0.00085; // 0.085% limit, minimum 0.085 tolerance if target is 0
 
             if (diffPlc <= tolerance && diffHmi <= tolerance) {
                 return '<span style="background:var(--success-color);color:#ffffff;padding:0.15rem 0.35rem;border-radius:4px;font-size:0.75rem;font-weight:600;">OK</span>';
@@ -1987,7 +1987,7 @@ order by
                         if (!isNaN(p) && !isNaN(h)) {
                             const diffPlc = Math.abs(p - t);
                             const diffHmi = Math.abs(h - t);
-                            const tolerance = t === 0 ? 0.001 : t * 0.00001;
+                            const tolerance = t === 0 ? 0.085 : t * 0.00085;
                             if (diffPlc > tolerance || diffHmi > tolerance) {
                                 if (isReCal) {
                                     hasRecal = true;
