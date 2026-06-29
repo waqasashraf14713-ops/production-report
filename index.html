@@ -89,6 +89,10 @@
                     <span class="nav-icon">💊</span>
                     <span>Batching Audit</span>
                 </a>
+                <a href="#batching-scale" class="nav-item" id="nav-batching-scale">
+                    <span class="nav-icon">⚖️</span>
+                    <span>Batching Scale</span>
+                </a>
             </nav>
         </aside>
         
@@ -142,6 +146,11 @@
                     <div class="dash-quick-icon" style="background:linear-gradient(135deg,#ec4899,#f472b6);">💊</div>
                     <div class="dash-quick-label">Batching Audit</div>
                     <div class="dash-quick-desc">Batch audit records</div>
+                </div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-batching-scale').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#06b6d4,#22d3ee);">⚖️</div>
+                    <div class="dash-quick-label">Batching Scale</div>
+                    <div class="dash-quick-desc">Batching scale records</div>
                 </div>
             </section>
         </div>
@@ -599,36 +608,7 @@
                     </div>
                 </div>
 
-                    </div>
-
-                    <!-- Batching Scale Standalone Table -->
-                    <div style="display: flex; background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);flex-direction:column;">
-                        <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;">
-                        <h2 style="display:flex;align-items:center;gap:0.75rem;">⚖️ Batching Scale <span id="badge-batching-scale" class="sr-draft-badge" style="display:none;"></span></h2>
-                        <button class="btn btn-secondary" id="btn-add-batching-scale">➕ Add Batching Scale</button>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="report-table" id="batching-scale-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Shift</th>
-                                    <th>Recipe / Product</th>
-                                    <th>Target Weight</th>
-                                    <th>Actual Weight</th>
-                                    <th>Variance</th>
-                                    <th>Remarks</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- JS will populate -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                    </div>
+                     </div>
 
                     <!-- Silo Dumping Moisture Report Standalone Table -->
                     <div style="display: flex; background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);flex-direction:column;">
@@ -677,6 +657,40 @@
                     </div>
                 </div>
 
+                </div>
+            </section>
+        </div>
+
+        <!-- Batching Scale Report Section -->
+        <div id="view-batching-scale" class="view-section" style="display: none;">
+            <section class="table-container">
+                <div style="display: flex; background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);flex-direction:column;">
+                    <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;display:flex;justify-content:space-between;align-items:center;width:100%;">
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;margin:0;">⚖️ Batching Scale Records <span id="badge-batching-scale" class="sr-draft-badge" style="display:none;"></span></h2>
+                        <div class="header-actions" style="display:flex;gap:1rem;align-items:center;">
+                            <button class="btn btn-secondary" id="btn-add-batching-scale">➕ Add Batching Scale</button>
+                            <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table" id="batching-scale-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Shift</th>
+                                    <th>Recipe / Product</th>
+                                    <th>Target Weight</th>
+                                    <th>Actual Weight</th>
+                                    <th>Variance</th>
+                                    <th>Remarks</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS will populate -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </div>

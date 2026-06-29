@@ -28,12 +28,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewShiftReport = document.getElementById('view-shift-report');
     const navBatchingAudit = document.getElementById('nav-batching-audit');
     const viewBatchingAudit = document.getElementById('view-batching-audit');
+    const navBatchingScale = document.getElementById('nav-batching-scale');
+    const viewBatchingScale = document.getElementById('view-batching-scale');
 
     const switchView = (activeNav, activeView) => {
-        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navFiveS, navShiftReport, navBatchingAudit].forEach(nav => {
+        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navFiveS, navShiftReport, navBatchingAudit, navBatchingScale].forEach(nav => {
             if (nav) nav.classList.remove('active');
         });
-        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewFiveS, viewShiftReport, viewBatchingAudit].forEach(view => {
+        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewFiveS, viewShiftReport, viewBatchingAudit, viewBatchingScale].forEach(view => {
             if (view) view.style.display = 'none';
         });
 
@@ -103,6 +105,13 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             switchView(navBatchingAudit, viewBatchingAudit);
             initBatchingAuditView();
+        });
+    }
+
+    if (navBatchingScale) {
+        navBatchingScale.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(navBatchingScale, viewBatchingScale);
         });
     }
 
