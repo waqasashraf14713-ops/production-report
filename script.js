@@ -1,13 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     try {
     // ─── Date / Time ───────────────────────────────────────────────────────────
-    const updateDateTime = () => {
-        const now = new Date();
-        const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('current-date').textContent = now.toLocaleDateString(undefined, optionsDate);
-    };
-    updateDateTime();
-    setInterval(updateDateTime, 1000);
+    
 
     // ─── Sidebar Navigation ────────────────────────────────────────────────────
     const navDashboard = document.getElementById('nav-dashboard');
