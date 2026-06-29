@@ -33,7 +33,7 @@ CREATE TABLE batching_scale (
 
 -- Table for Batching Scale Calibration Checking (JSONB format for scale grids)
 CREATE TABLE batching_scale_calibration (
-    id SERIAL PRIMARY KEY,
+    id BIGINT PRIMARY KEY,
     date DATE NOT NULL,
     officer_name VARCHAR(150),
     operators VARCHAR(255),
