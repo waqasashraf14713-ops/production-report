@@ -1,5 +1,6 @@
 // ─── Quality Standards Check List Module ──────────────────────────────────
 (() => {
+try {
 const LS_QS = 'fm_qs_report';
 let qsData = [];
 try {
@@ -83,6 +84,7 @@ const clearQsForm = () => {
 };
 
 const renderQsTable = () => {
+    try { qsData = JSON.parse(localStorage.getItem(LS_QS) || '[]'); } catch(e) {}
     const tbody = document.querySelector('#qs-table tbody');
     if (!tbody) return;
     tbody.innerHTML = '';
@@ -182,4 +184,16 @@ window.initQualityStandardsEvents = () => {
 
     renderQsTable();
 };
+
+window.refreshQsData = () => {
+    try { qsData = JSON.parse(localStorage.getItem(LS_QS) || '[]'); } catch(e) {}
+    if (typeof renderQsTable === 'function') renderQsTable();
+};
+} catch (err) {
+    if (window.showRuntimeError) {
+        window.showRuntimeError('quality_standards.js', err);
+    } else {
+        console.error('quality_standards.js error:', err);
+    }
+}
 })();

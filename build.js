@@ -24,7 +24,18 @@ fs.writeFileSync(path.join(publicDir, 'env.js'), content);
 console.log('✓ env.js generated successfully in public folder.');
 
 // 4. Copy other static assets to public folder
-const filesToCopy = ['index.html', 'styles.css', 'script.js', 'silo.png'];
+const filesToCopy = [
+    'index.html', 
+    'styles.css', 
+    'script.js', 
+    'silo.png',
+    'silo_dump.js',
+    'silo_moisture.js',
+    'quality_standards.js',
+    'plant_report.js',
+    'shift_report_pdf.js',
+    'less_excess_pdf.js'
+];
 filesToCopy.forEach(file => {
     const srcPath = path.join(__dirname, file);
     const destPath = path.join(publicDir, file);

@@ -1,5 +1,6 @@
 // ─── Shift Plant Report Module ────────────────────────────────────────────
 (() => {
+try {
 const LS_PLANT_REPORT = 'fm_plant_report';
 let plantReportsData = [];
 try {
@@ -230,6 +231,7 @@ const loadPlantReportToForm = (data) => {
 };
 
 window.renderPlantReportTable = () => {
+    try { plantReportsData = JSON.parse(localStorage.getItem(LS_PLANT_REPORT) || '[]'); } catch(e) {}
     const tbody = document.querySelector('#plant-report-table tbody');
     if (!tbody) return;
     tbody.innerHTML = '';
@@ -270,7 +272,8 @@ window.deletePlantReport = (id) => {
 window.initPlantReportEvents = () => {
     buildAllTabsUI();
     
-    document.getElementById('pr-shift-select').addEventListener('change', updateShiftTimes);
+    const prShiftSel = document.getElementById('pr-shift-select');
+    if (prShiftSel) prShiftSel.addEventListener('change', updateShiftTimes);
 
     const btnAdd = document.getElementById('btn-add-plant-report');
     if (btnAdd) {
@@ -292,4 +295,16 @@ window.initPlantReportEvents = () => {
 
     window.renderPlantReportTable();
 };
+
+window.refreshPlantReportData = () => {
+    try { plantReportsData = JSON.parse(localStorage.getItem(LS_PLANT_REPORT) || '[]'); } catch(e) {}
+    if (typeof window.renderPlantReportTable === 'function') window.renderPlantReportTable();
+};
+} catch (err) {
+    if (window.showRuntimeError) {
+        window.showRuntimeError('plant_report.js', err);
+    } else {
+        console.error('plant_report.js error:', err);
+    }
+}
 })();

@@ -1,5 +1,6 @@
 // ─── Silo Moisture Report Module ────────────────────────────────────────────
 (() => {
+try {
     const LS_SILO_MOISTURE = 'fm_silo_moisture';
     let siloMoistData = [];
     try {
@@ -41,6 +42,8 @@
     };
 
     const renderSiloMoistTable = () => {
+        // Always reload from localStorage so previously saved reports appear
+        try { siloMoistData = JSON.parse(localStorage.getItem(LS_SILO_MOISTURE) || '[]'); } catch(e) {}
         const tbody = document.querySelector('#silo-moist-table tbody');
         if (!tbody) return;
 
@@ -223,6 +226,15 @@
         renderSiloMoistTable();
     };
 
+    // Allow external code to refresh the table after data sync
+    window.refreshSiloMoistData = () => {
+        try { siloMoistData = JSON.parse(localStorage.getItem(LS_SILO_MOISTURE) || '[]'); } catch(e) {}
+        renderSiloMoistTable();
+    };
+
+    // Export init function so script.js can call it after loadAllData
+    window.initSiloMoistEvents = initSmEvents;
+
     window.updateDailySiloMoistureSummary = (date) => {
         if (!date) return;
         const actualEl = document.getElementById('dsms-actual');
@@ -367,10 +379,6 @@
                     pointStyle: (ctx) => {
                         const v = data.diffValues[ctx.dataIndex];
                         return (v !== null && Math.abs(v) > 2) ? 'rectRot' : 'circle';
-                    },
-                    pointRadius: (ctx) => {
-                        const v = data.diffValues[ctx.dataIndex];
-                        return (v !== null && Math.abs(v) > 2) ? 8 : 5;
                     },
                     pointBorderWidth: 2,
                     borderWidth: 2,
@@ -727,10 +735,10 @@
         }
     };
 
-    // Initialize when DOM is ready
+    // Initialize chart buttons when DOM is ready
+    // NOTE: initSmEvents is called by script.js via window.initSiloMoistEvents after data loads
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            initSmEvents();
             setTimeout(window.renderSiloMoistureTrendChart, 500);
 
             const btnReset = document.getElementById('btn-chart-reset');
@@ -743,7 +751,6 @@
             if (btnFsClose) btnFsClose.addEventListener('click', closeFullscreenChart);
         });
     } else {
-        initSmEvents();
         setTimeout(window.renderSiloMoistureTrendChart, 500);
 
         const btnReset = document.getElementById('btn-chart-reset');
@@ -755,5 +762,11 @@
         const btnFsClose = document.getElementById('btn-chart-fullscreen-close');
         if (btnFsClose) btnFsClose.addEventListener('click', closeFullscreenChart);
     }
-
+} catch (err) {
+    if (window.showRuntimeError) {
+        window.showRuntimeError('silo_moisture.js', err);
+    } else {
+        console.error('silo_moisture.js error:', err);
+    }
+}
 })();

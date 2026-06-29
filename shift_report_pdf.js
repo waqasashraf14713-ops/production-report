@@ -131,17 +131,196 @@
         // 3. Plant Report
         html += `<div class="pdf-section"><h3>3. Plant Report (Combined)</h3>`;
         if (plantReportData.length > 0) {
-            html += `<table class="pdf-table"><thead><tr>
-                <th>Shift</th><th>Officer</th><th>Operator</th>
-            </tr></thead><tbody>`;
             plantReportData.forEach(row => {
-                html += `<tr>
-                    <td><strong>${row.shift || '-'}</strong></td>
-                    <td>${row.shiftDetails?.off || '-'}</td>
-                    <td>${row.shiftDetails?.op || '-'}</td>
-                </tr>`;
+                html += `<div style="margin-top: 1rem; border: 2px solid #000; padding: 1rem; background: #fff; page-break-inside: avoid; margin-bottom: 1.5rem;">
+                    <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; border-bottom: 2px solid #000; padding-bottom: 0.25rem;">Shift details: <strong>${row.shift || '-'} Shift</strong></h4>
+                    
+                    <!-- Shift Details Table -->
+                    <table class="pdf-table" style="margin-bottom: 0.75rem;">
+                        <thead>
+                            <tr>
+                                <th>Production Officer</th>
+                                <th>Plant Operator</th>
+                                <th>Start Time</th>
+                                <th>Finish Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${row.shiftDetails?.off || '-'}</td>
+                                <td>${row.shiftDetails?.op || '-'}</td>
+                                <td>${row.shiftDetails?.st || '-'}</td>
+                                <td>${row.shiftDetails?.fn || '-'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- 5S Checklist Sign Table -->
+                    <h5 style="margin: 0.5rem 0 0.25rem 0; font-size: 0.95rem;">5'S Checklists Sign</h5>
+                    <table class="pdf-table" style="margin-bottom: 0.75rem;">
+                        <thead>
+                            <tr>
+                                <th>Control ROOMS</th>
+                                <th>Pellet Mills</th>
+                                <th>Batching</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${row.fiveS?.cr || '-'}</td>
+                                <td>${row.fiveS?.pm || '-'}</td>
+                                <td>${row.fiveS?.b || '-'}</td>
+                                <td>${row.fiveS?.rm || '-'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Receiving Table -->
+                    <h5 style="margin: 0.5rem 0 0.25rem 0; font-size: 0.95rem;">Receiving</h5>
+                    <table class="pdf-table" style="margin-bottom: 0.75rem;">
+                        <thead>
+                            <tr>
+                                <th>Workforce (Persons)</th>
+                                <th>Receiving Avg. (Bags/min)</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${row.rec?.wf || '-'}</td>
+                                <td>${row.rec?.avg || '-'}</td>
+                                <td>${row.rec?.rm || '-'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Quality Control Table -->
+                    <h5 style="margin: 0.5rem 0 0.25rem 0; font-size: 0.95rem;">Quality Control</h5>
+                    <table class="pdf-table" style="margin-bottom: 0.75rem;">
+                        <thead>
+                            <tr>
+                                <th>Time (hh:mm)</th>
+                                <th>Feed Moisture (%)</th>
+                                <th>Micro-ingredient weights</th>
+                                <th>Feed bag weight (kg)</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${row.qc?.t || '-'}</td>
+                                <td>${row.qc?.m || '-'}</td>
+                                <td>${row.qc?.mi || '-'}</td>
+                                <td>${row.qc?.b || '-'}</td>
+                                <td>${row.qc?.rm || '-'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Grinding Table -->
+                    <h5 style="margin: 0.5rem 0 0.25rem 0; font-size: 0.95rem;">Grinding</h5>
+                    <table class="pdf-table" style="margin-bottom: 0.75rem;">
+                        <thead>
+                            <tr>
+                                <th>Grinder</th>
+                                <th>Time (hh:mm)</th>
+                                <th>Material</th>
+                                <th>Feeder Hz</th>
+                                <th>Motor Amps (Actual / Max)</th>
+                                <th>Overs (%)</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${row.grd?.g || '-'}</td>
+                                <td>${row.grd?.t || '-'}</td>
+                                <td>${row.grd?.m || '-'}</td>
+                                <td>${row.grd?.hz || '-'}</td>
+                                <td>${row.grd?.aa || '-'} / ${row.grd?.am || '-'}</td>
+                                <td>${row.grd?.ov || '-'}</td>
+                                <td>${row.grd?.rm || '-'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Pelleting Table -->
+                    <h5 style="margin: 0.5rem 0 0.25rem 0; font-size: 0.95rem;">Pelleting</h5>
+                    <table class="pdf-table" style="margin-bottom: 0.75rem;">
+                        <thead>
+                            <tr>
+                                <th>Pellet Mill</th>
+                                <th>Time (hh:mm)</th>
+                                <th>Feed #</th>
+                                <th>Feeder Hz</th>
+                                <th>Motor Amps (Actual / Max)</th>
+                                <th>Powder (%)</th>
+                                <th>Temp (°C)</th>
+                                <th>Sifter (Mash)</th>
+                                <th>Dumper (Open Inch)</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${row.pel?.m || '-'}</td>
+                                <td>${row.pel?.t || '-'}</td>
+                                <td>${row.pel?.f || '-'}</td>
+                                <td>${row.pel?.hz || '-'}</td>
+                                <td>${row.pel?.aa || '-'} / ${row.pel?.am || '-'}</td>
+                                <td>${row.pel?.p || '-'}</td>
+                                <td>${row.pel?.tm || '-'}</td>
+                                <td>${row.pel?.sm || '-'}</td>
+                                <td>${row.pel?.d || '-'}</td>
+                                <td>${row.pel?.rm || '-'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Physical Visit Table -->
+                    <h5 style="margin: 0.5rem 0 0.25rem 0; font-size: 0.95rem;">Physical Visit Checklist</h5>
+                    <table class="pdf-table">
+                        <thead>
+                            <tr>
+                                <th>Checking Parameters</th>
+                                <th>Basement</th>
+                                <th>Ground Flr</th>
+                                <th>1st Flr (19)</th>
+                                <th>2nd Flr (51)</th>
+                                <th>3rd Flr (67)</th>
+                                <th>4th Flr (91)</th>
+                                <th>Roof (110)</th>
+                                <th>Silos Top</th>
+                                <th>Silos Tower</th>
+                                <th>Dryer Side</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                
+                const locations = ['Basement', 'Ground Flr', '1st Flr (19)', '2nd Flr (51)', '3rd Flr (67)', '4th Flr (91)', 'Roof (110)', 'Silos Top', 'Silos Tower', 'Dryer Side'];
+                const params = [
+                    'Floor & Walls Cleaning',
+                    'Machine Cleaning',
+                    'Leakage',
+                    'Abnormal Machine Sound',
+                    'Unnecessary item'
+                ];
+
+                params.forEach((pName, pIdx) => {
+                    html += `<tr>
+                        <td><strong>${pName}</strong></td>`;
+                    locations.forEach((loc, lIdx) => {
+                        const checked = row.pv && row.pv[pIdx] ? !!row.pv[pIdx][lIdx] : false;
+                        html += `<td style="text-align: center; font-weight: bold; color: ${checked ? 'green' : '#ccc'};">${checked ? '✓' : '-'}</td>`;
+                    });
+                    html += `</tr>`;
+                });
+
+                html += `</tbody>
+                    </table>
+                </div>`;
             });
-            html += `</tbody></table>`;
         } else {
             html += `<p style="font-style:italic;color:#666;">No plant report data for this date.</p>`;
         }

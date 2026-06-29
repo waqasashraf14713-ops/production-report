@@ -1,6 +1,7 @@
 // ─── Silo Dumping Moisture & Condition Check Module ───────────────────────
 
 (() => {
+try {
 const LS_SD = 'fm_silo_dump';
 let sdData = [];
 try {
@@ -74,6 +75,8 @@ const clearSdForm = () => {
 };
 
 const renderSdTable = () => {
+    // Always reload from localStorage so previously saved reports appear
+    try { sdData = JSON.parse(localStorage.getItem(LS_SD) || '[]'); } catch(e) {}
     const tbody = document.querySelector('#silo-dump-table tbody');
     if (!tbody) return;
     tbody.innerHTML = '';
@@ -184,10 +187,13 @@ window.deleteSd = (id) => {
 
 window.initSiloDumpEvents = () => {
     
-    document.getElementById('sd-shift').addEventListener('change', (e) => {
-        // Warning: Changing shift clears table inputs
-        buildSdUI(e.target.value);
-    });
+    const shiftSel = document.getElementById('sd-shift');
+    if (shiftSel) {
+        shiftSel.addEventListener('change', (e) => {
+            // Warning: Changing shift clears table inputs
+            buildSdUI(e.target.value);
+        });
+    }
 
     const btnAdd = document.getElementById('btn-add-silo-dump');
     if (btnAdd) {
@@ -209,4 +215,17 @@ window.initSiloDumpEvents = () => {
 
     renderSdTable();
 };
+
+// Allow external code to refresh the table after data sync
+window.refreshSiloDumpData = () => {
+    try { sdData = JSON.parse(localStorage.getItem(LS_SD) || '[]'); } catch(e) {}
+    renderSdTable();
+};
+} catch (err) {
+    if (window.showRuntimeError) {
+        window.showRuntimeError('silo_dump.js', err);
+    } else {
+        console.error('silo_dump.js error:', err);
+    }
+}
 })();

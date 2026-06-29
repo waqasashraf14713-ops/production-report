@@ -9,6 +9,46 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- Supabase Client JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+    window.showRuntimeError = function(source, err) {
+        var div = document.createElement('div');
+        div.style.position = 'fixed';
+        div.style.top = '0';
+        div.style.left = '0';
+        div.style.width = '100%';
+        div.style.background = '#dc2626';
+        div.style.color = '#ffffff';
+        div.style.padding = '1.5rem';
+        div.style.zIndex = '999999';
+        div.style.fontSize = '14px';
+        div.style.fontFamily = 'monospace';
+        div.style.whiteSpace = 'pre-wrap';
+        div.innerHTML = '<strong>Runtime Error in ' + source + ':</strong><br>' + err.message + '<br><br><strong>Stack:</strong><br>' + err.stack;
+        document.body.appendChild(div);
+    };
+
+    window.addEventListener('error', function(e) {
+        // If it's a CORS-masked script error, we still report it
+        if (e.message === 'Script error.') {
+            // We will let the internal try-catch blocks report the real error
+            return;
+        }
+        var div = document.createElement('div');
+        div.style.position = 'fixed';
+        div.style.top = '0';
+        div.style.left = '0';
+        div.style.width = '100%';
+        div.style.background = '#ef4444';
+        div.style.color = '#ffffff';
+        div.style.padding = '1rem';
+        div.style.zIndex = '999998';
+        div.style.fontSize = '14px';
+        div.style.fontFamily = 'monospace';
+        div.style.whiteSpace = 'pre-wrap';
+        div.innerHTML = '<strong>JavaScript Error:</strong><br>' + e.message + '<br>at ' + e.filename + ':' + e.lineno + ':' + e.colno;
+        document.body.appendChild(div);
+    });
+    </script>
 </head>
 <body>
     <div class="layout-wrapper">

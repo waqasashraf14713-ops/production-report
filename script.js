@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    try {
     // ─── Date / Time ───────────────────────────────────────────────────────────
     const updateDateTime = () => {
         const now = new Date();
@@ -1003,34 +1004,39 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSilos();
         }
     };
-    document.getElementById('btn-reset').addEventListener('click', resetData);
+    const btnResetEl = document.getElementById('btn-reset');
+    if (btnResetEl) btnResetEl.addEventListener('click', resetData);
 
-    document.getElementById('btn-add-maize-log').addEventListener('click', () => {
-        const today = new Date();
-        const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
-        maizeLogs.push({
-            id: Date.now(),
-            date: d,
-            siloNumber: '7',
-            purchaseMoisture: 12.55,
-            formulaMoisture: 12.0,
-            cRoomUnGrind: [null, null, null, null, null, null],
-            labWetUnGrind: [null, null, null, null, null, null],
-            labWetGrind: [null, null, null, null, null, null]
+    const btnAddMaizeLogEl = document.getElementById('btn-add-maize-log');
+    if (btnAddMaizeLogEl) {
+        btnAddMaizeLogEl.addEventListener('click', () => {
+            const today = new Date();
+            const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+            maizeLogs.push({
+                id: Date.now(),
+                date: d,
+                siloNumber: '7',
+                purchaseMoisture: 12.55,
+                formulaMoisture: 12.0,
+                cRoomUnGrind: [null, null, null, null, null, null],
+                labWetUnGrind: [null, null, null, null, null, null],
+                labWetGrind: [null, null, null, null, null, null]
+            });
+            saveMaizeLogs();
+            renderMaizeMoistureTable();
+            showToast('✓ Added new date log');
         });
-        saveMaizeLogs();
-        renderMaizeMoistureTable();
-        showToast('✓ Added new date log');
-    });
-
-    document.getElementById('btn-add-less-excess-log').addEventListener('click', () => {
-        if (lessExcessLogs.length > 0) {
-            const lastLog = lessExcessLogs[lessExcessLogs.length - 1];
-            if (!lastLog.locked) {
-                alert('Please submit the current shift before starting a new one!');
-                return;
+    }
+    const btnAddLessExcessEl = document.getElementById('btn-add-less-excess-log');
+    if (btnAddLessExcessEl) {
+        btnAddLessExcessEl.addEventListener('click', () => {
+            if (lessExcessLogs.length > 0) {
+                const lastLog = lessExcessLogs[lessExcessLogs.length - 1];
+                if (!lastLog.locked) {
+                    alert('Please submit the current shift before starting a new one!');
+                    return;
+                }
             }
-        }
         
         const today = new Date();
         const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
@@ -1067,7 +1073,8 @@ document.addEventListener('DOMContentLoaded', () => {
         saveLessExcessLogs();
         renderLessExcessTable();
         showToast('✓ Started new shift');
-    });
+        });
+    }
 
     const leFilterDateInput = document.getElementById('le-filter-date');
     if (leFilterDateInput) {
@@ -1376,6 +1383,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.initPlantReportEvents) window.initPlantReportEvents();
         if (window.initQualityStandardsEvents) window.initQualityStandardsEvents();
         if (window.initSiloDumpEvents) window.initSiloDumpEvents();
+        if (window.initSiloMoistEvents) window.initSiloMoistEvents();
+        // Refresh module data tables after Supabase sync
+        if (window.refreshSiloDumpData) window.refreshSiloDumpData();
+        if (window.refreshSiloMoistData) window.refreshSiloMoistData();
+        if (window.refreshPlantReportData) window.refreshPlantReportData();
+        if (window.refreshQsData) window.refreshQsData();
     };
 
     // ─── Modal Actions ──────────────────────────────────────────────────────────
@@ -4178,5 +4191,12 @@ document.addEventListener('DOMContentLoaded', () => {
             camera.updateProjectionMatrix();
         });
     }
+} catch (err) {
+    if (window.showRuntimeError) {
+        window.showRuntimeError('script.js', err);
+    } else {
+        console.error('script.js init error:', err);
+    }
+}
 });
 
