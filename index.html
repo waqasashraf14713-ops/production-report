@@ -2038,79 +2038,82 @@ order by
             if (!trendRecords.length) return;
 
             const labels = trendRecords.map(r => r.date);
-            
-            const getAvgDeviation = (scaleData) => {
-                if (!scaleData || !scaleData.length) return 0;
-                let sum = 0;
-                let count = 0;
-                scaleData.forEach(row => {
-                    if (row.plc !== '' && row.hmi !== '') {
+
+            const getScaleStatus = (targets, data, isReCal) => {
+                if (!data || !data.length) return 'pending';
+                let hasError = false;
+                targets.forEach((t, i) => {
+                    const row = data[i];
+                    if (row && row.plc !== '' && row.hmi !== '') {
                         const p = parseFloat(row.plc);
                         const h = parseFloat(row.hmi);
                         if (!isNaN(p) && !isNaN(h)) {
-                            sum += (Math.abs(p - row.target) + Math.abs(h - row.target)) / 2;
-                            count++;
+                            const diffPlc = Math.abs(p - t);
+                            const diffHmi = Math.abs(h - t);
+                            const tolerance = t === 0 ? 0.085 : t * 0.00085;
+                            if (diffPlc > tolerance || diffHmi > tolerance) {
+                                hasError = true;
+                            }
                         }
                     }
                 });
-                return count > 0 ? parseFloat((sum / count).toFixed(3)) : 0;
+                if (hasError) {
+                    return isReCal ? 'recal' : 'refer';
+                }
+                return 'ok';
             };
 
-            const bigDevs = trendRecords.map(r => getAvgDeviation(r.bigScale));
-            const smallDevs = trendRecords.map(r => getAvgDeviation(r.smallScale));
-            const premixDevs = trendRecords.map(r => getAvgDeviation(r.premixScale));
-            const oilWtDevs = trendRecords.map(r => getAvgDeviation(r.oilWtScale));
-            const oilDsDevs = trendRecords.map(r => getAvgDeviation(r.oilDsScale));
+            const okCounts = [];
+            const recalCounts = [];
+            const referCounts = [];
+
+            trendRecords.forEach(r => {
+                let ok = 0;
+                let recal = 0;
+                let refer = 0;
+
+                const scales = [
+                    { t: BIG_TARGETS,      d: r.bigScale,      rc: r.recalBig },
+                    { t: SMALL_TARGETS,    d: r.smallScale,    rc: r.recalSmall },
+                    { t: PREMIX_TARGETS,   d: r.premixScale,   rc: r.recalPremix },
+                    { t: OIL_WT_TARGETS,   d: r.oilWtScale,    rc: r.recalOilWt },
+                    { t: OIL_DS_TARGETS,   d: r.oilDsScale,    rc: r.recalOilDs }
+                ];
+
+                scales.forEach(s => {
+                    const status = getScaleStatus(s.t, s.d, s.rc);
+                    if (status === 'ok') ok++;
+                    else if (status === 'recal') recal++;
+                    else if (status === 'refer') refer++;
+                });
+
+                okCounts.push(ok);
+                recalCounts.push(recal);
+                referCounts.push(refer);
+            });
 
             accuracyChart = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [
                         {
-                            label: '202 Big Scale',
-                            data: bigDevs,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            fill: false
+                            label: '✓ OK Scales',
+                            data: okCounts,
+                            backgroundColor: '#10b981', // green
+                            stack: 'statusStack'
                         },
                         {
-                            label: '204 Small Scale',
-                            data: smallDevs,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.05)',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            fill: false
+                            label: '⚙️ Re-calibrated (OK)',
+                            data: recalCounts,
+                            backgroundColor: '#f59e0b', // orange
+                            stack: 'statusStack'
                         },
                         {
-                            label: '216 Premix Dump',
-                            data: premixDevs,
-                            borderColor: '#f59e0b',
-                            backgroundColor: 'rgba(245, 158, 11, 0.05)',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            fill: false
-                        },
-                        {
-                            label: '251 Oil Weight',
-                            data: oilWtDevs,
-                            borderColor: '#ec4899',
-                            backgroundColor: 'rgba(236, 72, 153, 0.05)',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            fill: false
-                        },
-                        {
-                            label: '253 Oil Discharge',
-                            data: oilDsDevs,
-                            borderColor: '#8b5cf6',
-                            backgroundColor: 'rgba(139, 92, 246, 0.05)',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            fill: false
+                            label: '⚠️ Refer Calibration',
+                            data: referCounts,
+                            backgroundColor: '#ef4444', // red
+                            stack: 'statusStack'
                         }
                     ]
                 },
@@ -2122,29 +2125,32 @@ order by
                             position: 'top',
                             labels: {
                                 color: '#64748b',
-                                font: {
-                                    size: 11,
-                                    weight: '600'
-                                }
+                                font: { size: 11, weight: '600' }
                             }
                         },
                         tooltip: {
-                            mode: 'index',
-                            intersect: false
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} scale(s)`;
+                                }
+                            }
                         }
                     },
                     scales: {
                         x: {
+                            stacked: true,
                             grid: { color: 'rgba(100, 116, 139, 0.05)' },
                             ticks: { color: '#64748b', font: { size: 10 } }
                         },
                         y: {
+                            stacked: true,
                             min: 0,
+                            max: 5,
                             grid: { color: 'rgba(100, 116, 139, 0.05)' },
-                            ticks: { color: '#64748b', font: { size: 10 } },
+                            ticks: { color: '#64748b', stepSize: 1, font: { size: 10 } },
                             title: {
                                 display: true,
-                                text: 'Avg Deviation (kg)',
+                                text: 'Number of Scales',
                                 color: '#64748b',
                                 font: { size: 11, weight: '600' }
                             }
