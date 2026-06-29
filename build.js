@@ -29,6 +29,7 @@ const filesToCopy = [
     'styles.css', 
     'script.js', 
     'silo.png',
+    'feed_mill_dashboard_banner.png',
     'silo_dump.js',
     'silo_moisture.js',
     'quality_standards.js',
