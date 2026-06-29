@@ -85,9 +85,10 @@ const initBatchingScale = () => {
         const target = parseFloat(inputTarget.value);
         const actual = parseFloat(inputActual.value);
         const variance = (actual - target).toFixed(2);
+        const recordId = activeBatchingScaleId ? Number(activeBatchingScaleId) : Date.now();
 
         const record = {
-            id: activeBatchingScaleId || Date.now(),
+            id: recordId,
             date: inputDate.value,
             shift: inputShift.value,
             recipe: inputRecipe.value,
@@ -98,8 +99,12 @@ const initBatchingScale = () => {
         };
 
         if (activeBatchingScaleId) {
-            const index = batchingScaleData.findIndex(r => r.id === activeBatchingScaleId);
-            if (index !== -1) batchingScaleData[index] = record;
+            const index = batchingScaleData.findIndex(r => Number(r.id) === Number(activeBatchingScaleId));
+            if (index !== -1) {
+                batchingScaleData[index] = record;
+            } else {
+                batchingScaleData.push(record);
+            }
         } else {
             batchingScaleData.push(record);
         }
@@ -111,9 +116,9 @@ const initBatchingScale = () => {
     };
 
     window.editBatchingScale = (id) => {
-        const record = batchingScaleData.find(r => r.id === id);
+        const record = batchingScaleData.find(r => Number(r.id) === Number(id));
         if (!record) return;
-        activeBatchingScaleId = id;
+        activeBatchingScaleId = Number(id);
         document.getElementById('batching-scale-title').textContent = 'Edit Batching Scale Record';
         
         inputDate.value = record.date;
@@ -128,7 +133,7 @@ const initBatchingScale = () => {
 
     window.deleteBatchingScale = (id) => {
         if (!confirm('Are you sure you want to delete this record?')) return;
-        batchingScaleData = batchingScaleData.filter(r => r.id !== id);
+        batchingScaleData = batchingScaleData.filter(r => Number(r.id) !== Number(id));
         saveToLS();
         renderTable();
         if (window.showToast) window.showToast('Batching scale record deleted.');
