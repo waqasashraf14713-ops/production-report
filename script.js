@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = now.toLocaleDateString(undefined, optionsDate);
-        document.getElementById('current-time').textContent = now.toLocaleTimeString();
     };
     updateDateTime();
     setInterval(updateDateTime, 1000);
