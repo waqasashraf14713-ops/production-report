@@ -1,9 +1,14 @@
 // batching_scale.js
-// Handles logic for the Batching Scale section
+// Handles logic for the Batching Scale Calibration Checking
 
 const initBatchingScale = () => {
     const LS_BATCHING_SCALE = 'fm_batching_scale';
-    let batchingScaleData = JSON.parse(localStorage.getItem(LS_BATCHING_SCALE) || '[]');
+    let batchingScaleData = [];
+    try {
+        batchingScaleData = JSON.parse(localStorage.getItem(LS_BATCHING_SCALE) || '[]');
+    } catch (e) {
+        console.error("Error reading batching scale data:", e);
+    }
     let activeBatchingScaleId = null;
 
     const modal = document.getElementById('batching-scale-modal');
@@ -12,16 +17,25 @@ const initBatchingScale = () => {
     const btnCancel = document.getElementById('btn-cancel-batching-scale');
     const btnSave = document.getElementById('btn-save-batching-scale');
     
-    // Inputs
+    // Form Inputs
     const inputDate = document.getElementById('batching-modal-date');
-    const inputShift = document.getElementById('batching-modal-shift');
-    const inputRecipe = document.getElementById('batching-modal-recipe');
-    const inputTarget = document.getElementById('batching-modal-target');
-    const inputActual = document.getElementById('batching-modal-actual');
+    const inputOperator = document.getElementById('batching-modal-operator');
     const inputRemarks = document.getElementById('batching-modal-remarks');
+    
+    const bigScaleBody = document.getElementById('batching-modal-big-scale-body');
+    const smallScaleBody = document.getElementById('batching-modal-small-scale-body');
+
+    // Standard Target Weight values from calibration sheets
+    const DEFAULT_BIG_SCALE_TARGETS = [4000, 3500, 3000, 2500, 2000, 1500, 1300, 1100, 900, 700, 500, 300, 100, 0];
+    const DEFAULT_SMALL_SCALE_TARGETS = [2000, 1900, 1400, 900, 400, 200, 100, 0];
 
     const saveToLS = () => {
         localStorage.setItem(LS_BATCHING_SCALE, JSON.stringify(batchingScaleData));
+    };
+
+    // Helper to generate empty scale rows
+    const generateDefaultScaleRows = (targets) => {
+        return targets.map(t => ({ target: t, plc: '', hmi: '' }));
     };
 
     const renderTable = () => {
@@ -29,7 +43,7 @@ const initBatchingScale = () => {
         if (!tbody) return;
         tbody.innerHTML = '';
         if (batchingScaleData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-secondary);padding:2rem;">No records found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:2rem;">No records found.</td></tr>';
             return;
         }
 
@@ -37,19 +51,15 @@ const initBatchingScale = () => {
         const badge = document.getElementById('badge-batching-scale');
         if (badge) {
             badge.style.display = batchingScaleData.length > 0 ? 'inline-block' : 'none';
-            badge.textContent = batchingScaleData.length + ' Drafts';
+            badge.textContent = batchingScaleData.length + ' Checked';
         }
 
         [...batchingScaleData].reverse().forEach(record => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${record.date}</td>
-                <td>${record.shift}</td>
-                <td>${record.recipe}</td>
-                <td>${record.target} kg</td>
-                <td>${record.actual} kg</td>
-                <td style="color: ${record.variance < 0 ? 'red' : 'green'}; font-weight: bold;">${record.variance > 0 ? '+' : ''}${record.variance} kg</td>
-                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${record.remarks || '—'}</td>
+                <td>${record.operator || '—'}</td>
+                <td style="max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${record.remarks || ''}">${record.remarks || '—'}</td>
                 <td>
                     <button class="btn btn-secondary" style="padding:0.25rem 0.5rem;font-size:0.8rem;" onclick="editBatchingScale(${record.id})">Edit</button>
                     <button class="btn btn-danger" style="padding:0.25rem 0.5rem;font-size:0.8rem;" onclick="deleteBatchingScale(${record.id})">Del</button>
@@ -59,16 +69,48 @@ const initBatchingScale = () => {
         });
     };
 
+    // Render Calibration rows in the Modal Input Grid
+    const renderModalScaleGrids = (bigScaleRows, smallScaleRows) => {
+        // Big Scale
+        bigScaleBody.innerHTML = '';
+        bigScaleRows.forEach((row, i) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding:0.3rem;font-weight:600;color:var(--text-secondary);vertical-align:middle;">${row.target} kg</td>
+                <td style="padding:0.3rem;"><input type="number" step="any" class="big-plc-input" data-index="${i}" value="${row.plc !== undefined && row.plc !== null ? row.plc : ''}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.3rem;outline:none;background:var(--card-bg);color:var(--text-primary);" /></td>
+                <td style="padding:0.3rem;"><input type="number" step="any" class="big-hmi-input" data-index="${i}" value="${row.hmi !== undefined && row.hmi !== null ? row.hmi : ''}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.3rem;outline:none;background:var(--card-bg);color:var(--text-primary);" /></td>
+            `;
+            bigScaleBody.appendChild(tr);
+        });
+
+        // Small Scale
+        smallScaleBody.innerHTML = '';
+        smallScaleRows.forEach((row, i) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding:0.3rem;font-weight:600;color:var(--text-secondary);vertical-align:middle;">${row.target} kg</td>
+                <td style="padding:0.3rem;"><input type="number" step="any" class="small-plc-input" data-index="${i}" value="${row.plc !== undefined && row.plc !== null ? row.plc : ''}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.3rem;outline:none;background:var(--card-bg);color:var(--text-primary);" /></td>
+                <td style="padding:0.3rem;"><input type="number" step="any" class="small-hmi-input" data-index="${i}" value="${row.hmi !== undefined && row.hmi !== null ? row.hmi : ''}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.3rem;outline:none;background:var(--card-bg);color:var(--text-primary);" /></td>
+            `;
+            smallScaleBody.appendChild(tr);
+        });
+    };
+
     const openModal = () => {
         activeBatchingScaleId = null;
-        document.getElementById('batching-scale-title').textContent = 'New Batching Scale Record';
+        document.getElementById('batching-scale-title').textContent = 'New Calibration Checking Record';
+        
         // reset form
         inputDate.value = new Date().toISOString().split('T')[0];
-        inputShift.value = 'A';
-        inputRecipe.value = '';
-        inputTarget.value = '';
-        inputActual.value = '';
+        inputOperator.value = '';
         inputRemarks.value = '';
+        
+        // Populate standard target grids
+        renderModalScaleGrids(
+            generateDefaultScaleRows(DEFAULT_BIG_SCALE_TARGETS),
+            generateDefaultScaleRows(DEFAULT_SMALL_SCALE_TARGETS)
+        );
+        
         if (modal) modal.classList.add('show');
     };
 
@@ -77,25 +119,48 @@ const initBatchingScale = () => {
     };
 
     const saveRecord = () => {
-        if (!inputDate.value || !inputRecipe.value || !inputTarget.value || !inputActual.value) {
-            alert('Please fill all required fields (Date, Recipe, Target, Actual).');
+        if (!inputDate.value) {
+            alert('Please select a Date.');
             return;
         }
 
-        const target = parseFloat(inputTarget.value);
-        const actual = parseFloat(inputActual.value);
-        const variance = (actual - target).toFixed(2);
+        // Parse Big Scale inputs
+        const bigScale = [];
+        const bigPlcInputs = bigScaleBody.querySelectorAll('.big-plc-input');
+        const bigHmiInputs = bigScaleBody.querySelectorAll('.big-hmi-input');
+        DEFAULT_BIG_SCALE_TARGETS.forEach((target, i) => {
+            const plcVal = bigPlcInputs[i].value.trim();
+            const hmiVal = bigHmiInputs[i].value.trim();
+            bigScale.push({
+                target: target,
+                plc: plcVal === '' ? '' : parseFloat(plcVal),
+                hmi: hmiVal === '' ? '' : parseFloat(hmiVal)
+            });
+        });
+
+        // Parse Small Scale inputs
+        const smallScale = [];
+        const smallPlcInputs = smallScaleBody.querySelectorAll('.small-plc-input');
+        const smallHmiInputs = smallScaleBody.querySelectorAll('.small-hmi-input');
+        DEFAULT_SMALL_SCALE_TARGETS.forEach((target, i) => {
+            const plcVal = smallPlcInputs[i].value.trim();
+            const hmiVal = smallHmiInputs[i].value.trim();
+            smallScale.push({
+                target: target,
+                plc: plcVal === '' ? '' : parseFloat(plcVal),
+                hmi: hmiVal === '' ? '' : parseFloat(hmiVal)
+            });
+        });
+
         const recordId = activeBatchingScaleId ? Number(activeBatchingScaleId) : Date.now();
 
         const record = {
             id: recordId,
             date: inputDate.value,
-            shift: inputShift.value,
-            recipe: inputRecipe.value,
-            target: target,
-            actual: actual,
-            variance: variance,
-            remarks: inputRemarks.value
+            operator: inputOperator.value.trim(),
+            remarks: inputRemarks.value.trim(),
+            bigScale: bigScale,
+            smallScale: smallScale
         };
 
         if (activeBatchingScaleId) {
@@ -112,21 +177,23 @@ const initBatchingScale = () => {
         saveToLS();
         renderTable();
         closeModal();
-        if (window.showToast) window.showToast('Batching scale record saved.');
+        if (window.showToast) window.showToast('Calibration checking record saved.');
     };
 
     window.editBatchingScale = (id) => {
         const record = batchingScaleData.find(r => Number(r.id) === Number(id));
         if (!record) return;
         activeBatchingScaleId = Number(id);
-        document.getElementById('batching-scale-title').textContent = 'Edit Batching Scale Record';
+        document.getElementById('batching-scale-title').textContent = 'Edit Calibration Checking Record';
         
         inputDate.value = record.date;
-        inputShift.value = record.shift;
-        inputRecipe.value = record.recipe;
-        inputTarget.value = record.target;
-        inputActual.value = record.actual;
-        inputRemarks.value = record.remarks;
+        inputOperator.value = record.operator || '';
+        inputRemarks.value = record.remarks || '';
+        
+        // Render inputs with loaded values
+        const bigScaleRows = record.bigScale || generateDefaultScaleRows(DEFAULT_BIG_SCALE_TARGETS);
+        const smallScaleRows = record.smallScale || generateDefaultScaleRows(DEFAULT_SMALL_SCALE_TARGETS);
+        renderModalScaleGrids(bigScaleRows, smallScaleRows);
         
         if (modal) modal.classList.add('show');
     };
@@ -136,7 +203,7 @@ const initBatchingScale = () => {
         batchingScaleData = batchingScaleData.filter(r => Number(r.id) !== Number(id));
         saveToLS();
         renderTable();
-        if (window.showToast) window.showToast('Batching scale record deleted.');
+        if (window.showToast) window.showToast('Calibration checking record deleted.');
     };
 
     // Event Listeners
