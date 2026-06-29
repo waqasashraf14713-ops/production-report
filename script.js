@@ -1989,13 +1989,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 table.innerHTML = `
                     <thead>
                         <tr>
-                            <th>Feed Name / No.</th>
+                            <th>Date</th>
+                            <th>Feed No / Name</th>
                             <th>Batches</th>
-                            <th>Actual Production (Bags)</th>
+                            <th>Production (Bags)</th>
                             <th>Less/Excess (Bags)</th>
-                            <th>Final %age</th>
-                            <th>Water Addition</th>
-                            <th>Overall Avg Less/Excess</th>
+                            <th>Percentage</th>
                             <th>Remarks</th>
                             <th>Actions</th>
                         </tr>
@@ -2067,13 +2066,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const tr = document.createElement('tr');
             tr.innerHTML = `
+                <td>${log.date || '-'}</td>
                 <td><span class="${log.locked ? '' : 'editable-value'}" id="le-feed-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.feedName}</span></td>
                 <td><span class="${log.locked ? '' : 'editable-value'}" id="le-batch-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.batches}</span></td>
                 <td><span class="${log.locked ? '' : 'editable-value'}" id="le-prod-${log.id}" title="${log.locked ? '' : 'Click to edit'}" style="font-weight: bold; color: #93c5fd;">${log.productionBags}</span></td>
                 <td><span class="badge ${log._badgeClass}">${log._diffStr}</span></td>
                 <td><span class="badge ${log._badgeClass}">${log._pctStr}</span></td>
-                <td><span class="${log.locked ? '' : 'editable-value'}" id="le-water-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.waterAddition ?? 0}</span></td>
-                <td><span class="badge ${log._overallBadgeClass}">${log._overallPct}</span></td>
                 <td><span class="${log.locked ? '' : 'editable-value'}" id="le-remarks-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.remarks || (log.locked ? '' : '<span style="color:var(--text-secondary); font-style:italic; font-size:0.85rem;">+ Add remark</span>')}</span></td>
                 <td>${log.locked ? '' : `<button class="btn btn-sm" style="background:transparent; border:none; color:var(--danger-color); cursor:pointer; font-size:1.1rem; padding:0;" id="le-del-${log.id}" title="Delete Entry">🗑️</button>`}</td>
             `;
@@ -2084,7 +2082,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 makeEditable(document.getElementById(`le-feed-${log.id}`), 'text', () => log.feedName, (val) => { log.feedName = val || log.feedName; saveLessExcessLogs(); renderLessExcessTable(); });
                 makeEditable(document.getElementById(`le-batch-${log.id}`), 'number', () => log.batches, (val) => { const n = parseFloat(val); if (!isNaN(n)) log.batches = n; saveLessExcessLogs(); renderLessExcessTable(); });
                 makeEditable(document.getElementById(`le-prod-${log.id}`), 'number', () => log.productionBags, (val) => { const n = parseFloat(val); if (!isNaN(n)) log.productionBags = n; saveLessExcessLogs(); renderLessExcessTable(); });
-                makeEditable(document.getElementById(`le-water-${log.id}`), 'number', () => log.waterAddition ?? 0, (val) => { const n = parseFloat(val); if (!isNaN(n)) log.waterAddition = n; saveLessExcessLogs(); renderLessExcessTable(); });
                 makeEditable(document.getElementById(`le-remarks-${log.id}`), 'text', () => log.remarks || '', (val) => { log.remarks = val || ''; saveLessExcessLogs(); renderLessExcessTable(); });
 
                 document.getElementById(`le-del-${log.id}`).addEventListener('click', () => {
