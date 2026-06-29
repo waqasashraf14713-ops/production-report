@@ -1287,12 +1287,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.error("Error opening silo data modal:", e);
                 }
             };
-            window.openSiloDataModal = openModal;
-            window.closeSiloDataModal = closeModal;
-
             const closeModal = () => {
                 modal.classList.remove('show');
             };
+
+            window.openSiloDataModal = openModal;
+            window.closeSiloDataModal = closeModal;
 
             btnOpen.addEventListener('click', openModal);
             if (btnClose) btnClose.addEventListener('click', closeModal);
