@@ -561,6 +561,7 @@
         <div id="view-batching-scale" class="view-section" style="display: none;">
             <section class="table-container">
                 <div style="display: flex; background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);flex-direction:column;">
+                    <div id="batching-scale-alert-banner" style="margin-bottom: 1.25rem; display: none;"></div>
                     <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;display:flex;justify-content:space-between;align-items:center;width:100%;">
                         <h2 style="display:flex;align-items:center;gap:0.75rem;margin:0;">⚖️ Batching Scale Records <span id="badge-batching-scale" class="sr-draft-badge" style="display:none;"></span></h2>
                         <div class="header-actions" style="display:flex;gap:1rem;align-items:center;">
@@ -2015,6 +2016,37 @@ order by
             const tbody = document.querySelector('#batching-scale-table tbody');
             if (!tbody) return;
             tbody.innerHTML = '';
+
+            // 15-day calibration check warning banner alarm
+            const banner = document.getElementById('batching-scale-alert-banner');
+            if (banner) {
+                if (!records.length) {
+                    banner.style.display = 'block';
+                    banner.innerHTML = `
+                        <div style="background:rgba(239, 68, 68, 0.12); border: 1px solid var(--danger-color); border-radius: 8px; padding: 0.75rem 1rem; color: #f87171; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                            ⚠️ MANDATORY CHECK REQUIRED: No calibration check records found! Please check scales immediately.
+                        </div>`;
+                } else {
+                    const sorted = [...records].sort((a, b) => new Date(b.date) - new Date(a.date));
+                    const latest = sorted[0];
+                    const diffDays = Math.floor((new Date() - new Date(latest.date)) / (1000 * 60 * 60 * 24));
+                    
+                    banner.style.display = 'block';
+                    if (diffDays >= 15) {
+                        banner.innerHTML = `
+                            <div style="background:rgba(239, 68, 68, 0.12); border: 1px solid var(--danger-color); border-radius: 8px; padding: 0.75rem 1rem; color: #f87171; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                🚨 ALARM: Last calibration check was ${diffDays} days ago (Max limit: 15 days). Please perform scale calibration check immediately!
+                            </div>`;
+                    } else {
+                        const remaining = 15 - diffDays;
+                        banner.innerHTML = `
+                            <div style="background:rgba(16, 185, 129, 0.12); border: 1px solid var(--success-color); border-radius: 8px; padding: 0.75rem 1rem; color: #34d399; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                🟢 Scale Status: Calibrated (Last check was ${diffDays === 0 ? 'today' : diffDays + ' days ago'}. Next check due in ${remaining} days).
+                            </div>`;
+                    }
+                }
+            }
+
             if (!records.length) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:2rem;">No records found. Click ➕ Add Batching Scale to begin.</td></tr>';
                 return;
@@ -2033,6 +2065,7 @@ order by
                     </td>`;
                 tbody.appendChild(tr);
             });
+            updateSidebarWarning();
         }
 
         function buildScaleRows(targets, data, prefix) {
@@ -2179,6 +2212,39 @@ order by
             renderTable();
             closeModal();
             toast('✓ Calibration record saved.');
+        }
+
+        function updateSidebarWarning() {
+            const nav = document.getElementById('nav-batching-scale');
+            if (!nav) return;
+            
+            const existingDot = nav.querySelector('.alert-dot');
+            if (existingDot) existingDot.remove();
+            
+            if (!records.length) {
+                const dot = document.createElement('span');
+                dot.className = 'alert-dot';
+                dot.style.color = '#ef4444';
+                dot.style.marginLeft = '0.5rem';
+                dot.style.fontWeight = 'bold';
+                dot.innerHTML = '⚠️';
+                dot.title = 'No calibration records found!';
+                nav.appendChild(dot);
+            } else {
+                const sorted = [...records].sort((a, b) => new Date(b.date) - new Date(a.date));
+                const latest = sorted[0];
+                const diffDays = Math.floor((new Date() - new Date(latest.date)) / (1000 * 60 * 60 * 24));
+                if (diffDays >= 15) {
+                    const dot = document.createElement('span');
+                    dot.className = 'alert-dot';
+                    dot.style.color = '#ef4444';
+                    dot.style.marginLeft = '0.5rem';
+                    dot.style.fontWeight = 'bold';
+                    dot.innerHTML = '🔴';
+                    dot.title = `Last calibration was ${diffDays} days ago!`;
+                    nav.appendChild(dot);
+                }
+            }
         }
 
         window.bsEdit = function(id) {
