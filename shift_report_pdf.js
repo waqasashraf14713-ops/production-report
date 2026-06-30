@@ -11,7 +11,7 @@
         }
     }
 
-    function generateCompleteShiftPDF() {
+    function generateCompleteShiftPDF(isApproved = false, remarks = '') {
         const dateInput = document.getElementById('sr-filter-date');
         const selectedDate = dateInput ? dateInput.value.trim() : '';
 
@@ -233,15 +233,27 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>${row.grd?.g || '-'}</td>
-                                <td>${row.grd?.t || '-'}</td>
-                                <td>${row.grd?.m || '-'}</td>
-                                <td>${row.grd?.hz || '-'}</td>
-                                <td>${row.grd?.aa || '-'} / ${row.grd?.am || '-'}</td>
-                                <td>${row.grd?.ov || '-'}</td>
-                                <td>${row.grd?.rm || '-'}</td>
-                            </tr>
+                            ${Array.isArray(row.grd) ? row.grd.map(g => `
+                                <tr>
+                                    <td>${g.g || '-'}</td>
+                                    <td>${g.t || '-'}</td>
+                                    <td>${g.m || '-'}</td>
+                                    <td>${g.hz || '-'}</td>
+                                    <td>${g.aa || '-'} / ${g.am || '-'}</td>
+                                    <td>${g.ov || '-'}</td>
+                                    <td>${g.rm || '-'}</td>
+                                </tr>
+                            `).join('') : `
+                                <tr>
+                                    <td>${row.grd?.g || '-'}</td>
+                                    <td>${row.grd?.t || '-'}</td>
+                                    <td>${row.grd?.m || '-'}</td>
+                                    <td>${row.grd?.hz || '-'}</td>
+                                    <td>${row.grd?.aa || '-'} / ${row.grd?.am || '-'}</td>
+                                    <td>${row.grd?.ov || '-'}</td>
+                                    <td>${row.grd?.rm || '-'}</td>
+                                </tr>
+                            `}
                         </tbody>
                     </table>
 
@@ -263,18 +275,33 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>${row.pel?.m || '-'}</td>
-                                <td>${row.pel?.t || '-'}</td>
-                                <td>${row.pel?.f || '-'}</td>
-                                <td>${row.pel?.hz || '-'}</td>
-                                <td>${row.pel?.aa || '-'} / ${row.pel?.am || '-'}</td>
-                                <td>${row.pel?.p || '-'}</td>
-                                <td>${row.pel?.tm || '-'}</td>
-                                <td>${row.pel?.sm || '-'}</td>
-                                <td>${row.pel?.d || '-'}</td>
-                                <td>${row.pel?.rm || '-'}</td>
-                            </tr>
+                            ${Array.isArray(row.pel) ? row.pel.map(p => `
+                                <tr>
+                                    <td>${p.m || '-'}</td>
+                                    <td>${p.t || '-'}</td>
+                                    <td>${p.f || '-'}</td>
+                                    <td>${p.hz || '-'}</td>
+                                    <td>${p.aa || '-'} / ${p.am || '-'}</td>
+                                    <td>${p.p || '-'}</td>
+                                    <td>${p.tm || '-'}</td>
+                                    <td>${p.sm || '-'}</td>
+                                    <td>${p.d || '-'}</td>
+                                    <td>${p.rm || '-'}</td>
+                                </tr>
+                            `).join('') : `
+                                <tr>
+                                    <td>${row.pel?.m || '-'}</td>
+                                    <td>${row.pel?.t || '-'}</td>
+                                    <td>${row.pel?.f || '-'}</td>
+                                    <td>${row.pel?.hz || '-'}</td>
+                                    <td>${row.pel?.aa || '-'} / ${row.pel?.am || '-'}</td>
+                                    <td>${row.pel?.p || '-'}</td>
+                                    <td>${row.pel?.tm || '-'}</td>
+                                    <td>${row.pel?.sm || '-'}</td>
+                                    <td>${row.pel?.d || '-'}</td>
+                                    <td>${row.pel?.rm || '-'}</td>
+                                </tr>
+                            `}
                         </tbody>
                     </table>
 
@@ -371,21 +398,28 @@
         html += `<div class="pdf-section"><h3>6. Silo Moisture (Combined)</h3>`;
         if (siloMoistData.length > 0 && siloMoistData.some(r => r.rows && r.rows.length > 0)) {
             html += `<table class="pdf-table"><thead><tr>
-                <th>Shift</th><th>Officer</th><th>Silo No</th><th>Material</th><th>Moisture %</th><th>Remarks</th>
+                <th>Shift</th><th>Officer</th><th>Silo No</th><th>Material</th><th>Lab Ungrind %</th><th>Lab Grind %</th><th>Remarks</th>
             </tr></thead><tbody>`;
             
             let sum = 0, count = 0;
             siloMoistData.forEach(r => {
                 (r.rows || []).forEach(row => {
+                    const mat = (row.material || '').trim().toLowerCase();
+                    if (mat !== 'maize') return; // Only display maize
+
+                    const valUngrind = row.moistureUngrind || row.moisture || '-';
+                    const valGrind = row.moistureGrind || '-';
+
                     html += `<tr>
                         <td><strong>${r.shift || '-'}</strong></td>
                         <td>${r.officerName || '-'}</td>
                         <td>${row.silo || '-'}</td>
                         <td>${row.material || '-'}</td>
-                        <td>${row.moisture || '-'}</td>
+                        <td>${valUngrind}</td>
+                        <td>${valGrind}</td>
                         <td>${row.remarks || '-'}</td>
                     </tr>`;
-                    const m = parseFloat(row.moisture);
+                    const m = parseFloat(valUngrind);
                     if (!isNaN(m)) { sum += m; count++; }
                 });
             });
@@ -417,6 +451,27 @@
                     html += `Formula Moisture: Not Entered<br>`;
                 }
                 html += `</div>`;
+            }
+
+            // Control Room moisture per shift
+            const ctrlRows = siloMoistData.filter(r => r.ctrlMoisture);
+            if (ctrlRows.length > 0) {
+                html += `<div style="margin-top:10px; padding:10px; border:1px solid #000; background:#eef6ff;">
+                    <strong>Control Room Moisture Results:</strong><br>
+                    <table style="width:100%; border-collapse:collapse; margin-top:6px; font-size:0.85em;">
+                        <thead><tr style="background:#dbeafe;">
+                            <th style="border:1px solid #999; padding:4px;">Shift</th>
+                            <th style="border:1px solid #999; padding:4px;">Officer</th>
+                            <th style="border:1px solid #999; padding:4px;">Control Room Moisture (%)</th>
+                        </tr></thead><tbody>`;
+                ctrlRows.forEach(r => {
+                    html += `<tr>
+                        <td style="border:1px solid #999; padding:4px; text-align:center;">${r.shift || '-'}</td>
+                        <td style="border:1px solid #999; padding:4px; text-align:center;">${r.officerName || '-'}</td>
+                        <td style="border:1px solid #999; padding:4px; text-align:center;">${r.ctrlMoisture ? r.ctrlMoisture + '%' : '-'}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table></div>`;
             }
 
         } else {
@@ -512,27 +567,56 @@
         html += `</div>`;
 
         // Approval Block
-        html += `
-            <div class="pdf-approval-block">
-                <h3 style="margin-top:0; border-bottom:1px solid #000; padding-bottom:10px;">Production Manager Approval</h3>
-                <div style="margin-top:20px;">
-                    <strong>Comments / Remarks:</strong>
-                    <div style="border-bottom: 1px dotted #999; height: 30px; margin-top:10px;"></div>
-                    <div style="border-bottom: 1px dotted #999; height: 30px;"></div>
-                    <div style="border-bottom: 1px dotted #999; height: 30px;"></div>
-                </div>
-                <div class="signature-box">
-                    <div>
-                        <div class="signature-line"></div>
-                        <div>Production Manager Signature</div>
+        if (isApproved) {
+            html += `
+                <div class="pdf-approval-block" style="border: 2px solid green; padding: 15px; border-radius: 8px;">
+                    <h3 style="margin-top:0; border-bottom:1px solid green; padding-bottom:10px; color: green;">Production Manager Approval</h3>
+                    <div style="margin-top:15px; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem; color: green; font-weight: bold;">
+                        <span>✅ APPROVED BY PRODUCTION MANAGER</span>
                     </div>
-                    <div>
-                        <div class="signature-line" style="width:150px;"></div>
-                        <div>Date</div>
+                    <div style="margin-top:15px;">
+                        <strong>Comments / Remarks:</strong>
+                        <div style="border: 1px solid #ddd; background: #f9f9f9; padding: 10px; border-radius: 4px; margin-top:5px; font-style: italic; color: #333;">
+                            ${remarks ? remarks : 'Approved with one-click approval.'}
+                        </div>
+                    </div>
+                    <div class="signature-box" style="margin-top:25px;">
+                        <div>
+                            <div style="font-weight:bold; font-family:'Courier New', monospace; border-bottom:1px solid #000; padding-bottom:5px; text-align:center; width:250px;">Production Manager</div>
+                            <div style="margin-top:5px;">Production Manager Signature</div>
+                        </div>
+                        <div>
+                            <div style="border-bottom: 1px solid #000; width:150px; text-align:center; padding-bottom:5px; font-weight:bold;">
+                                ${new Date().toLocaleDateString('en-GB')}
+                            </div>
+                            <div style="margin-top:5px;">Date</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            html += `
+                <div class="pdf-approval-block">
+                    <h3 style="margin-top:0; border-bottom:1px solid #000; padding-bottom:10px;">Production Manager Approval</h3>
+                    <div style="margin-top:20px;">
+                        <strong>Comments / Remarks:</strong>
+                        <div style="border-bottom: 1px dotted #999; height: 30px; margin-top:10px;"></div>
+                        <div style="border-bottom: 1px dotted #999; height: 30px;"></div>
+                        <div style="border-bottom: 1px dotted #999; height: 30px;"></div>
+                    </div>
+                    <div class="signature-box">
+                        <div>
+                            <div class="signature-line"></div>
+                            <div>Production Manager Signature</div>
+                        </div>
+                        <div>
+                            <div class="signature-line" style="width:150px;"></div>
+                            <div>Date</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
 
         const container = document.getElementById('shift-report-print-container');
         if (container) {
@@ -552,9 +636,86 @@
 
     // Initialize when DOM is ready
     const initPDFEvents = () => {
-        const btn = document.getElementById('btn-generate-shift-pdf');
-        if (btn) {
-            btn.addEventListener('click', generateCompleteShiftPDF);
+        const updatePreview = () => {
+            const chk = document.getElementById('preview-approval-check');
+            const rem = document.getElementById('preview-approval-remarks');
+            const isApproved = chk ? chk.checked : false;
+            const remarks = rem ? rem.value.trim() : '';
+            const html = generateCompleteShiftPDF(isApproved, remarks);
+            const paper = document.getElementById('preview-document-paper');
+            if (paper) paper.innerHTML = html;
+        };
+
+        const openPreviewModal = () => {
+            const dateInput = document.getElementById('sr-filter-date');
+            const selectedDate = dateInput ? dateInput.value.trim() : '';
+            if (!selectedDate) {
+                alert('Please select a date in the Daily Shift Reports section first to generate the PDF.');
+                return;
+            }
+            
+            // Default to approved and empty remarks when opening
+            const chk = document.getElementById('preview-approval-check');
+            if (chk) chk.checked = true;
+            const rem = document.getElementById('preview-approval-remarks');
+            if (rem) rem.value = '';
+
+            // Generate initial preview HTML with dynamic approval block
+            updatePreview();
+
+            // Open preview modal
+            const modal = document.getElementById('report-preview-modal');
+            if (modal) modal.classList.add('show');
+        };
+
+        // Bind main trigger button to open preview
+        const btnView = document.getElementById('btn-view-shift-report');
+        if (btnView) btnView.addEventListener('click', openPreviewModal);
+
+        // Bind instant update events
+        const chk = document.getElementById('preview-approval-check');
+        if (chk) chk.addEventListener('change', updatePreview);
+        const rem = document.getElementById('preview-approval-remarks');
+        if (rem) rem.addEventListener('input', updatePreview);
+
+        // Close preview modal logic
+        const closePreview = () => {
+            document.getElementById('report-preview-modal').classList.remove('show');
+        };
+
+        const closeBtn = document.getElementById('btn-close-preview');
+        if (closeBtn) closeBtn.addEventListener('click', closePreview);
+
+        const cancelBtn = document.getElementById('btn-preview-cancel');
+        if (cancelBtn) cancelBtn.addEventListener('click', closePreview);
+
+        // Print & Save logic from preview modal
+        const printBtn = document.getElementById('btn-preview-print');
+        if (printBtn) {
+            printBtn.addEventListener('click', () => {
+                const chk = document.getElementById('preview-approval-check');
+                const rem = document.getElementById('preview-approval-remarks');
+                const isApproved = chk ? chk.checked : false;
+                const remarks = rem ? rem.value.trim() : '';
+
+                // Close preview modal
+                document.getElementById('report-preview-modal').classList.remove('show');
+
+                // Generate full print HTML with approval info & remarks
+                const html = generateCompleteShiftPDF(isApproved, remarks);
+                const container = document.getElementById('shift-report-print-container');
+                if (container) container.innerHTML = html;
+
+                // Trigger print
+                document.body.classList.add('printing-shift-pdf');
+                setTimeout(() => {
+                    window.print();
+                    // Remove class after print dialog closes
+                    setTimeout(() => {
+                        document.body.classList.remove('printing-shift-pdf');
+                    }, 1000);
+                }, 300);
+            });
         }
     };
 

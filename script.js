@@ -64,6 +64,29 @@ document.addEventListener('DOMContentLoaded', () => {
         navMaizeMoisture.addEventListener('click', (e) => {
             e.preventDefault();
             switchView(navMaizeMoisture, viewMaizeMoisture);
+            
+            // Ensure filter date is initialized so reports load data
+            const filterInput = document.getElementById('sr-filter-date');
+            if (filterInput) {
+                if (!filterInput.value) {
+                    const today = new Date();
+                    const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
+                    filterInput.value = d;
+                    currentSrFilterDate = d;
+                } else {
+                    currentSrFilterDate = filterInput.value.trim();
+                }
+            }
+            
+            // Update table rendering and daily silo summary
+            renderMaizeMoistureTable();
+            if (typeof window.updateDailySiloMoistureSummary === 'function') {
+                window.updateDailySiloMoistureSummary(currentSrFilterDate);
+            }
+            // Trigger a chart redraw
+            if (typeof window.renderSiloMoistureTrendChart === 'function') {
+                setTimeout(window.renderSiloMoistureTrendChart, 100);
+            }
         });
     }
 
@@ -355,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    let availableMaterials = ['Maize', 'Rice'];
+    let availableMaterials = ['Maize', 'Rice', 'Wheat Bran', 'Low Grade Canola', 'Canola Meal', 'Soyabean Meal'];
     let silosData = [];
     let maizeLogs = [];
     let lessExcessLogs = [];
@@ -397,7 +420,8 @@ document.addEventListener('DOMContentLoaded', () => {
         fillingStart: dbSilo.filling_start,
         fillingEnd: dbSilo.filling_end,
         fanOnTime: dbSilo.fan_on_time || '-',
-        fanOffTime: dbSilo.fan_off_time || '-'
+        fanOffTime: dbSilo.fan_off_time || '-',
+        temperature: parseFloat(dbSilo.temperature !== undefined ? dbSilo.temperature : 15)
     });
 
     const mapSiloToDb = (silo) => ({
@@ -415,7 +439,8 @@ document.addEventListener('DOMContentLoaded', () => {
         filling_start: silo.fillingStart,
         filling_end: silo.fillingEnd,
         fan_on_time: silo.fanOnTime,
-        fan_off_time: silo.fanOffTime
+        fan_off_time: silo.fanOffTime,
+        temperature: silo.temperature || 15
     });
 
     const mapLessExcessFromDb = (dbRow) => ({
@@ -599,14 +624,29 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
-        try {
-            if (typeof supabase === 'undefined') {
-                console.warn('Supabase SDK is not available yet.');
-                isSbConnected = false;
-                updateSbStatusUI();
-                return false;
-            }
+        // Show connecting state immediately
+        const dot = document.getElementById('supabase-status-dot');
+        const text = document.getElementById('supabase-status-text');
+        if (dot && text) {
+            dot.className = 'connecting';
+            text.textContent = 'Connecting...';
+        }
 
+        // Wait for SDK to become available (up to 5 seconds)
+        let attempts = 0;
+        while (typeof supabase === 'undefined' && attempts < 25) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            attempts++;
+        }
+
+        if (typeof supabase === 'undefined') {
+            console.warn('Supabase SDK not available after waiting.');
+            isSbConnected = false;
+            updateSbStatusUI();
+            return false;
+        }
+
+        try {
             sbClient = supabase.createClient(supabaseUrl, supabaseKey);
 
             // Ping db
@@ -621,6 +661,19 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Supabase connection error:', err);
             isSbConnected = false;
             updateSbStatusUI();
+
+            // Auto-retry once after 3 seconds in case of transient network issue
+            setTimeout(async () => {
+                try {
+                    const { error } = await sbClient.from('materials').select('name').limit(1);
+                    if (!error) {
+                        isSbConnected = true;
+                        updateSbStatusUI();
+                        setupRealtimeSubscription();
+                    }
+                } catch (_) {}
+            }, 3000);
+
             return false;
         }
     };
@@ -660,10 +713,12 @@ document.addEventListener('DOMContentLoaded', () => {
             .subscribe();
     };
     const ensureDefaultMaterials = () => {
-        const required = ['Fresh Maize', 'Old Maize', 'Dryer Maize'];
+        const required = ['Maize', 'Rice', 'Wheat Bran', 'Low Grade Canola', 'Canola Meal', 'Soyabean Meal'];
         if (!availableMaterials || !Array.isArray(availableMaterials)) {
             availableMaterials = [];
         }
+        const toRemove = ['Old Maize', 'Dryer Maize', 'Fresh Maize'];
+        availableMaterials = availableMaterials.filter(m => !toRemove.includes(m));
         required.forEach(m => {
             if (!availableMaterials.includes(m)) availableMaterials.push(m);
         });
@@ -675,7 +730,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!silosData) return;
         silosData.forEach(silo => {
             let expectedCap = 5000;
-            if (silo.id === 3 || silo.id === 6) expectedCap = 500;
+            if ([1, 2, 4, 7, 8].includes(silo.id)) expectedCap = 3500;
+            else if (silo.id === 3 || silo.id === 6) expectedCap = 2500;
             else if (silo.id >= 9 && silo.id <= 12) expectedCap = 2500;
             else if (silo.id >= 17 && silo.id <= 19) expectedCap = 400;
             else if (silo.id >= 20 && silo.id <= 21) expectedCap = 250;
@@ -1013,7 +1069,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnAddMaizeLogEl) {
         btnAddMaizeLogEl.addEventListener('click', () => {
             const today = new Date();
-            const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+            const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
             maizeLogs.push({
                 id: Date.now(),
                 date: d,
@@ -1041,7 +1097,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         
         const today = new Date();
-        const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+        const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
         
         let currentShift = 'A';
         if (lessExcessLogs.length > 0) {
@@ -1159,7 +1215,8 @@ document.addEventListener('DOMContentLoaded', () => {
             let capacity = 5000;
             let name = `Silo ${i.toString().padStart(2, '0')}`;
             
-            if (i === 3 || i === 6) capacity = 500;
+            if ([1, 2, 4, 7, 8].includes(i)) capacity = 3500;
+            else if (i === 3 || i === 6) capacity = 2500;
             else if (i >= 9 && i <= 12) capacity = 2500;
             else if (i >= 17 && i <= 19) {
                 capacity = 400;
@@ -1191,7 +1248,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 fillingStart:     fmt(start),
                 fillingEnd:       Math.random() > 0.5 ? fmt(end) : 'In Progress',
                 fanOnTime:        isRunning ? fmt(start) : '-',
-                fanOffTime:       isRunning ? '-' : fmt(end)
+                fanOffTime:       isRunning ? '-' : fmt(end),
+                temperature:      Math.floor(13 + Math.random() * 14)
             });
         }
         return silos;
@@ -1216,11 +1274,40 @@ document.addEventListener('DOMContentLoaded', () => {
             const inputRuntime = document.getElementById('sd-m-runtime');
             const inputFanOn = document.getElementById('sd-m-fanon');
             const inputFanOff = document.getElementById('sd-m-fanoff');
+            const inputTemperature = document.getElementById('sd-m-temp');
 
             if (!btnOpen || !modal) {
                 console.warn("btn-add-silo-data or silo-data-modal not found in DOM");
                 return;
             }
+
+            const to24Hour = (str) => {
+                if (!str || str === '-' || str === 'In Progress' || str === 'None') return '';
+                if (/^\d{2}:\d{2}$/.test(str)) return str;
+                const match = str.match(/(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?/);
+                if (!match) return '';
+                let hours = parseInt(match[1]);
+                const minutes = match[2];
+                const ampm = match[3];
+                if (ampm) {
+                    const norm = ampm.toUpperCase();
+                    if (norm === 'PM' && hours < 12) hours += 12;
+                    if (norm === 'AM' && hours === 12) hours = 0;
+                }
+                return `${hours.toString().padStart(2, '0')}:${minutes}`;
+            };
+
+            const to12Hour = (timeStr) => {
+                if (!timeStr) return '-';
+                const parts = timeStr.split(':');
+                if (parts.length < 2) return timeStr;
+                let hours = parseInt(parts[0]);
+                const minutes = parts[1];
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+            };
 
             // Populate Silo Dropdown
             const populateSiloDropdown = () => {
@@ -1268,8 +1355,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (inputCMoist) inputCMoist.value = silo.currentMoisture || 0;
                 if (selectFan) selectFan.value = silo.fanStatus || 'Off';
                 if (inputRuntime) inputRuntime.value = silo.runTime || 0;
-                if (inputFanOn) inputFanOn.value = silo.fanOnTime || '-';
-                if (inputFanOff) inputFanOff.value = silo.fanOffTime || '-';
+                if (inputFanOn) inputFanOn.value = to24Hour(silo.fanOnTime);
+                if (inputFanOff) inputFanOff.value = to24Hour(silo.fanOffTime);
+                if (inputTemperature) inputTemperature.value = silo.temperature || 15;
             };
 
             selectSilo.addEventListener('change', loadSiloData);
@@ -1336,8 +1424,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (inputCMoist) silo.currentMoisture = parseFloat(inputCMoist.value) || 0;
                         if (selectFan) silo.fanStatus = selectFan.value;
                         if (inputRuntime) silo.runTime = parseFloat(inputRuntime.value) || 0;
-                        if (inputFanOn) silo.fanOnTime = inputFanOn.value.trim();
-                        if (inputFanOff) silo.fanOffTime = inputFanOff.value.trim();
+                        if (inputFanOn) silo.fanOnTime = to12Hour(inputFanOn.value);
+                        if (inputFanOff) silo.fanOffTime = to12Hour(inputFanOff.value);
+                        if (inputTemperature) silo.temperature = parseFloat(inputTemperature.value) || 15;
 
                         saveData(silo);
                         renderSilos();
@@ -2093,6 +2182,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Render Silo Cards ────────────────────────────────────────────────────
     const renderSilos = () => {
+        const formatDateOnly = (str) => {
+            if (!str) return '-';
+            if (str === 'In Progress' || str === '-' || str === 'None') return str;
+            
+            // Clean/get first part in case of space
+            const parts = str.split(' ')[0];
+            const d = new Date(parts);
+            if (isNaN(d.getTime())) {
+                return str;
+            }
+            const day = d.getDate();
+            const month = d.toLocaleString('default', { month: 'short' });
+            const year = d.getFullYear();
+            return `${day}-${month}-${year}`;
+        };
+
+        const getStorageLife = (moisture, temp) => {
+            const t = Math.round(temp || 15);
+            if (t < 13 || t > 26) return 'Out of Range';
+
+            let rangeIdx = -1;
+            if (moisture >= 12 && moisture < 13) rangeIdx = 0;
+            else if (moisture >= 13 && moisture < 14) rangeIdx = 1;
+            else if (moisture >= 14 && moisture < 15) rangeIdx = 2;
+            else if (moisture >= 15 && moisture < 16) rangeIdx = 3;
+            else if (moisture >= 16 && moisture <= 17) rangeIdx = 4;
+            else if (moisture < 12) return 'Safe (>830 Days)';
+            else return 'Danger (<20 Days)';
+
+            const table = [
+                [830, 800, 768, 700, 640, 610, 570, 540, 512, 475, 450, 420, 400, 384],
+                [416, 384, 340, 320, 280, 256, 250, 228, 190, 192, 170, 150, 130, 120],
+                [224, 200, 192, 170, 160, 135, 128, 112, 96, 90, 80, 70, 60, 56],
+                [135, 132, 118, 108, 98, 94, 80, 70, 64, 56, 51, 46, 40, 35],
+                [98, 96, 80, 60, 64, 54, 56, 48, 40, 35, 32, 28, 24, 20]
+            ];
+
+            const tempOffset = t - 13;
+            const days = table[rangeIdx][tempOffset];
+            return days + ' Days';
+        };
+
         // Fail-safe: ensure we have 21 silos
         if (!silosData || silosData.length < 21) {
             const newSilos = generateSiloData(21);
@@ -2155,6 +2286,19 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </div>
                             </div>
                         </div>
+                        <!-- Vertical Level Gauge -->
+                        <div class="silo-level-gauge-container" style="position:absolute; right:15px; bottom:55px; display:flex; flex-direction:row; align-items:center; gap:6px; z-index:10; background:rgba(15,23,42,0.4); padding:6px 4px; border-radius:6px; border:1px solid rgba(255,255,255,0.08); backdrop-filter:blur(4px);">
+                            <div style="display:flex; flex-direction:column; justify-content:space-between; height:120px; font-size:0.6rem; color:rgba(255,255,255,0.7); font-weight:700; text-align:right; line-height: 1;">
+                                <span>100</span>
+                                <span>75</span>
+                                <span>50</span>
+                                <span>25</span>
+                                <span>0</span>
+                            </div>
+                            <div style="width:8px; height:120px; background:rgba(255,255,255,0.15); border-radius:4px; border:1px solid rgba(255,255,255,0.2); position:relative; overflow:hidden;">
+                                <div style="height:${silo.fillLevel}%; width:100%; position:absolute; bottom:0; left:0; background:linear-gradient(to top, #06b6d4, #22d3ee); box-shadow:0 0 8px rgba(34,211,238,0.6);"></div>
+                            </div>
+                        </div>
                         <div style="position:absolute;top:10px;right:10px;z-index:10;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);padding:5px 12px;border-radius:20px;font-weight:700;font-size:0.75rem;color:#38bdf8;border:1px solid rgba(56,189,248,0.3);box-shadow:0 2px 10px rgba(0,0,0,0.3),0 0 15px rgba(56,189,248,0.1);letter-spacing:0.5px;">
                             <span style="color:rgba(255,255,255,0.6);font-weight:500;">FILL</span> ${silo.fillLevel}%
                         </div>
@@ -2211,7 +2355,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="metric">
                             <div class="metric-label">
                                 <span>Filling Start</span>
-                                <span class="metric-value" id="fstart-${silo.id}" style="font-size:0.8rem;">${silo.fillingStart}</span>
+                                <span class="metric-value" id="fstart-${silo.id}" style="font-size:0.8rem;">${formatDateOnly(silo.fillingStart)}</span>
                             </div>
                         </div>
 
@@ -2219,7 +2363,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="metric">
                             <div class="metric-label">
                                 <span>Filling End</span>
-                                <span class="metric-value" id="fend-${silo.id}" style="font-size:0.8rem;">${silo.fillingEnd}</span>
+                                <span class="metric-value" id="fend-${silo.id}" style="font-size:0.8rem;">${formatDateOnly(silo.fillingEnd)}</span>
                             </div>
                         </div>
 
@@ -2239,6 +2383,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                             <div class="progress-bar-bg">
                                 <div class="progress-bar-fill" id="mbar-${silo.id}" style="width:${mPct}%;background-color:${mc};"></div>
+                            </div>
+                        </div>
+
+                        <!-- Grain Temp & Storage Life -->
+                        <div class="metric" style="background:rgba(56,189,248,0.06); margin-top:0.4rem; padding:0.4rem 0.6rem; border-radius:6px; border:1px solid rgba(56,189,248,0.15);">
+                            <div class="metric-label" style="margin-bottom:0.25rem;">
+                                <span>Grain Temp</span>
+                                <span style="font-weight:600; color:var(--text-primary); font-size:0.85rem;">${silo.temperature || 15}°C</span>
+                            </div>
+                            <div class="metric-label">
+                                <span>Storage Life</span>
+                                <span style="font-weight:700; color:#38bdf8; font-size:0.85rem;">${getStorageLife(silo.currentMoisture, silo.temperature || 15)}</span>
                             </div>
                         </div>
 
@@ -2303,11 +2459,11 @@ document.addEventListener('DOMContentLoaded', () => {
         areas.forEach((area, idx) => {
             const d1 = new Date();
             d1.setDate(d1.getDate() - 7);
-            const d1Str = d1.getDate() + '-' + d1.toLocaleString('default', { month: 'short' });
+            const d1Str = d1.getDate() + '-' + d1.toLocaleString('default', { month: 'short' }) + '-' + d1.getFullYear();
             
             const d2 = new Date();
             d2.setDate(d2.getDate() - 1);
-            const d2Str = d2.getDate() + '-' + d2.toLocaleString('default', { month: 'short' });
+            const d2Str = d2.getDate() + '-' + d2.toLocaleString('default', { month: 'short' }) + '-' + d2.getFullYear();
             
             logs.push({
                 id: Date.now() - (idx * 200000) - 100000,
@@ -2904,7 +3060,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const dateInput = document.getElementById('dc-date-select');
         if (dateInput && !dateInput.value) {
             const today = new Date();
-            const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+            const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
             dateInput.value = d;
             currentChecklistDate = d;
         } else if (dateInput) {
@@ -3144,7 +3300,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filterInput) {
             if (!filterInput.value) {
                 const today = new Date();
-                const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+                const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
                 filterInput.value = d;
                 currentSrFilterDate = d;
             } else {
@@ -3359,12 +3515,29 @@ document.addEventListener('DOMContentLoaded', () => {
         // We could also sync to Supabase if a table exists
     };
 
+    const populateRmMaterialsDropdown = () => {
+        const sel = document.getElementById('rm-modal-material');
+        if (!sel) return;
+        sel.innerHTML = '';
+        const mats = Array.isArray(availableMaterials) ? availableMaterials : ['Maize', 'Rice', 'Wheat Bran', 'Low Grade Canola', 'Canola Meal', 'Soyabean Meal'];
+        mats.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = m;
+            sel.appendChild(opt);
+        });
+        const optAddNew = document.createElement('option');
+        optAddNew.value = 'add_new';
+        optAddNew.textContent = '+ Add New...';
+        sel.appendChild(optAddNew);
+    };
+
     const renderStandaloneRmChecks = () => {
         const tbody = document.querySelector('#standalone-rm-table tbody');
         if (!tbody) return;
         tbody.innerHTML = '';
         if (standaloneRmChecks.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text-secondary);padding:2rem;">No unloading checks found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--text-secondary);padding:2rem;">No unloading checks found.</td></tr>';
             return;
         }
         [...standaloneRmChecks].reverse().forEach(c => {
@@ -3374,6 +3547,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${c.date}</td>
                 <td>${c.shift}</td>
                 <td>👷 ${c.officer || '—'}</td>
+                <td><strong>${c.material || '—'}</strong></td>
                 <td>${c.vehicle}</td>
                 <td>${c.location}</td>
                 <td>${c.moisture}</td>
@@ -3393,9 +3567,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const c = standaloneRmChecks.find(x => x.id === id);
         if (!c) return;
         activeStandaloneRmId = id;
+        populateRmMaterialsDropdown();
         document.getElementById('rm-modal-date').value = c.date;
         document.getElementById('rm-modal-shift').value = c.shift;
         document.getElementById('rm-modal-officer').value = c.officer || 'M. Zubair';
+        
+        const sel = document.getElementById('rm-modal-material');
+        if (sel) {
+            if (c.material && !availableMaterials.includes(c.material)) {
+                availableMaterials.push(c.material);
+                populateRmMaterialsDropdown();
+            }
+            sel.value = c.material || availableMaterials[0] || 'Maize';
+        }
+        
         document.getElementById('rm-modal-vehicle').value = c.vehicle;
         document.getElementById('rm-modal-location').value = c.location;
         document.getElementById('rm-modal-moisture').value = c.moisture;
@@ -3418,10 +3603,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const openStandaloneRmModal = () => {
         activeStandaloneRmId = null;
+        populateRmMaterialsDropdown();
         const today = new Date();
-        document.getElementById('rm-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+        document.getElementById('rm-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
         document.getElementById('rm-modal-shift').value = 'A';
         document.getElementById('rm-modal-officer').value = 'M. Zubair';
+        const sel = document.getElementById('rm-modal-material');
+        if (sel) sel.value = availableMaterials[0] || 'Maize';
         document.getElementById('rm-modal-vehicle').value = '';
         document.getElementById('rm-modal-location').value = '';
         document.getElementById('rm-modal-moisture').value = '';
@@ -3438,6 +3626,7 @@ document.addEventListener('DOMContentLoaded', () => {
             date: document.getElementById('rm-modal-date').value.trim(),
             shift: document.getElementById('rm-modal-shift').value.trim(),
             officer: document.getElementById('rm-modal-officer').value.trim(),
+            material: document.getElementById('rm-modal-material') ? document.getElementById('rm-modal-material').value.trim() : '',
             vehicle: document.getElementById('rm-modal-vehicle').value.trim(),
             location: document.getElementById('rm-modal-location').value.trim(),
             moisture: document.getElementById('rm-modal-moisture').value.trim(),
@@ -3472,6 +3661,33 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnClose1) btnClose1.addEventListener('click', closeStandaloneRmModal);
         const btnClose2 = document.getElementById('btn-cancel-rm');
         if (btnClose2) btnClose2.addEventListener('click', closeStandaloneRmModal);
+
+        // Add dynamic add_new listener for RM modal material select
+        const rmSelectMaterial = document.getElementById('rm-modal-material');
+        if (rmSelectMaterial) {
+            rmSelectMaterial.addEventListener('change', (e) => {
+                if (e.target.value === 'add_new') {
+                    const newMat = prompt('Enter new material name:');
+                    if (newMat && newMat.trim()) {
+                        const name = newMat.trim();
+                        if (!availableMaterials.includes(name)) {
+                            availableMaterials.push(name);
+                            localStorage.setItem(LS_MATERIALS, JSON.stringify(availableMaterials));
+                            if (isSbConnected && sbClient) {
+                                sbClient.from('materials').upsert([{ name: name }]).catch(console.error);
+                            }
+                        }
+                        // Refresh all lists
+                        populateRmMaterialsDropdown();
+                        if (typeof populateMaterialsDropdown === 'function') populateMaterialsDropdown();
+                        rmSelectMaterial.value = name;
+                    } else {
+                        rmSelectMaterial.value = availableMaterials[0] || 'Maize';
+                    }
+                }
+            });
+        }
+
         renderStandaloneRmChecks();
     };
 
@@ -3518,11 +3734,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { cat: 'RAW MATERIAL UNLOADING PROTOCOLS', name: 'Silo Side A+B Line Dumping Sample checking via Worker', m:true, e:true, n:true },
         { cat: 'RAW MATERIAL UNLOADING PROTOCOLS', name: 'Dryer to Concrete Silo Shifting Maize Sample', m:true, e:true, n:true },
 
-        { cat: 'OTHERS', name: 'Bats weights checking,Both scales Calibration checking after 15 Days,Oil system scale checking', m:true, e:true, n:true },
-        { cat: 'OTHERS', name: 'Plant Cleaning Before Breeder', m:true, e:true, n:true },
-        { cat: 'OTHERS', name: 'Both Scales Weight checking During Breeder Batching', m:true, e:true, n:true },
-        { cat: 'OTHERS', name: 'Batching Medicines weight checking (For Breeder)', m:true, e:true, n:true },
-        { cat: 'OTHERS', name: '5 WHY Performa', m:true, e:true, n:true }
     ];
 
     const savePerformas = () => {
@@ -3602,7 +3813,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const openPerformaModal = () => {
         activePerformaId = null;
         const today = new Date();
-        document.getElementById('performa-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+        document.getElementById('performa-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
         document.getElementById('performa-modal-sign').value = '';
         document.getElementById('performa-modal-remarks').value = '';
         populatePerformaModalTable({});

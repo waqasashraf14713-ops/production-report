@@ -13,6 +13,27 @@ let activeSdId = null;
 
 const inp = (id, w = '100%') => `<input type="text" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;">`;
 
+const matInp = (id) => {
+    let mats = ['Maize', 'Rice', 'Wheat Bran', 'Low Grade Canola', 'Canola Meal', 'Soyabean Meal'];
+    try {
+        const stored = localStorage.getItem('fmpr_materials');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                mats = parsed;
+            }
+        }
+    } catch (e) {
+        console.error("Error reading fmpr_materials", e);
+    }
+    return `
+        <input type="text" id="${id}" list="sd-mat-options-${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;" placeholder="Select or type" value="Maize">
+        <datalist id="sd-mat-options-${id}">
+            ${mats.map(m => `<option value="${m}">`).join('')}
+        </datalist>
+    `;
+};
+
 const generateTimeSlots = (shift) => {
     let startHour = 0;
     if (shift === 'Morning') startHour = 6;
@@ -44,7 +65,7 @@ const buildSdUI = (shift) => {
         html += `
         <tr>
             <td style="font-weight:bold;color:var(--text-secondary);padding:0.5rem;">${t}</td>
-            <td style="padding:0.2rem;">${inp(`sd-mat-${i}`)}</td>
+            <td style="padding:0.2rem;">${matInp(`sd-mat-${i}`)}</td>
             
             <td style="padding:0.2rem; border-left:2px solid #ccc;">${inp(`sd-amois-${i}`)}</td>
             <td style="padding:0.2rem;">${inp(`sd-acr-${i}`)}</td>
@@ -64,7 +85,7 @@ const buildSdUI = (shift) => {
 
 const clearSdForm = () => {
     const today = new Date();
-    document.getElementById('sd-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+    document.getElementById('sd-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
     document.getElementById('sd-shift').value = 'Morning';
     document.getElementById('sd-officer').value = '';
     

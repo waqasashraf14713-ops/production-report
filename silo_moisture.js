@@ -17,10 +17,7 @@ try {
     const getSiloOptionList = () => {
         const list = [];
         for (let i = 1; i <= 8; i++) list.push(`Silo ${i.toString().padStart(2, '0')}`);
-        for (let i = 9; i <= 12; i++) list.push(`Silo ${i.toString().padStart(2, '0')}`);
-        for (let i = 1; i <= 3; i++) list.push(`Wet Bin ${i.toString().padStart(2, '0')}`);
-        for (let i = 1; i <= 2; i++) list.push(`Cooling Bin ${i.toString().padStart(2, '0')}`);
-        for (let i = 13; i <= 16; i++) list.push(`Silo ${i.toString().padStart(2, '0')}`);
+        list.push('Plant Maize');
         return list;
     };
     
@@ -29,13 +26,13 @@ try {
         ${getSiloOptionList().map(name => `<option value="${name}">${name}</option>`).join('')}
     </select>`;
 
-    const matInp = (id) => `
-        <input type="text" id="${id}" list="mat-options-${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;" placeholder="Select or type">
-        <datalist id="mat-options-${id}">
-            <option value="Maize">
-            <option value="Rice">
-        </datalist>
-    `;
+    const matInp = (id) => {
+        return `
+            <select id="${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;background:var(--card-bg);color:var(--text-primary);">
+                <option value="Maize">Maize</option>
+            </select>
+        `;
+    };
 
     const saveSiloMoistData = () => {
         localStorage.setItem(LS_SILO_MOISTURE, JSON.stringify(siloMoistData));
@@ -81,6 +78,7 @@ try {
         document.getElementById('sm-date').value = r.date || '';
         document.getElementById('sm-shift').value = r.shift || 'Morning';
         document.getElementById('sm-officer').value = r.officerName || '';
+        document.getElementById('sm-ctrl-moisture').value = r.ctrlMoisture || '';
 
         const tbody = document.getElementById('sm-rows-tbody');
         tbody.innerHTML = '';
@@ -111,7 +109,8 @@ try {
         tr.innerHTML = `
             <td>${siloSel(`sm-silo-${rId}`)}</td>
             <td>${matInp(`sm-mat-${rId}`)}</td>
-            <td>${num(`sm-moist-${rId}`)}</td>
+            <td>${num(`sm-moist-ungrind-${rId}`)}</td>
+            <td>${num(`sm-moist-grind-${rId}`)}</td>
             <td>${inp(`sm-rem-${rId}`)}</td>
             <td><div style="cursor:pointer;" onclick="this.closest('tr').remove()">${btn('🗑️', 'var(--danger-color)')}</div></td>
         `;
@@ -119,7 +118,14 @@ try {
 
         if (data.silo) document.getElementById(`sm-silo-${rId}`).value = data.silo;
         if (data.material) document.getElementById(`sm-mat-${rId}`).value = data.material;
-        if (data.moisture) document.getElementById(`sm-moist-${rId}`).value = data.moisture;
+        
+        if (data.moistureUngrind !== undefined) {
+            document.getElementById(`sm-moist-ungrind-${rId}`).value = data.moistureUngrind;
+        } else if (data.moisture !== undefined) {
+            document.getElementById(`sm-moist-ungrind-${rId}`).value = data.moisture;
+        }
+        
+        if (data.moistureGrind !== undefined) document.getElementById(`sm-moist-grind-${rId}`).value = data.moistureGrind;
         if (data.remarks) document.getElementById(`sm-rem-${rId}`).value = data.remarks;
     };
 
@@ -132,11 +138,13 @@ try {
         
         document.getElementById('sm-shift').value = 'Morning';
         document.getElementById('sm-officer').value = '';
+        document.getElementById('sm-ctrl-moisture').value = '';
 
         const tbody = document.getElementById('sm-rows-tbody');
         tbody.innerHTML = '';
         addSmRowUI();
 
+        renderSiloMoistTable();
         document.getElementById('silo-moist-modal').classList.add('show');
     };
 
@@ -150,17 +158,19 @@ try {
 
         const shift = document.getElementById('sm-shift').value;
         const officerName = document.getElementById('sm-officer').value;
+        const ctrlMoisture = document.getElementById('sm-ctrl-moisture').value.trim();
 
         const rows = [];
         document.querySelectorAll('#sm-rows-tbody .sm-row').forEach(tr => {
             const rId = tr.dataset.rid;
             const silo = document.getElementById(`sm-silo-${rId}`).value.trim();
             const material = document.getElementById(`sm-mat-${rId}`).value.trim();
-            const moisture = document.getElementById(`sm-moist-${rId}`).value.trim();
+            const moistureUngrind = document.getElementById(`sm-moist-ungrind-${rId}`).value.trim();
+            const moistureGrind = document.getElementById(`sm-moist-grind-${rId}`).value.trim();
             const remarks = document.getElementById(`sm-rem-${rId}`).value.trim();
             
-            if (silo || material || moisture) {
-                rows.push({ silo, material, moisture, remarks });
+            if (silo || material || moistureUngrind || moistureGrind) {
+                rows.push({ silo, material, moistureUngrind, moistureGrind, remarks });
             }
         });
 
@@ -169,6 +179,7 @@ try {
             date,
             shift,
             officerName,
+            ctrlMoisture,
             rows
         };
 

@@ -24,6 +24,7 @@ const num = (id, w = '100%') => `<input type="number" step="any" id="${id}" styl
 const chk = (id) => `<input type="checkbox" id="${id}" style="transform:scale(1.2);cursor:pointer;">`;
 
 const offSel = (id) => `<select id="${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;background:var(--card-bg);color:var(--text-primary);"><option value="">Select Officer</option><option value="M. Zubair">M. Zubair</option><option value="M. Tahir">M. Tahir</option><option value="M. Shoaib">M. Shoaib</option></select>`;
+const opSel = (id) => `<select id="${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;background:var(--card-bg);color:var(--text-primary);"><option value="">Select Operator</option><option value="M. Saifal">M. Saifal</option><option value="M. Umer">M. Umer</option><option value="M. Deen">M. Deen</option><option value="M. Akmel">M. Akmel</option><option value="M. Farrukh">M. Farrukh</option></select>`;
 
 const getShiftTimes = (shiftName) => {
     if(shiftName === 'Morning') return {st:'06:00 AM', fn:'02:00 PM'};
@@ -35,7 +36,13 @@ const getShiftTimes = (shiftName) => {
 const buildShiftDetailsUI = () => {
     let html = `<tr>
         <td>${offSel('pr-shift-officer')}</td>
-        <td>${inp('pr-shift-op')}</td>
+        <td>
+            <div style="display:flex;gap:0.4rem;align-items:center;">
+                ${opSel('pr-shift-op1')}
+                <span style="font-weight:bold;color:var(--text-secondary);">+</span>
+                ${opSel('pr-shift-op2')}
+            </div>
+        </td>
         <td style="text-align:center;color:var(--text-secondary);" id="pr-shift-st-text">06:00 AM</td>
         <td style="text-align:center;color:var(--text-secondary);" id="pr-shift-fn-text">02:00 PM</td>
     </tr>`;
@@ -44,14 +51,6 @@ const buildShiftDetailsUI = () => {
 };
 
 const build5SUI = () => {
-    let s5 = `<tr>
-        <td>${inp('pr-5s-control')}</td>
-        <td>${inp('pr-5s-pellet')}</td>
-        <td>${inp('pr-5s-batch')}</td>
-        <td>${inp('pr-5s-rem')}</td>
-    </tr>`;
-    const el = document.getElementById('pr-5s-tbody');
-    if (el) el.innerHTML = s5;
 
     let rec = `<tr>
         <td>${num('pr-rec-work')}</td>
@@ -73,32 +72,47 @@ const buildQCGrindingUI = () => {
     const qcEl = document.getElementById('pr-qc-tbody');
     if (qcEl) qcEl.innerHTML = qc;
 
-    let grd = `<tr>
-        <td>${inp('pr-grd-grinder', '80px')}</td>
-        <td>${inp('pr-grd-time', '80px')}</td>
-        <td>${inp('pr-grd-mat')}</td>
-        <td>${num('pr-grd-hz')}</td>
-        <td style="display:flex;gap:0.25rem;">${num('pr-grd-amp-act', '50%')} ${num('pr-grd-amp-max', '50%')}</td>
-        <td>${num('pr-grd-overs')}</td>
-        <td>${inp('pr-grd-rem')}</td>
-    </tr>`;
+    let grd = '';
+    for (let i = 0; i < 3; i++) {
+        grd += `<tr>
+            <td>${inp(`pr-grd-grinder-${i}`, '80px')}</td>
+            <td>${inp(`pr-grd-time-${i}`, '80px')}</td>
+            <td>${inp(`pr-grd-mat-${i}`)}</td>
+            <td>${num(`pr-grd-hz-${i}`)}</td>
+            <td style="display:flex;gap:0.25rem;">${num(`pr-grd-amp-act-${i}`, '50%')} ${num(`pr-grd-amp-max-${i}`, '50%')}</td>
+            <td>${num(`pr-grd-overs-${i}`)}</td>
+            <td>${inp(`pr-grd-rem-${i}`)}</td>
+        </tr>`;
+    }
     const grdEl = document.getElementById('pr-grinding-tbody');
     if (grdEl) grdEl.innerHTML = grd;
 };
 
+const pmSel = (id) => `<select id="${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;background:var(--card-bg);color:var(--text-primary);"><option value="">Select Mill</option><option value="Pellet Mill A">Pellet Mill A</option><option value="Pellet Mill B">Pellet Mill B</option></select>`;
+const sifterSel = (id) => `<select id="${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;background:var(--card-bg);color:var(--text-primary);"><option value="">Select Sifter</option><option value="8">8</option><option value="10">10</option></select>`;
+const dumperInp = (id) => `
+    <input type="text" id="${id}" list="dumper-options-${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;" placeholder="Select or type">
+    <datalist id="dumper-options-${id}">
+        <option value="Fully Open">
+    </datalist>
+`;
+
 const buildPelletingUI = () => {
-    let p = `<tr>
-        <td>${inp('pr-pel-mill', '80px')}</td>
-        <td>${inp('pr-pel-time', '80px')}</td>
-        <td>${inp('pr-pel-feed', '80px')}</td>
-        <td>${num('pr-pel-hz', '70px')}</td>
-        <td style="display:flex;gap:0.25rem;min-width:110px;">${num('pr-pel-amp-act', '50%')} ${num('pr-pel-amp-max', '50%')}</td>
-        <td>${num('pr-pel-pow', '60px')}</td>
-        <td>${num('pr-pel-temp', '60px')}</td>
-        <td>${inp('pr-pel-sifter', '70px')}</td>
-        <td>${inp('pr-pel-dumper', '70px')}</td>
-        <td>${inp('pr-pel-rem')}</td>
-    </tr>`;
+    let p = '';
+    for (let i = 0; i < 4; i++) {
+        p += `<tr>
+            <td>${pmSel(`pr-pel-mill-${i}`)}</td>
+            <td>${inp(`pr-pel-time-${i}`, '80px')}</td>
+            <td>${inp(`pr-pel-feed-${i}`, '80px')}</td>
+            <td>${num(`pr-pel-hz-${i}`, '70px')}</td>
+            <td style="display:flex;gap:0.25rem;min-width:110px;">${num(`pr-pel-amp-act-${i}`, '50%')} ${num(`pr-pel-amp-max-${i}`, '50%')}</td>
+            <td>${num(`pr-pel-pow-${i}`, '60px')}</td>
+            <td>${num(`pr-pel-temp-${i}`, '60px')}</td>
+            <td>${sifterSel(`pr-pel-sifter-${i}`)}</td>
+            <td>${dumperInp(`pr-pel-dumper-${i}`)}</td>
+            <td>${inp(`pr-pel-rem-${i}`)}</td>
+        </tr>`;
+    }
     const pelEl = document.getElementById('pr-pelleting-tbody');
     if (pelEl) pelEl.innerHTML = p;
 };
@@ -127,7 +141,7 @@ const buildAllTabsUI = () => {
 
 const clearPlantReportForm = () => {
     const today = new Date();
-    document.getElementById('pr-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+    document.getElementById('pr-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
     document.getElementById('pr-shift-select').value = 'Morning';
     updateShiftTimes();
     document.querySelectorAll('#plant-report-modal input[type="text"], #plant-report-modal input[type="number"], #plant-report-modal select').forEach(el => {
@@ -153,15 +167,40 @@ const savePlantReport = () => {
     const shift = getVal('pr-shift-select');
     if (!date) return alert('Date is required!');
 
+    const op1 = getVal('pr-shift-op1') || '';
+    const op2 = getVal('pr-shift-op2') || '';
+    const opCombine = (op1 && op2) ? `${op1} + ${op2}` : (op1 || op2);
+
     const data = {
         date,
         shift,
-        shiftDetails: { off: getVal('pr-shift-officer'), op: getVal('pr-shift-op'), st: getShiftTimes(shift).st, fn: getShiftTimes(shift).fn },
+        shiftDetails: { off: getVal('pr-shift-officer'), op: opCombine, st: getShiftTimes(shift).st, fn: getShiftTimes(shift).fn },
         fiveS: { cr: getVal('pr-5s-control'), pm: getVal('pr-5s-pellet'), b: getVal('pr-5s-batch'), rm: getVal('pr-5s-rem') },
         rec: { wf: getVal('pr-rec-work'), avg: getVal('pr-rec-avg'), rm: getVal('pr-rec-rem') },
         qc: { t: getVal('pr-qc-time'), m: getVal('pr-qc-moist'), mi: getVal('pr-qc-micro'), b: getVal('pr-qc-bag'), rm: getVal('pr-qc-rem') },
-        grd: { g: getVal('pr-grd-grinder'), t: getVal('pr-grd-time'), m: getVal('pr-grd-mat'), hz: getVal('pr-grd-hz'), aa: getVal('pr-grd-amp-act'), am: getVal('pr-grd-amp-max'), ov: getVal('pr-grd-overs'), rm: getVal('pr-grd-rem') },
-        pel: { m: getVal('pr-pel-mill'), t: getVal('pr-pel-time'), f: getVal('pr-pel-feed'), hz: getVal('pr-pel-hz'), aa: getVal('pr-pel-amp-act'), am: getVal('pr-pel-amp-max'), p: getVal('pr-pel-pow'), tm: getVal('pr-pel-temp'), sm: getVal('pr-pel-sifter'), d: getVal('pr-pel-dumper'), rm: getVal('pr-pel-rem') },
+        grd: [0, 1, 2].map(i => ({
+            g: getVal(`pr-grd-grinder-${i}`),
+            t: getVal(`pr-grd-time-${i}`),
+            m: getVal(`pr-grd-mat-${i}`),
+            hz: getVal(`pr-grd-hz-${i}`),
+            aa: getVal(`pr-grd-amp-act-${i}`),
+            am: getVal(`pr-grd-amp-max-${i}`),
+            ov: getVal(`pr-grd-overs-${i}`),
+            rm: getVal(`pr-grd-rem-${i}`)
+        })),
+        pel: [0, 1, 2, 3].map(i => ({
+            m: getVal(`pr-pel-mill-${i}`),
+            t: getVal(`pr-pel-time-${i}`),
+            f: getVal(`pr-pel-feed-${i}`),
+            hz: getVal(`pr-pel-hz-${i}`),
+            aa: getVal(`pr-pel-amp-act-${i}`),
+            am: getVal(`pr-pel-amp-max-${i}`),
+            p: getVal(`pr-pel-pow-${i}`),
+            tm: getVal(`pr-pel-temp-${i}`),
+            sm: getVal(`pr-pel-sifter-${i}`),
+            d: getVal(`pr-pel-dumper-${i}`),
+            rm: getVal(`pr-pel-rem-${i}`)
+        })),
         pv: pParams.map((_, pIdx) => pLocations.map((__, lIdx) => getChk(`pr-pv-${pIdx}-${lIdx}`)))
     };
 
@@ -185,7 +224,11 @@ const loadPlantReportToForm = (data) => {
     updateShiftTimes();
     
     setVal('pr-shift-officer', data.shiftDetails?.off);
-    setVal('pr-shift-op', data.shiftDetails?.op);
+    
+    const opVal = data.shiftDetails?.op || '';
+    const parts = opVal.split(' + ');
+    setVal('pr-shift-op1', parts[0] || '');
+    setVal('pr-shift-op2', parts[1] || '');
 
     setVal('pr-5s-control', data.fiveS?.cr);
     setVal('pr-5s-pellet', data.fiveS?.pm);
@@ -202,26 +245,82 @@ const loadPlantReportToForm = (data) => {
     setVal('pr-qc-bag', data.qc?.b);
     setVal('pr-qc-rem', data.qc?.rm);
 
-    setVal('pr-grd-grinder', data.grd?.g);
-    setVal('pr-grd-time', data.grd?.t);
-    setVal('pr-grd-mat', data.grd?.m);
-    setVal('pr-grd-hz', data.grd?.hz);
-    setVal('pr-grd-amp-act', data.grd?.aa);
-    setVal('pr-grd-amp-max', data.grd?.am);
-    setVal('pr-grd-overs', data.grd?.ov);
-    setVal('pr-grd-rem', data.grd?.rm);
+    for (let i = 0; i < 3; i++) {
+        if (Array.isArray(data.grd)) {
+            const r = data.grd[i] || {};
+            setVal(`pr-grd-grinder-${i}`, r.g);
+            setVal(`pr-grd-time-${i}`, r.t);
+            setVal(`pr-grd-mat-${i}`, r.m);
+            setVal(`pr-grd-hz-${i}`, r.hz);
+            setVal(`pr-grd-amp-act-${i}`, r.aa);
+            setVal(`pr-grd-amp-max-${i}`, r.am);
+            setVal(`pr-grd-overs-${i}`, r.ov);
+            setVal(`pr-grd-rem-${i}`, r.rm);
+        } else {
+            if (i === 0 && data.grd) {
+                setVal(`pr-grd-grinder-0`, data.grd.g);
+                setVal(`pr-grd-time-0`, data.grd.t);
+                setVal(`pr-grd-mat-0`, data.grd.m);
+                setVal(`pr-grd-hz-0`, data.grd.hz);
+                setVal(`pr-grd-amp-act-0`, data.grd.aa);
+                setVal(`pr-grd-amp-max-0`, data.grd.am);
+                setVal(`pr-grd-overs-0`, data.grd.ov);
+                setVal(`pr-grd-rem-0`, data.grd.rm);
+            } else {
+                setVal(`pr-grd-grinder-${i}`, '');
+                setVal(`pr-grd-time-${i}`, '');
+                setVal(`pr-grd-mat-${i}`, '');
+                setVal(`pr-grd-hz-${i}`, '');
+                setVal(`pr-grd-amp-act-${i}`, '');
+                setVal(`pr-grd-amp-max-${i}`, '');
+                setVal(`pr-grd-overs-${i}`, '');
+                setVal(`pr-grd-rem-${i}`, '');
+            }
+        }
+    }
 
-    setVal('pr-pel-mill', data.pel?.m);
-    setVal('pr-pel-time', data.pel?.t);
-    setVal('pr-pel-feed', data.pel?.f);
-    setVal('pr-pel-hz', data.pel?.hz);
-    setVal('pr-pel-amp-act', data.pel?.aa);
-    setVal('pr-pel-amp-max', data.pel?.am);
-    setVal('pr-pel-pow', data.pel?.p);
-    setVal('pr-pel-temp', data.pel?.tm);
-    setVal('pr-pel-sifter', data.pel?.sm);
-    setVal('pr-pel-dumper', data.pel?.d);
-    setVal('pr-pel-rem', data.pel?.rm);
+    for (let i = 0; i < 4; i++) {
+        if (Array.isArray(data.pel)) {
+            const r = data.pel[i] || {};
+            setVal(`pr-pel-mill-${i}`, r.m);
+            setVal(`pr-pel-time-${i}`, r.t);
+            setVal(`pr-pel-feed-${i}`, r.f);
+            setVal(`pr-pel-hz-${i}`, r.hz);
+            setVal(`pr-pel-amp-act-${i}`, r.aa);
+            setVal(`pr-pel-amp-max-${i}`, r.am);
+            setVal(`pr-pel-pow-${i}`, r.p);
+            setVal(`pr-pel-temp-${i}`, r.tm);
+            setVal(`pr-pel-sifter-${i}`, r.sm);
+            setVal(`pr-pel-dumper-${i}`, r.d);
+            setVal(`pr-pel-rem-${i}`, r.rm);
+        } else {
+            if (i === 0 && data.pel) {
+                setVal(`pr-pel-mill-0`, data.pel.m);
+                setVal(`pr-pel-time-0`, data.pel.t);
+                setVal(`pr-pel-feed-0`, data.pel.f);
+                setVal(`pr-pel-hz-0`, data.pel.hz);
+                setVal(`pr-pel-amp-act-0`, data.pel.aa);
+                setVal(`pr-pel-amp-max-0`, data.pel.am);
+                setVal(`pr-pel-pow-0`, data.pel.p);
+                setVal(`pr-pel-temp-0`, data.pel.tm);
+                setVal(`pr-pel-sifter-0`, data.pel.sm);
+                setVal(`pr-pel-dumper-0`, data.pel.d);
+                setVal(`pr-pel-rem-0`, data.pel.rm);
+            } else {
+                setVal(`pr-pel-mill-${i}`, '');
+                setVal(`pr-pel-time-${i}`, '');
+                setVal(`pr-pel-feed-${i}`, '');
+                setVal(`pr-pel-hz-${i}`, '');
+                setVal(`pr-pel-amp-act-${i}`, '');
+                setVal(`pr-pel-amp-max-${i}`, '');
+                setVal(`pr-pel-pow-${i}`, '');
+                setVal(`pr-pel-temp-${i}`, '');
+                setVal(`pr-pel-sifter-${i}`, '');
+                setVal(`pr-pel-dumper-${i}`, '');
+                setVal(`pr-pel-rem-${i}`, '');
+            }
+        }
+    }
 
     pParams.forEach((_, pIdx) => {
         pLocations.forEach((__, lIdx) => {

@@ -1070,6 +1070,12 @@ header h1 {
   box-shadow: 0 0 8px var(--warning-color);
 }
 
+#supabase-status-dot.connecting {
+  background-color: #f59e0b;
+  box-shadow: 0 0 10px #f59e0b;
+  animation: pulse 0.8s infinite;
+}
+
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;
@@ -2002,4 +2008,11 @@ header h1 {
     width: 250px;
     margin-bottom: 5px;
   }
+}
+
+.urdu-text {
+  font-family: 'JameelNooriNastaliq', 'Noto Nastaliq Urdu', serif !important;
+  direction: rtl;
+  font-size: 1.25rem; /* slightly larger for readability */
+  line-height: 2.0; /* slightly higher line height for Nastaliq script spacing */
 }

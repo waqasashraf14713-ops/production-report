@@ -54,7 +54,7 @@ const buildQsUI = () => {
         bHtml += `
         <tr style="border-bottom:1px solid var(--card-border);">
             <td style="text-align:center;font-weight:bold;padding:0.5rem;">${i + 1}</td>
-            <td style="text-align:right;padding:0.5rem;direction:rtl;">${item}</td>
+            <td class="urdu-text" style="text-align:right;padding:0.5rem;direction:rtl;">${item}</td>
             <td style="text-align:center;padding:0.5rem;">${chkHtml(`qs-b-${i}`)}</td>
         </tr>`;
     });
@@ -66,7 +66,7 @@ const buildQsUI = () => {
         pHtml += `
         <tr style="border-bottom:1px solid var(--card-border);">
             <td style="text-align:center;font-weight:bold;padding:0.5rem;">${i + 1}</td>
-            <td style="text-align:right;padding:0.5rem;direction:rtl;">${item}</td>
+            <td class="urdu-text" style="text-align:right;padding:0.5rem;direction:rtl;">${item}</td>
             <td style="text-align:center;padding:0.5rem;">${chkHtml(`qs-p-${i}`)}</td>
         </tr>`;
     });
@@ -76,7 +76,7 @@ const buildQsUI = () => {
 
 const clearQsForm = () => {
     const today = new Date();
-    document.getElementById('qs-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+    document.getElementById('qs-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
     document.getElementById('qs-shift').value = 'Morning';
     document.getElementById('qs-officer').value = '';
 
