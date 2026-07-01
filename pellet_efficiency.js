@@ -261,6 +261,34 @@ try {
             tfoot.innerHTML = '';
         }
 
+        // Calculate separate averages for gauges
+        let sumEffA = 0, countA = 0;
+        let sumEffB = 0, countB = 0;
+        sortedReports.forEach(r => {
+            r.rows.forEach(row => {
+                const mill = row.mill || 'A Pellet';
+                const prod = parseFloat(row.production) || 0;
+                const runTime = parseFloat(row.runTime) || 0;
+                const avg = runTime > 0 ? Math.round(prod / runTime) : 0;
+                const target = mill === 'A Pellet' ? 600 : 800;
+                const eff = avg > 0 ? Math.round((avg / target) * 100) : 0;
+
+                if (mill === 'A Pellet') {
+                    sumEffA += eff;
+                    countA++;
+                } else if (mill === 'B Pellet') {
+                    sumEffB += eff;
+                    countB++;
+                }
+            });
+        });
+        const avgEffA = countA > 0 ? (sumEffA / countA) : 0;
+        const avgEffB = countB > 0 ? (sumEffB / countB) : 0;
+
+        // Render Gauges
+        renderPeGauge('a', avgEffA);
+        renderPeGauge('b', avgEffB);
+
         renderCharts();
     };
 
@@ -525,6 +553,129 @@ try {
         }
     };
 
+    let gaugeAnimA = null;
+    let gaugeCurrentA = 0;
+    let gaugeAnimB = null;
+    let gaugeCurrentB = 0;
+
+    const renderPeGauge = (type, value) => {
+        const canvas = document.getElementById(`pe-gauge-canvas-${type}`);
+        const label = document.getElementById(`pe-gauge-label-${type}`);
+        if (!canvas || !label) return;
+
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+        const cx = W / 2;
+        const cy = H - 20; 
+        const R = Math.min(cx, cy) - 10; 
+
+        const MIN_VAL = 0;
+        const MAX_VAL = 120;
+        const clamped = Math.max(MIN_VAL, Math.min(MAX_VAL, value));
+
+        const targetAngle = Math.PI - (clamped / MAX_VAL) * Math.PI;
+
+        let startAngle = type === 'a' ? gaugeCurrentA : gaugeCurrentB;
+        const startTime = performance.now();
+        const animDuration = 800; // ms
+        const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+        const drawFrame = (now) => {
+            const elapsed = now - startTime;
+            const t = Math.min(elapsed / animDuration, 1);
+            const easedT = easeOutCubic(t);
+            const angle = startAngle + (targetAngle - startAngle) * easedT;
+
+            if (type === 'a') gaugeCurrentA = angle;
+            else gaugeCurrentB = angle;
+
+            ctx.clearRect(0, 0, W, H);
+
+            // Draw arc zones
+            const zones = [
+                { from: 0, to: 50, color: '#ef4444' },    // poor - red
+                { from: 50, to: 75, color: '#f59e0b' },   // moderate - yellow
+                { from: 75, to: 90, color: '#60a5fa' },   // good - light blue
+                { from: 90, to: 120, color: '#10b981' }   // excellent - green
+            ];
+
+            zones.forEach(z => {
+                const a1 = Math.PI - (z.from / MAX_VAL) * Math.PI;
+                const a2 = Math.PI - (z.to / MAX_VAL) * Math.PI;
+                ctx.beginPath();
+                ctx.arc(cx, cy, R, Math.min(a1, a2), Math.max(a1, a2));
+                ctx.lineWidth = 20;
+                ctx.strokeStyle = z.color;
+                ctx.globalAlpha = 0.35;
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+            });
+
+            // Outer thin borders
+            ctx.beginPath();
+            ctx.arc(cx, cy, R + 10, Math.PI, 0);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(128,128,128,0.2)';
+            ctx.stroke();
+
+            // Ticks
+            const ticks = [0, 20, 40, 60, 80, 100, 120];
+            ticks.forEach(v => {
+                const a = Math.PI - (v / MAX_VAL) * Math.PI;
+                const innerR = R - 12;
+                const outerR = R + 10;
+
+                ctx.beginPath();
+                ctx.moveTo(cx + innerR * Math.cos(a), cy - innerR * Math.sin(a));
+                ctx.lineTo(cx + outerR * Math.cos(a), cy - outerR * Math.sin(a));
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = 'rgba(150,150,150,0.5)';
+                ctx.stroke();
+
+                // Tick labels
+                ctx.font = '10px sans-serif';
+                ctx.fillStyle = '#64748b';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const labelR = R - 22;
+                ctx.fillText(v + '%', cx + labelR * Math.cos(a), cy - labelR * Math.sin(a));
+            });
+
+            // Needle
+            ctx.beginPath();
+            ctx.moveTo(cx - 6 * Math.sin(angle), cy - 6 * Math.cos(angle));
+            ctx.lineTo(cx + R * Math.cos(angle), cy - R * Math.sin(angle));
+            ctx.lineTo(cx + 6 * Math.sin(angle), cy + 6 * Math.cos(angle));
+            ctx.closePath();
+            ctx.fillStyle = '#1e293b';
+            ctx.fill();
+
+            // Pivot center circle
+            ctx.beginPath();
+            ctx.arc(cx, cy, 8, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1e293b';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(cx, cy, 3, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            if (t < 1) {
+                if (type === 'a') gaugeAnimA = requestAnimationFrame(drawFrame);
+                else gaugeAnimB = requestAnimationFrame(drawFrame);
+            }
+        };
+
+        if (type === 'a') {
+            if (gaugeAnimA) cancelAnimationFrame(gaugeAnimA);
+            gaugeAnimA = requestAnimationFrame(drawFrame);
+        } else {
+            if (gaugeAnimB) cancelAnimationFrame(gaugeAnimB);
+            gaugeAnimB = requestAnimationFrame(drawFrame);
+        }
+
+        label.textContent = `${Math.round(value)}%`;
     const savePeData = () => {
         localStorage.setItem(LS_PELLET_EFFICIENCY, JSON.stringify(pelletEffData));
     };

@@ -739,6 +739,26 @@
                     </div>
                 </div>
 
+                <!-- Pellet Efficiency Gauges -->
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; margin-top:2rem;">
+                    <!-- A Pellet Gauge Card -->
+                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;align-items:center;">
+                        <h3 style="margin-bottom:0.75rem;color:var(--text-primary);font-size:1.05rem;text-align:center;margin-top:0;">🎯 A Pellet Average Efficiency</h3>
+                        <div style="width:100%;height:180px;position:relative;display:flex;justify-content:center;">
+                            <canvas id="pe-gauge-canvas-a" width="300" height="180" style="max-width:100%;"></canvas>
+                        </div>
+                        <p id="pe-gauge-label-a" style="text-align:center;margin:0.5rem 0 0 0;font-size:1.4rem;font-weight:800;color:var(--text-primary);">0%</p>
+                    </div>
+                    <!-- B Pellet Gauge Card -->
+                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;align-items:center;">
+                        <h3 style="margin-bottom:0.75rem;color:var(--text-primary);font-size:1.05rem;text-align:center;margin-top:0;">🎯 B Pellet Average Efficiency</h3>
+                        <div style="width:100%;height:180px;position:relative;display:flex;justify-content:center;">
+                            <canvas id="pe-gauge-canvas-b" width="300" height="180" style="max-width:100%;"></canvas>
+                        </div>
+                        <p id="pe-gauge-label-b" style="text-align:center;margin:0.5rem 0 0 0;font-size:1.4rem;font-weight:800;color:var(--text-primary);">0%</p>
+                    </div>
+                </div>
+
                 <!-- Pellet Efficiency Trend widgets/charts -->
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; margin-top:2rem;">
                     <!-- Left: Production Trend -->
