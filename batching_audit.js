@@ -37,6 +37,78 @@ try {
         { name: 'Soya Bean Oil', config: 'Local', standWeight: 0.00, emptyTub: 0.000 }
     ];
 
+    const RECIPE_GROUPS = {
+        chenab: ['430(278)', '431(279)', '432(278)', '433(290)', '432(265)', '433(289)', '431(262)', '434(276)', '432(252)', '432(257)', '434(271)', '31A(288)', '31A(291)', '33Y(298)', '34A(287)', '34M(187)', '33P(290)', '33A(305)', '34A(282)', '33A(304)', '33P(288)', '31A(285)', '33A(33)LS', '34M(186)', '34Y(260)'],
+        delta: ['41A(298)', '42A(297)', '33A(296)', '43A(309)', '33M(185)', '34A(284)', '33Y(282)', '33A(315)', '34M(186)-delta', '34Y(260)-delta', 'sample-delta'],
+        wanda: ['733(98)', '731(103)', '723(99)', '721(104)', '732(102)', '741(104)', '743(108)', '742(106)', '744(78)', '712(103)', '743(0)'],
+        breeder: ['324LC(76)', '521(22)', '5212(52)', '5221(52)', '521(20)', '522(1)', '5211(52)', 'sample-breeder']
+    };
+
+    const RECIPES = {
+        // Asia-Chenab
+        '430(278)': { 'SALT': 8.7, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 31.07, 'DL.METHININE': 17.09, 'L THREONINE': 9.85, 'YIDUOZYME': 0.5, 'L.VALINE': 4.9, 'L.ISOLEUCINE': 4.26, 'L ARGINUNE': 1.08, 'L Glycine': 5, 'Soya Bean Oil': 20 },
+        '431(279)': { 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 32.79, 'DL.METHININE': 12.6, 'L THREONINE': 8.78, 'L.VALINE': 2.66, 'L.ISOLEUCINE': 3.97, 'L Glycine': 4.73 },
+        '432(278)': { 'MARBLE CHIPS': 12.6, 'SALT': 9.4, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 31.47, 'DL.METHININE': 10.94, 'L THREONINE': 7.79, 'L.VALINE': 2.13, 'L.ISOLEUCINE': 3.78, 'L Glycine': 2.04 },
+        '433(290)': { 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 37.96, 'DL.METHININE': 12.24, 'L THREONINE': 9.61, 'L.VALINE': 4.92, 'L.ISOLEUCINE': 6.48, 'L ARGINUNE': 4.8, 'L Glycine': 5 },
+        '432(265)': { 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 35.73, 'DL.METHININE': 10.87, 'L THREONINE': 8.39, 'L.VALINE': 3.7, 'L.ISOLEUCINE': 5.65, 'L ARGINUNE': 5, 'L Glycine': 1.46 },
+        '433(289)': { 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 35.05, 'DL.METHININE': 12.35, 'L THREONINE': 8.64, 'L.VALINE': 4.53, 'L.ISOLEUCINE': 5.77, 'L ARGINUNE': 5, 'L Glycine': 0.06 },
+        '431(262)': { 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 36.44, 'DL.METHININE': 12.9, 'L THREONINE': 9.56, 'L.VALINE': 4.64, 'L.ISOLEUCINE': 5.98, 'L ARGINUNE': 5, 'L Glycine': 5 },
+        '434(276)': { 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 34.97, 'DL.METHININE': 13.05, 'L THREONINE': 8.86, 'L.VALINE': 4.81, 'L.ISOLEUCINE': 5.72, 'L ARGINUNE': 5, 'L Glycine': 0.92, 'Mix Oil': 10 },
+        '432(252)': { 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 24.03, 'DL.METHININE': 13.28, 'L THREONINE': 7.14, 'L.VALINE': 2.12, 'L.ISOLEUCINE': 2.06, 'L Glycine': 5, 'Mix Oil': 30 },
+        '432(257)': { 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 37.91, 'DL.METHININE': 10.49, 'L THREONINE': 8.62, 'L.VALINE': 3.82, 'L.ISOLEUCINE': 6.26, 'L ARGINUNE': 6, 'Mix Oil': 20 },
+        '434(271)': { 'SALT': 8.3, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 36.67, 'DL.METHININE': 13.51, 'L THREONINE': 9.62, 'L.VALINE': 5.35, 'L.ISOLEUCINE': 6.32, 'L ARGINUNE': 5, 'L Glycine': 2.28, 'Soya Bean Oil': 20 },
+        '31A(288)': { 'SALT': 18.1, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 28.79, 'DL.METHININE': 8.27, 'L THREONINE': 7.88, 'L TRYPTOPHAN': 1.74, 'L.ISOLEUCINE': 3.32, 'L ARGINUNE': 1.93 },
+        '31A(291)': { 'SALT': 18.6, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 27.73, 'DL.METHININE': 7.63, 'L THREONINE': 7.47, 'L TRYPTOPHAN': 1.38, 'L.ISOLEUCINE': 2.51, 'L Glycine': 4.73 },
+        '33Y(298)': { 'SALT': 37.2, 'SODIUM BICARBONATE': 12, 'LYSINE SULPHATE 70%': 55.46, 'DL.METHININE': 15.26, 'L THREONINE': 14.94, 'L TRYPTOPHAN': 2.76, 'L.ISOLEUCINE': 5.02, 'L Glycine': 2.06 },
+        '34A(287)': { 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 11.74, 'DL.METHININE': 6.45, 'L THREONINE': 1.35, 'L.ISOLEUCINE': 0.78 },
+        '34M(187)': { 'Maize': 5, 'DL.METHININE': 8.13, 'L THREONINE': 1.7, 'L TRYPTOPHAN': 1.16, 'L.ISOLEUCINE': 2.17, 'L Glycine': 3.05 },
+        '33P(290)': { 'Maize': 5, 'DL.METHININE': 9.75, 'L THREONINE': 2.4, 'L TRYPTOPHAN': 0.95, 'L.ISOLEUCINE': 1.92, 'L Glycine': 1.46 },
+        '33A(305)': { 'SALT': 7.6, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 12.84, 'DL.METHININE': 4.87, 'L THREONINE': 2.59, 'L TRYPTOPHAN': 0.53 },
+        '34A(282)': { 'SALT': 7.4, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 12.3, 'DL.METHININE': 8.28, 'L THREONINE': 2.05, 'L TRYPTOPHAN': 0.06, 'L.ISOLEUCINE': 1.21 },
+        '33A(304)': { 'SALT': 14.5, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 13.53, 'DL.METHININE': 7.64, 'L THREONINE': 2.15, 'L TRYPTOPHAN': 1.08, 'L.ISOLEUCINE': 2.42 },
+        '33P(288)': { 'SALT': 16.2, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 11.77, 'DL.METHININE': 8.23, 'L THREONINE': 1.52, 'L TRYPTOPHAN': 0.46, 'L.ISOLEUCINE': 1.16 },
+        '31A(285)': { 'SALT': 7.4, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 15.81, 'DL.METHININE': 5.4, 'L THREONINE': 2.23, 'L TRYPTOPHAN': 0.63 },
+        '33A(33)LS': { 'SALT': 10.2, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 10.98, 'DL.METHININE': 7.01, 'L THREONINE': 2.22, 'L TRYPTOPHAN': 1.44, 'L.ISOLEUCINE': 1, 'Soya Bean Oil': 20 },
+        '34M(186)': { 'SALT': 13.7, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 11.13, 'DL.METHININE': 7.01, 'L THREONINE': 2.22, 'L TRYPTOPHAN': 1.44, 'L.ISOLEUCINE': 1 },
+        '34Y(260)': { 'SALT': 17, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 23.41, 'DL.METHININE': 15.26, 'L THREONINE': 5.87, 'L TRYPTOPHAN': 1.44, 'Soya Bean Oil': 30 },
+
+        // Delta
+        '41A(298)': { 'SALT': 9.4, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 32.61, 'DL.METHININE': 11.93, 'L THREONINE': 8.53, 'L.VALINE': 2.39, 'L.ISOLEUCINE': 3.94, 'L Glycine': 4.55 },
+        '42A(297)': { 'MARBLE CHIPS': 12.5, 'SALT': 9.6, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 31.29, 'DL.METHININE': 9.89, 'L THREONINE': 7.41, 'L TRYPTOPHAN': 0.13, 'L.VALINE': 1.69, 'L.ISOLEUCINE': 3.74, 'L Glycine': 1.79 },
+        '33A(296)': { 'SALT': 10.5, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 11.34, 'DL.METHININE': 8.21, 'L THREONINE': 1.84, 'L.ISOLEUCINE': 1.1 },
+        '43A(309)': { 'SALT': 9.9, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 35.13, 'DL.METHININE': 11.39, 'L THREONINE': 8.65, 'L TRYPTOPHAN': 0.95, 'L.ISOLEUCINE': 5.4, 'L Glycine': 3.05 },
+        '33M(185)': { 'SALT': 7.3, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 14.03, 'DL.METHININE': 8.79, 'L THREONINE': 2.36, 'L TRYPTOPHAN': 0.85, 'L.ISOLEUCINE': 2.29 },
+        '34A(284)': { 'SALT': 7.9, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 13.03, 'DL.METHININE': 8.06, 'L THREONINE': 1.92, 'L TRYPTOPHAN': 0.85, 'L.ISOLEUCINE': 1.95, 'DCP': 2.96 },
+        '33Y(282)': { 'SALT': 9.7, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 14.8, 'DL.METHININE': 9.38, 'L THREONINE': 2.8, 'L TRYPTOPHAN': 0.77, 'L.ISOLEUCINE': 2.33 },
+        '33A(315)': { 'SALT': 6.8, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 15.44, 'DL.METHININE': 7.04, 'L THREONINE': 1.79, 'L TRYPTOPHAN': 1.29, 'L.ISOLEUCINE': 2.54 },
+        '34M(186)-delta': { 'SALT': 7.4, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 5.44, 'DL.METHININE': 7.46, 'L THREONINE': 0.05, 'L TRYPTOPHAN': 26.76, 'L Glycine': 30 },
+        '34Y(260)-delta': { 'SALT': 6.6, 'SODIUM BICARBONATE': 5, 'LYSINE SULPHATE 70%': 12.34, 'DL.METHININE': 10.31, 'L THREONINE': 2.74, 'L TRYPTOPHAN': 1.11, 'L.ISOLEUCINE': 2.31 },
+        'sample-delta': { 'SALT': 6.6, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 13.52, 'DL.METHININE': 7.52, 'L THREONINE': 1.8, 'L TRYPTOPHAN': 0.91, 'L.ISOLEUCINE': 1.21 },
+
+        // Wanda
+        '733(98)': { 'Supplement(L.S)': 56, 'M.C.P Wanda': 4, 'SALT': 40, 'SODIUM BICARBONATE': 8, 'CMS': 80, 'Magnesium oxide': 4 },
+        '731(103)': { 'SALT': 20, 'SODIUM BICARBONATE': 8, 'CMS': 40 },
+        '723(99)': { 'SALT': 40, 'SODIUM BICARBONATE': 8, 'Soya Bean Oil': 12 },
+        '721(104)': { 'SALT': 40, 'SODIUM BICARBONATE': 8, 'CMS': 20, 'DCP': 8, 'Magnesium oxide': 4 },
+        '732(102)': { 'SALT': 20, 'SODIUM BICARBONATE': 8, 'CMS': 20, 'DCP': 4, 'Magnesium oxide': 4 },
+        '741(104)': { 'SALT': 20, 'SODIUM BICARBONATE': 8, 'CMS': 20, 'DCP': 8, 'Magnesium oxide': 4 },
+        '743(108)': { 'SALT': 24, 'SODIUM BICARBONATE': 12, 'CMS': 20, 'DCP': 12, 'Magnesium oxide': 8, 'Soya Bean Oil': 16 },
+        '742(106)': { 'Supplement(L.S)': 64, 'SALT': 24, 'SODIUM BICARBONATE': 8, 'CMS': 20, 'DCP': 8, 'Magnesium oxide': 4, 'Soya Bean Oil': 10 },
+        '744(78)': { 'Supplement(L.S)': 64, 'SALT': 120, 'SODIUM BICARBONATE': 40, 'CMS': 1000, 'DCP': 600, 'Magnesium oxide': 400 },
+        '712(103)': { 'Supplement(L.S)': 64, 'SALT': 24, 'SODIUM BICARBONATE': 16, 'CMS': 20, 'DCP': 8, 'Magnesium oxide': 4, 'Soya Bean Oil': 50 },
+        '743(0)': { 'Supplement(L.S)': 64, 'SALT': 120, 'SODIUM BICARBONATE': 32, 'CMS': 100, 'DCP': 40, 'Magnesium oxide': 20, 'Soya Bean Oil': 10 },
+
+        // Breeder
+        '324LC(76)': { 'M.C.P Wanda': 42, 'SALT': 12.5, 'SODIUM BICARBONATE': 5, 'LYSINE SULPHATE 70%': 13.02, 'DL.METHININE': 9.6, 'L THREONINE': 0.56, 'L TRYPTOPHAN': 0.93, 'YIDUOZYME': 3.01, 'L.ISOLEUCINE': 0.12 },
+        '521(22)': { 'M.C.P Wanda': 52.5, 'SALT': 10.88, 'SODIUM BICARBONATE': 5, 'LYSINE SULPHATE 70%': 23.17, 'DL.METHININE': 8.42, 'L THREONINE': 3.45 },
+        '5212(52)': { 'M.C.P Wanda': 31.5, 'SALT': 11.07, 'SODIUM BICARBONATE': 8.99, 'LYSINE SULPHATE 70%': 0.28, 'L THREONINE': 7.14, 'L TRYPTOPHAN': 3.47, 'YIDUOZYME': 0.14, 'L.ISOLEUCINE': 1 },
+        '5221(52)': { 'M.C.P Wanda': 40, 'SALT': 11.36, 'SODIUM BICARBONATE': 5, 'LYSINE SULPHATE 70%': 6.31, 'L THREONINE': 6.73, 'L TRYPTOPHAN': 0.8, 'YIDUOZYME': 0.26 },
+        '521(20)': { 'M.C.P Wanda': 53.5, 'SALT': 10.98, 'SODIUM BICARBONATE': 5, 'LYSINE SULPHATE 70%': 25, 'L THREONINE': 8.07, 'L TRYPTOPHAN': 3.54, 'YIDUOZYME': 0.08 },
+        '522(1)': { 'SALT': 10.53, 'SODIUM BICARBONATE': 5, 'LYSINE SULPHATE 70%': 23.13, 'L THREONINE': 9.2, 'L TRYPTOPHAN': 4.1 },
+        '5211(52)': { 'M.C.P Wanda': 36, 'SALT': 11, 'SODIUM BICARBONATE': 7.32, 'LYSINE SULPHATE 70%': 1.36, 'L THREONINE': 7.55, 'L TRYPTOPHAN': 3.64, 'YIDUOZYME': 0.28, 'L.ISOLEUCINE': 1.26 },
+        'sample-breeder': { 'M.C.P Wanda': 18, 'SALT': 6, 'SODIUM BICARBONATE': 4.5 }
+    };
+
     const initSupabase = () => {
         const sbUrl = localStorage.getItem('fmpr_supabaseUrl');
         const sbKey = localStorage.getItem('fmpr_supabaseKey');
@@ -73,25 +145,12 @@ try {
         const issuance = parseFloat(document.getElementById(`ba-issuance-${i}`).value) || 0;
         const totalBatches = parseFloat(document.getElementById('ba-modal-total-batches').value) || 0;
 
-        // Calc Net Opening Balance = (Bags Available * Stand Weight) + Loose Weight - Empty Tub Weight + Received
         const netOpening = (openBags * standWeight) + openLoose - openEmptyTub + received;
-        
-        // Calc Net Closing Balance = (Bags Available * Stand Weight) + Loose Weight - Empty Tub Weight
         const netClosing = (closeBags * standWeight) + closeLoose - openEmptyTub;
-        
-        // Calc Actual Used = Net Opening - Net Closing
         const actualUsed = netOpening - netClosing;
-
-        // Calc Used Bags Excess/Less
         const usedBagsExcessLess = bagsUsed * avgExcessLess;
-
-        // Calc Diff = Actual Used - Issuance
         const diff = actualUsed - issuance;
-
-        // Calc Diff/Batch
         const diffBatch = totalBatches > 0 ? diff / totalBatches : 0;
-
-        // Calc %age Excess/Less
         const pctExcess = issuance > 0 ? (diff / issuance) * 100 : 0;
 
         document.getElementById(`ba-net-opening-${i}`).value = netOpening.toFixed(2);
@@ -103,15 +162,54 @@ try {
         document.getElementById(`ba-pct-excess-${i}`).value = issuance > 0 ? pctExcess.toFixed(2) + '%' : '#DIV/0!';
     };
 
-    window.updateBaTotalBatches = () => {
-        const chenab = parseFloat(document.getElementById('ba-form-chenab').value) || 0;
-        const delta = parseFloat(document.getElementById('ba-form-delta').value) || 0;
-        const wanda = parseFloat(document.getElementById('ba-form-wanda').value) || 0;
-        const breeder = parseFloat(document.getElementById('ba-form-breeder').value) || 0;
-        
-        const total = chenab + delta + wanda + breeder;
-        document.getElementById('ba-modal-total-batches').value = total;
-        
+    window.updateRecipesCalculation = () => {
+        let sumChenab = 0;
+        let sumDelta = 0;
+        let sumWanda = 0;
+        let sumBreeder = 0;
+
+        const ingredientIssuance = {};
+        DEFAULT_ITEMS.forEach(it => {
+            ingredientIssuance[it.name] = 0;
+        });
+
+        document.querySelectorAll('.ba-recipe-input').forEach(input => {
+            const group = input.getAttribute('data-group');
+            const code = input.getAttribute('data-code');
+            const val = parseFloat(input.value) || 0;
+
+            if (val > 0) {
+                if (group === 'chenab') sumChenab += val;
+                else if (group === 'delta') sumDelta += val;
+                else if (group === 'wanda') sumWanda += val;
+                else if (group === 'breeder') sumBreeder += val;
+
+                const recipe = RECIPES[code];
+                if (recipe) {
+                    for (let ing in recipe) {
+                        if (ingredientIssuance[ing] !== undefined) {
+                            ingredientIssuance[ing] += val * recipe[ing];
+                        }
+                    }
+                }
+            }
+        });
+
+        document.getElementById('ba-form-chenab').value = sumChenab;
+        document.getElementById('ba-form-delta').value = sumDelta;
+        document.getElementById('ba-form-wanda').value = sumWanda;
+        document.getElementById('ba-form-breeder').value = sumBreeder;
+
+        const totalBatches = sumChenab + sumDelta + sumWanda + sumBreeder;
+        document.getElementById('ba-modal-total-batches').value = totalBatches;
+
+        DEFAULT_ITEMS.forEach((it, i) => {
+            const issuanceInput = document.getElementById(`ba-issuance-${i}`);
+            if (issuanceInput) {
+                issuanceInput.value = ingredientIssuance[it.name] > 0 ? ingredientIssuance[it.name].toFixed(2) : '';
+            }
+        });
+
         window.calcAllBaRows();
     };
 
@@ -163,6 +261,35 @@ try {
         `;
         tbody.appendChild(tr);
         calculateRow(i);
+    };
+
+    const populateRecipeInputsUI = () => {
+        const buildCol = (divId, groupKey) => {
+            const container = document.getElementById(divId);
+            if (!container) return;
+            container.innerHTML = '';
+            RECIPE_GROUPS[groupKey].forEach(code => {
+                const cleanCode = code.replace('-delta', '').replace('-breeder', '');
+                const row = document.createElement('div');
+                row.style = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:0.15rem;';
+                row.innerHTML = `
+                    <span style="font-weight:600;font-size:0.72rem;color:#334155;white-space:nowrap;">${cleanCode}</span>
+                    <input type="number" step="any" class="ba-recipe-input" data-group="${groupKey}" data-code="${code}" value="" style="width:50px;border:1px solid #cbd5e1;padding:0.05rem 0.15rem;border-radius:3px;font-size:0.72rem;text-align:center;height:18px;background:#ffffff;">
+                `;
+                container.appendChild(row);
+            });
+        };
+        buildCol('ba-recipes-chenab', 'chenab');
+        buildCol('ba-recipes-delta', 'delta');
+        buildCol('ba-recipes-wanda', 'wanda');
+        buildCol('ba-recipes-breeder', 'breeder');
+
+        // Bind update handler to all inputs
+        document.querySelectorAll('.ba-recipe-input').forEach(input => {
+            input.addEventListener('input', () => {
+                window.updateRecipesCalculation();
+            });
+        });
     };
 
     const renderBaTable = () => {
@@ -225,10 +352,15 @@ try {
         document.getElementById('ba-modal-shift').value = audit.shift || 'ABC';
         document.getElementById('ba-modal-limit').value = audit.acceptableLimit !== undefined ? audit.acceptableLimit : '0.4';
         document.getElementById('ba-modal-total-batches').value = audit.totalBatches !== undefined ? audit.totalBatches : '113';
-        document.getElementById('ba-form-chenab').value = audit.formChenab !== undefined ? audit.formChenab : '56';
-        document.getElementById('ba-form-delta').value = audit.formDelta !== undefined ? audit.formDelta : '0';
-        document.getElementById('ba-form-wanda').value = audit.formWanda !== undefined ? audit.formWanda : '57';
-        document.getElementById('ba-form-breeder').value = audit.formBreeder !== undefined ? audit.formBreeder : '0';
+
+        // Load recipe values
+        const savedRecipes = audit.recipes || {};
+        document.querySelectorAll('.ba-recipe-input').forEach(input => {
+            const code = input.getAttribute('data-code');
+            input.value = savedRecipes[code] !== undefined ? savedRecipes[code] : '';
+        });
+
+        window.updateRecipesCalculation();
 
         const tbody = document.getElementById('ba-rows-tbody');
         tbody.innerHTML = '';
@@ -265,6 +397,10 @@ try {
         const btnClose = document.getElementById('ba-modal-close');
         const btnCancel = document.getElementById('btn-cancel-ba-modal');
         const btnSave = document.getElementById('btn-save-ba-modal');
+        const btnClear = document.getElementById('btn-clear-recipes');
+
+        // Populate recipe entries UI
+        populateRecipeInputsUI();
 
         if (btnAdd) {
             btnAdd.addEventListener('click', () => {
@@ -273,10 +409,16 @@ try {
                 document.getElementById('ba-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
                 document.getElementById('ba-modal-shift').value = 'ABC';
                 document.getElementById('ba-modal-limit').value = '0.4';
-                document.getElementById('ba-modal-total-batches').value = '113';
-                document.getElementById('ba-form-chenab').value = '56';
+                document.getElementById('ba-modal-total-batches').value = '0';
+
+                // Clear recipe inputs
+                document.querySelectorAll('.ba-recipe-input').forEach(input => {
+                    input.value = '';
+                });
+
+                document.getElementById('ba-form-chenab').value = '0';
                 document.getElementById('ba-form-delta').value = '0';
-                document.getElementById('ba-form-wanda').value = '57';
+                document.getElementById('ba-form-wanda').value = '0';
                 document.getElementById('ba-form-breeder').value = '0';
 
                 const tbody = document.getElementById('ba-rows-tbody');
@@ -291,12 +433,22 @@ try {
         if (btnClose) btnClose.addEventListener('click', closeModal);
         if (btnCancel) btnCancel.addEventListener('click', closeModal);
 
+        if (btnClear) {
+            btnClear.addEventListener('click', () => {
+                document.querySelectorAll('.ba-recipe-input').forEach(input => {
+                    input.value = '';
+                });
+                window.updateRecipesCalculation();
+            });
+        }
+
         if (btnSave) {
             btnSave.addEventListener('click', async () => {
                 const date = document.getElementById('ba-modal-date').value.trim();
                 const shift = document.getElementById('ba-modal-shift').value.trim();
                 const acceptableLimit = parseFloat(document.getElementById('ba-modal-limit').value) || 0.4;
-                const totalBatches = parseFloat(document.getElementById('ba-modal-total-batches').value) || 113;
+                const totalBatches = parseFloat(document.getElementById('ba-modal-total-batches').value) || 0;
+                
                 const formChenab = parseFloat(document.getElementById('ba-form-chenab').value) || 0;
                 const formDelta = parseFloat(document.getElementById('ba-form-delta').value) || 0;
                 const formWanda = parseFloat(document.getElementById('ba-form-wanda').value) || 0;
@@ -328,6 +480,16 @@ try {
                     });
                 }
 
+                // Gather recipe inputs values
+                const recipes = {};
+                document.querySelectorAll('.ba-recipe-input').forEach(input => {
+                    const code = input.getAttribute('data-code');
+                    const val = parseFloat(input.value) || 0;
+                    if (val > 0) {
+                        recipes[code] = val;
+                    }
+                });
+
                 const report = {
                     id: activeBaId || Date.now(),
                     date,
@@ -338,6 +500,7 @@ try {
                     formDelta,
                     formWanda,
                     formBreeder,
+                    recipes,
                     items
                 };
 
@@ -368,6 +531,7 @@ try {
                             form_delta: report.formDelta,
                             form_wanda: report.formWanda,
                             form_breeder: report.formBreeder,
+                            recipes: report.recipes,
                             items: report.items
                         };
                         const { error } = await sbClient.from('batching_audits').upsert([dbRecord]);
@@ -402,8 +566,13 @@ try {
                             id: r.id,
                             date: localeDate,
                             shift: r.shift,
-                            totalBatches: r.total_batches || 113,
+                            totalBatches: r.total_batches || 0,
                             acceptableLimit: r.acceptable_limit || 0.4,
+                            formChenab: r.form_chenab || 0,
+                            formDelta: r.form_delta || 0,
+                            formWanda: r.form_wanda || 0,
+                            formBreeder: r.form_breeder || 0,
+                            recipes: r.recipes || {},
                             items: r.items || []
                         };
                     });
