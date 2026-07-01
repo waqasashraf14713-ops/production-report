@@ -168,8 +168,8 @@ try {
         const date = log.date || '';
         const siloNo = log.siloNumber ? log.siloNumber.replace('Silo ', '') : '';
         const material = log.material || '';
-        const supervisor = log.supervisor || '';
-        const operator = log.operator || '';
+        const officer = log.supervisor || ''; // officer name (mapped to supervisor)
+        const operator = log.operator || '';  // operator name
         const remarks = log.remarks || '';
 
         const renderTick = (val, expectTrue = true) => {
@@ -263,8 +263,8 @@ try {
                     <tr>
                         <td style="width:25%;"><strong>سائلو نمبر:</strong> <span style="font-family:Arial,sans-serif;">${siloNo}</span></td>
                         <td style="width:25%;"><strong>مٹیریل:</strong> ${material}</td>
-                        <td style="width:25%;"><strong>آفیسر کا نام:</strong> ${operator}</td>
-                        <td style="width:25%;"><strong>سپروائزر کا نام:</strong> ${supervisor}</td>
+                        <td style="width:25%;"><strong>آفیسر کا نام:</strong> ${officer}</td>
+                        <td style="width:25%;"><strong>آپریٹر کا نام:</strong> ${operator}</td>
                     </tr>
                 </table>
 
@@ -326,8 +326,8 @@ try {
         const date = log.date || '';
         const siloNo = log.siloNumber ? log.siloNumber.replace('Silo ', '') : '';
         const material = log.material || '';
-        const supervisor = log.supervisor || '';
-        const operator = log.operator || '';
+        const officer = log.supervisor || ''; // officer name (mapped to supervisor field)
+        const operator = log.operator || '';  // operator name
         const remarks = log.remarks || '';
 
         const renderTick = (val, expectTrue = true) => {
@@ -355,8 +355,8 @@ try {
                 <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:1.25rem; margin-bottom:2rem; font-size:1.15rem;">
                     <div><strong>سائلو نمبر:</strong> <span style="color:#2563eb;font-family:sans-serif;font-weight:bold;margin-right:5px;">${siloNo}</span></div>
                     <div><strong>مٹیریل:</strong> <span style="color:#1e293b;font-weight:bold;margin-right:5px;">${material}</span></div>
-                    <div><strong>آفیسر کا نام:</strong> <span style="color:#1e293b;font-weight:bold;margin-right:5px;">${operator}</span></div>
-                    <div><strong>سپروائزر کا نام:</strong> <span style="color:#1e293b;font-weight:bold;margin-right:5px;">${supervisor}</span></div>
+                    <div><strong>آفیسر کا نام:</strong> <span style="color:#1e293b;font-weight:bold;margin-right:5px;">${officer}</span></div>
+                    <div><strong>آپریٹر کا نام:</strong> <span style="color:#1e293b;font-weight:bold;margin-right:5px;">${operator}</span></div>
                 </div>
 
                 <!-- Main Checklist Table -->
@@ -557,7 +557,7 @@ try {
                     <th style="padding:0.5rem;">Date</th>
                     <th style="padding:0.5rem;">Material</th>
                     <th style="padding:0.5rem;">Officer Name</th>
-                    <th style="padding:0.5rem;">Supervisor</th>
+                    <th style="padding:0.5rem;">Operator Name</th>
                     <th style="padding:0.5rem;">Seal No</th>
                     <th style="padding:0.5rem;">Inspected</th>
                     <th class="no-print" style="padding:0.5rem;">Actions</th>
@@ -573,8 +573,8 @@ try {
                     <tr style="border-bottom:1px solid #e2e8f0;">
                         <td style="font-weight:600;padding:0.5rem;">${log.date}</td>
                         <td style="padding:0.5rem;font-weight:600;">${log.material}</td>
-                        <td style="padding:0.5rem;">${log.operator || '-'}</td>
-                        <td style="padding:0.5rem;">${log.supervisor || '-'}</td>
+                        <td style="padding:0.5rem;">${log.supervisor || '-'}</td> <!-- stores officer name -->
+                        <td style="padding:0.5rem;">${log.operator || '-'}</td>  <!-- stores operator name -->
                         <td style="padding:0.5rem;">${log.sealNo || '-'}</td>
                         <td style="padding:0.5rem;font-weight:700;color:#4f46e5;">${hasInspection}</td>
                         <td class="no-print" style="padding:0.5rem;display:flex;gap:0.2rem;">
@@ -644,7 +644,7 @@ try {
         operationSelect.value = operationType;
 
         document.getElementById('sl-modal-seal-no').value = '';
-        document.getElementById('sl-modal-supervisor').value = '';
+        document.getElementById('sl-modal-officer').value = '';
 
         // Reset radio buttons to default "no"
         for (let i = 1; i <= 4; i++) {
@@ -662,7 +662,7 @@ try {
 
         const modalCard = document.getElementById('silo-log-modal-card');
         const sealGroup = document.getElementById('fg-seal-no');
-        const supervisorGroup = document.getElementById('fg-supervisor');
+        const officerGroup = document.getElementById('fg-officer');
         const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
 
         const shiftGroup = document.getElementById('fg-shift');
@@ -674,7 +674,7 @@ try {
         if (operationType === 'Filling') {
             if (modalCard) modalCard.style.maxWidth = '900px';
             if (sealGroup) sealGroup.style.display = 'block';
-            if (supervisorGroup) supervisorGroup.style.display = 'block';
+            if (officerGroup) officerGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'block';
             
             // Hide non-checklist fields for Filling
@@ -686,7 +686,7 @@ try {
         } else {
             if (modalCard) modalCard.style.maxWidth = '550px';
             if (sealGroup) sealGroup.style.display = 'none';
-            if (supervisorGroup) supervisorGroup.style.display = 'none';
+            if (officerGroup) officerGroup.style.display = 'none';
             if (inspectionSection) inspectionSection.style.display = 'none';
 
             // Show them for Discharging
@@ -722,7 +722,7 @@ try {
 
         const modalCard = document.getElementById('silo-log-modal-card');
         const sealGroup = document.getElementById('fg-seal-no');
-        const supervisorGroup = document.getElementById('fg-supervisor');
+        const officerGroup = document.getElementById('fg-officer');
         const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
 
         const shiftGroup = document.getElementById('fg-shift');
@@ -734,7 +734,7 @@ try {
         if (log.operation === 'Filling') {
             if (modalCard) modalCard.style.maxWidth = '900px';
             if (sealGroup) sealGroup.style.display = 'block';
-            if (supervisorGroup) supervisorGroup.style.display = 'block';
+            if (officerGroup) officerGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'block';
 
             // Hide non-checklist fields for Filling
@@ -745,7 +745,7 @@ try {
             if (operatorGroup) operatorGroup.style.display = 'block';
 
             document.getElementById('sl-modal-seal-no').value = log.sealNo || '';
-            document.getElementById('sl-modal-supervisor').value = log.supervisor || '';
+            document.getElementById('sl-modal-officer').value = log.supervisor || ''; // mapped supervisor field stores Officer Name
 
             const insp = log.inspection || {};
             for (let i = 1; i <= 4; i++) {
@@ -766,7 +766,7 @@ try {
         } else {
             if (modalCard) modalCard.style.maxWidth = '550px';
             if (sealGroup) sealGroup.style.display = 'none';
-            if (supervisorGroup) supervisorGroup.style.display = 'none';
+            if (officerGroup) officerGroup.style.display = 'none';
             if (inspectionSection) inspectionSection.style.display = 'none';
 
             // Show them for Discharging
@@ -897,7 +897,7 @@ try {
                 const moisture = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-moisture').value) || 0);
                 const netQty = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-net-wt').value) || 0);
                 const temperature = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-temp').value) || 0);
-                const operator = document.getElementById('sl-modal-operator').value.trim();
+                const operator = document.getElementById('sl-modal-operator').value.trim(); // operator name
                 
                 const remarks = document.getElementById('sl-modal-remarks').value.trim();
 
@@ -905,12 +905,12 @@ try {
                 if (!material) return alert('Please enter Material Name.');
 
                 let sealNo = '';
-                let supervisor = '';
+                let supervisor = ''; // stores Officer Name
                 let inspection = null;
 
                 if (operation === 'Filling') {
                     sealNo = document.getElementById('sl-modal-seal-no').value.trim();
-                    supervisor = document.getElementById('sl-modal-supervisor').value.trim();
+                    supervisor = document.getElementById('sl-modal-officer').value.trim(); // Officer Name mapped to supervisor column
                     
                     inspection = {
                         top1: document.getElementById('sl-chk-top1-yes').checked,
