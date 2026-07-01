@@ -94,6 +94,10 @@
                     <span class="nav-icon">⚖️</span>
                     <span>Batching Scale</span>
                 </a>
+                <a href="#pellet-efficiency" class="nav-item" id="nav-pellet-efficiency">
+                    <span class="nav-icon">⚡</span>
+                    <span>Pellet Efficiency</span>
+                </a>
             </nav>
         </aside>
         
@@ -102,6 +106,10 @@
                 <header>
                     <h1>Feed Mill Production Report</h1>
                     <div class="header-actions">
+                        <button class="btn-supabase-status" id="btn-supabase-status">
+                            <span id="supabase-status-dot"></span>
+                            <span id="supabase-status-text">Connecting...</span>
+                        </button>
                     </div>
                 </header>
 
@@ -146,6 +154,11 @@
                     <div class="dash-quick-icon" style="background:linear-gradient(135deg,#06b6d4,#22d3ee);">⚖️</div>
                     <div class="dash-quick-label">Batching Scale</div>
                     <div class="dash-quick-desc">Batching scale records</div>
+                </div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-pellet-efficiency').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#eab308,#fde047);">⚡</div>
+                    <div class="dash-quick-label">Pellet Efficiency</div>
+                    <div class="dash-quick-desc">Pellet mill energy & PDI</div>
                 </div>
             </section>
         </div>
@@ -627,6 +640,59 @@
                 <!-- Audit cards container -->
                 <div id="ba-cards-container" style="display:flex;flex-direction:column;gap:1.5rem;margin-top:1.5rem;">
                     <!-- Populated by JS -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Pellet Efficiency Section -->
+        <div id="view-pellet-efficiency" class="view-section" style="display: none;">
+            <section class="table-container">
+                <div style="display: flex; background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);flex-direction:column;">
+                    <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;display:flex;justify-content:space-between;align-items:center;width:100%;">
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;margin:0;">⚡ Pellet Efficiency Records</h2>
+                        <div class="header-actions" style="display:flex;gap:1rem;align-items:center;">
+                            <button class="btn btn-secondary" id="btn-add-pellet-efficiency">➕ Add Pellet Report</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table" id="pellet-efficiency-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Shift</th>
+                                    <th>Officer</th>
+                                    <th>Pellet Mills Included</th>
+                                    <th>Production (T)</th>
+                                    <th>Run Time (Hrs)</th>
+                                    <th>Avg Throughput (T/Hr)</th>
+                                    <th>Specific Energy (kWh/T)</th>
+                                    <th>Avg PDI (%)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS will populate -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pellet Efficiency Trend widgets/charts -->
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; margin-top:2rem;">
+                    <!-- Left: Average Throughput -->
+                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                        <h3 style="margin-bottom:1rem;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;margin-top:0;">📊 Average Throughput (T/Hr)</h3>
+                        <div style="width:100%;height:250px;position:relative;">
+                            <canvas id="pellet-throughput-chart"></canvas>
+                        </div>
+                    </div>
+                    <!-- Right: Specific Energy Trend -->
+                    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
+                        <h3 style="margin-bottom:1rem;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;margin-top:0;">📈 Specific Energy (kWh/T) Trend</h3>
+                        <div style="width:100%;height:250px;position:relative;">
+                            <canvas id="pellet-energy-chart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -1334,7 +1400,7 @@ order by
 
     <!-- Daily Plant Report Modal -->
     <div id="plant-report-modal" class="modal-overlay">
-        <div class="modal-card" style="max-width:1100px;width:95%;background:#ffffff;">
+        <div class="modal-card" style="max-width:1100px;width:95%;background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); color: #0f172a; border: 1px solid #cbd5e1; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
             <div class="modal-header">
                 <h2 id="plant-report-title">Shift Plant Report</h2>
                 <button id="plant-report-close" class="modal-close-btn">&times;</button>
@@ -1631,7 +1697,7 @@ order by
 
     <!-- Silo Moisture Modal -->
     <div id="silo-moist-modal" class="modal-overlay">
-        <div class="modal-card" style="max-width:900px;width:95%;background:#ffffff;">
+        <div class="modal-card" style="max-width:900px;width:95%;background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); color: #0f172a; border: 1px solid #cbd5e1; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
             <div class="modal-header">
                 <h2 id="silo-moist-title">💧 Silo Moisture Report</h2>
                 <button id="silo-moist-close" class="modal-close-btn">&times;</button>
@@ -1987,6 +2053,66 @@ order by
         </div>
     </div>
 
+    <!-- Pellet Efficiency Modal -->
+    <div id="pellet-efficiency-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:980px;width:95%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
+            <div class="modal-header" style="background:#f8fafc;padding:1.25rem 1.5rem;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+                <h2 id="pellet-efficiency-title" style="margin:0;font-size:1.25rem;color:#0f172a;display:flex;align-items:center;gap:0.5rem;">⚡ Pellet Efficiency Report</h2>
+                <button id="pellet-efficiency-close" class="modal-close-btn" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem; max-height:75vh; overflow-y:auto;">
+                <div style="display:flex;gap:1.5rem;margin-bottom:1.5rem;flex-wrap:wrap;background:#f8fafc;padding:1rem;border-radius:8px;border:1px solid #e2e8f0;">
+                    <div class="form-group" style="flex:1;min-width:180px;">
+                        <label style="font-weight:600;display:block;margin-bottom:0.4rem;color:#334155;font-size:0.875rem;">Date</label>
+                        <input type="text" id="pe-date" style="width:100%;border-radius:6px;border:1px solid #cbd5e1;padding:0.5rem;outline:none;background:#ffffff;color:#0f172a;" />
+                    </div>
+                    <div class="form-group" style="flex:1;min-width:180px;">
+                        <label style="font-weight:600;display:block;margin-bottom:0.4rem;color:#334155;font-size:0.875rem;">Shift</label>
+                        <select id="pe-shift" style="width:100%;border-radius:6px;border:1px solid #cbd5e1;padding:0.5rem;outline:none;background:#ffffff;color:#0f172a;cursor:pointer;">
+                            <option value="Morning">Morning</option>
+                            <option value="Evening">Evening</option>
+                            <option value="Night">Night</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:1;min-width:180px;">
+                        <label style="font-weight:600;display:block;margin-bottom:0.4rem;color:#334155;font-size:0.875rem;">Production Officer</label>
+                        <select id="pe-officer" style="width:100%;border-radius:6px;border:1px solid #cbd5e1;padding:0.5rem;outline:none;background:#ffffff;color:#0f172a;cursor:pointer;">
+                            <option value="">Select Officer</option>
+                            <option value="M. Zubair">M. Zubair</option>
+                            <option value="M. Tahir">M. Tahir</option>
+                            <option value="M. Shoaib">M. Shoaib</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="report-table" style="width:100%; border-collapse: collapse; text-align:center;">
+                        <thead>
+                            <tr style="background:#f1f5f9;color:#334155;font-weight:600;">
+                                <th>Pellet Mill</th>
+                                <th style="width:100px;">Run Time (Hrs)</th>
+                                <th style="width:100px;">Production (T)</th>
+                                <th style="width:110px;">Total Energy (kWh)</th>
+                                <th style="width:100px;">Throughput (T/H)</th>
+                                <th style="width:110px;">Specific Energy (kWh/T)</th>
+                                <th style="width:90px;">PDI (%)</th>
+                                <th style="width:90px;">Temp (°C)</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pe-rows-tbody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding:1.25rem 1.5rem;display:flex;justify-content:flex-end;gap:1rem;border-top:1px solid #e2e8f0;background:#f8fafc;">
+                <button class="btn btn-secondary" id="btn-cancel-pe" style="padding:0.5rem 1.5rem;border-radius:6px;">Cancel</button>
+                <button class="btn btn-primary" id="btn-save-pe" style="padding:0.5rem 2rem;border-radius:6px;font-weight:600;">💾 Save Record</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Hidden container for complete shift PDF print layout -->
 
     <div id="shift-report-print-container"></div>
@@ -2001,6 +2127,7 @@ order by
     <script src="quality_standards.js?v=4"></script>
     <script src="plant_report.js?v=4"></script>
     <script src="silo_moisture.js?v=4"></script>
+    <script src="pellet_efficiency.js?v=4"></script>
     <script src="script.js?v=4"></script>
     <script src="shift_report_pdf.js?v=4"></script>
     <script src="less_excess_pdf.js?v=4"></script>

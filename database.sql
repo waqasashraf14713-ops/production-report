@@ -50,3 +50,12 @@ CREATE TABLE batching_scale_calibration (
     remarks TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE pellet_efficiency (
+    id BIGINT PRIMARY KEY,
+    date DATE NOT NULL,
+    shift VARCHAR(50),
+    officer_name VARCHAR(150),
+    rows JSONB,              -- Array of objects representing each pellet mill's efficiency details
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

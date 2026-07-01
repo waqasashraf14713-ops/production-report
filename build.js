@@ -35,7 +35,8 @@ const filesToCopy = [
     'quality_standards.js',
     'plant_report.js',
     'shift_report_pdf.js',
-    'less_excess_pdf.js'
+    'less_excess_pdf.js',
+    'pellet_efficiency.js'
 ];
 filesToCopy.forEach(file => {
     const srcPath = path.join(__dirname, file);

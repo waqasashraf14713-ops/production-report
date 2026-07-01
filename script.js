@@ -23,23 +23,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewBatchingAudit = document.getElementById('view-batching-audit');
     const navBatchingScale = document.getElementById('nav-batching-scale');
     const viewBatchingScale = document.getElementById('view-batching-scale');
+    const navPelletEfficiency = document.getElementById('nav-pellet-efficiency');
+    const viewPelletEfficiency = document.getElementById('view-pellet-efficiency');
 
     const switchView = (activeNav, activeView) => {
-        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navFiveS, navShiftReport, navBatchingAudit, navBatchingScale].forEach(nav => {
+        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navFiveS, navShiftReport, navBatchingAudit, navBatchingScale, navPelletEfficiency].forEach(nav => {
             if (nav) nav.classList.remove('active');
         });
-        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewFiveS, viewShiftReport, viewBatchingAudit, viewBatchingScale].forEach(view => {
+        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewFiveS, viewShiftReport, viewBatchingAudit, viewBatchingScale, viewPelletEfficiency].forEach(view => {
             if (view) view.style.display = 'none';
         });
 
         if (activeNav) activeNav.classList.add('active');
         if (activeView) activeView.style.display = 'block';
+
+        const actionsDiv = document.querySelector('.actions');
+        if (actionsDiv) {
+            if (activeView === viewDashboard) {
+                actionsDiv.style.display = 'none';
+            } else {
+                actionsDiv.style.display = 'flex';
+            }
+        }
     };
 
     if (navDashboard) {
         navDashboard.addEventListener('click', (e) => {
             e.preventDefault();
             switchView(navDashboard, viewDashboard);
+        });
+    }
+
+    if (navPelletEfficiency) {
+        navPelletEfficiency.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(navPelletEfficiency, viewPelletEfficiency);
         });
     }
 
@@ -1050,6 +1068,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem(LS_DAILY_CHECKLISTS);
             localStorage.removeItem(LS_SHIFT_REPORTS);
             localStorage.removeItem(LS_BATCHING_AUDITS);
+            localStorage.removeItem('fm_pellet_efficiency');
             availableMaterials = [];
             ensureDefaultMaterials();
             silosData = generateSiloData(21);
@@ -1482,6 +1501,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.refreshSiloMoistData) window.refreshSiloMoistData();
         if (window.refreshPlantReportData) window.refreshPlantReportData();
         if (window.refreshQsData) window.refreshQsData();
+
+        switchView(navDashboard, viewDashboard);
     };
 
     // ─── Modal Actions ──────────────────────────────────────────────────────────
