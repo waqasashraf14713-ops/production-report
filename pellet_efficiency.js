@@ -1,4 +1,5 @@
 // ─── Pellet Efficiency Report Module ────────────────────────────────────────────
+// Version: 1.0.1 - Rebuild trigger
 (() => {
 try {
     const LS_PELLET_EFFICIENCY = 'fm_pellet_efficiency';
