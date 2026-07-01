@@ -459,6 +459,9 @@
                                 <option value="Premix">Premix</option>
                                 <option value="Other Department">Other Department</option>
                             </select>
+                            <span id="matrix-dept-head" style="font-size:0.875rem; font-weight:600; color:var(--text-secondary); padding:0.5rem 0.75rem; background:var(--card-bg); border:1px solid var(--card-border); border-radius:6px; display:flex; align-items:center; gap:0.35rem;">
+                                👤 Head: -
+                            </span>
                             <select id="matrix-month-select" style="border-radius:6px; border:1px solid var(--card-border); padding:0.5rem; background:var(--card-bg); color:var(--text-primary); font-weight:600; outline:none; cursor:pointer;" onchange="window.renderChecklistMatrix()">
                                 <!-- Will populate with months dynamically -->
                             </select>
@@ -711,24 +714,27 @@
                         </div>
                     </div>
                     <div class="table-responsive">
-                        <table class="report-table" id="pellet-efficiency-table">
+                        <table class="report-table" id="pellet-efficiency-table" style="font-size:0.9rem;">
                             <thead>
-                                <tr>
+                                <tr style="background:#f1f5f9; color:#334155; font-weight:700;">
                                     <th>Date</th>
-                                    <th>Shift</th>
-                                    <th>Officer</th>
-                                    <th>Pellet Mills Included</th>
-                                    <th>Production (T)</th>
-                                    <th>Run Time (Hrs)</th>
-                                    <th>Avg Throughput (T/Hr)</th>
-                                    <th>Specific Energy (kWh/T)</th>
-                                    <th>Avg PDI (%)</th>
-                                    <th>Actions</th>
+                                    <th>Days</th>
+                                    <th>Pellets</th>
+                                    <th>Production</th>
+                                    <th>Pellets Run Time</th>
+                                    <th>Pellets Average</th>
+                                    <th>Pellets Efficiency %</th>
+                                    <th>Ton/hrs</th>
+                                    <th>Remarks</th>
+                                    <th class="no-print">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <!-- JS will populate -->
                             </tbody>
+                            <tfoot id="pellet-efficiency-tfoot" style="background:#f8fafc; font-weight:700; border-top:2px solid #cbd5e1;">
+                                <!-- Totals populated by JS -->
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -824,7 +830,7 @@ create table if not exists public.silos (
 
 -- Insert default materials
 insert into public.materials (name) 
-values ('Maize'), ('Rice'), ('Wheat Bran'), ('Low Grade Canola'), ('Canola Meal'), ('Soyabean Meal')
+values ('Winter Maize'), ('Summer Maize')
 on conflict (name) do nothing;
 
 -- Create daily_maize_logs table
@@ -2145,14 +2151,12 @@ order by
                     <table class="report-table" style="width:100%; border-collapse: collapse; text-align:center;">
                         <thead>
                             <tr style="background:#f1f5f9;color:#334155;font-weight:600;">
-                                <th>Pellet Mill</th>
-                                <th style="width:100px;">Run Time (Hrs)</th>
-                                <th style="width:100px;">Production (T)</th>
-                                <th style="width:110px;">Total Energy (kWh)</th>
-                                <th style="width:100px;">Throughput (T/H)</th>
-                                <th style="width:110px;">Specific Energy (kWh/T)</th>
-                                <th style="width:90px;">PDI (%)</th>
-                                <th style="width:90px;">Temp (°C)</th>
+                                <th>Pellets</th>
+                                <th style="width:120px;">Production (Bags)</th>
+                                <th style="width:120px;">Run Time (Hrs)</th>
+                                <th style="width:120px;">Pellets Average</th>
+                                <th style="width:120px;">Pellets Efficiency %</th>
+                                <th style="width:120px;">Ton/hrs</th>
                                 <th>Remarks</th>
                             </tr>
                         </thead>

@@ -396,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    let availableMaterials = ['Maize', 'Rice', 'Wheat Bran', 'Low Grade Canola', 'Canola Meal', 'Soyabean Meal'];
+    let availableMaterials = ['Winter Maize', 'Summer Maize'];
     let silosData = [];
     let maizeLogs = [];
     let lessExcessLogs = [];
@@ -731,11 +731,11 @@ document.addEventListener('DOMContentLoaded', () => {
             .subscribe();
     };
     const ensureDefaultMaterials = () => {
-        const required = ['Maize', 'Rice', 'Wheat Bran', 'Low Grade Canola', 'Canola Meal', 'Soyabean Meal'];
+        const required = ['Winter Maize', 'Summer Maize'];
         if (!availableMaterials || !Array.isArray(availableMaterials)) {
             availableMaterials = [];
         }
-        const toRemove = ['Old Maize', 'Dryer Maize', 'Fresh Maize'];
+        const toRemove = ['Maize', 'Rice', 'Wheat Bran', 'Low Grade Canola', 'Canola Meal', 'Soyabean Meal', 'Old Maize', 'Dryer Maize', 'Fresh Maize'];
         availableMaterials = availableMaterials.filter(m => !toRemove.includes(m));
         required.forEach(m => {
             if (!availableMaterials.includes(m)) availableMaterials.push(m);
@@ -1345,7 +1345,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const populateMaterialsDropdown = () => {
                 if (!selectMaterial) return;
                 selectMaterial.innerHTML = '';
-                const mats = Array.isArray(availableMaterials) ? availableMaterials : ['Maize', 'Rice'];
+                const mats = Array.isArray(availableMaterials) ? availableMaterials : ['Winter Maize', 'Summer Maize'];
                 mats.forEach(m => {
                     const opt = document.createElement('option');
                     opt.value = m;
@@ -1367,7 +1367,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!silo) return;
 
                 if (selectStatus) selectStatus.value = silo.status || 'Stopped';
-                if (selectMaterial) selectMaterial.value = silo.materialType || 'Maize';
+                if (selectMaterial) selectMaterial.value = silo.materialType || 'Winter Maize';
                 if (inputFill) inputFill.value = silo.currentFillTons || 0;
                 if (inputCapacity) inputCapacity.value = silo.capacity || 0;
                 if (inputPMoist) inputPMoist.value = silo.purchaseMoisture || 0;
@@ -3231,6 +3231,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const deptName = deptSelect.value;
         const [monthName, yearVal] = monthSelect.value.split('-'); 
         
+        // Update Department Head Name
+        const headEl = document.getElementById('matrix-dept-head');
+        if (headEl) {
+            const heads = DEPT_HEADS[deptName] || [];
+            headEl.innerHTML = `👤 Head: ${heads[0] || '-'}`;
+        }
+        
         const daysInMonth = 31; 
         
         // Generate Header
@@ -3686,7 +3693,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sel = document.getElementById('rm-modal-material');
         if (!sel) return;
         sel.innerHTML = '';
-        const mats = Array.isArray(availableMaterials) ? availableMaterials : ['Maize', 'Rice', 'Wheat Bran', 'Low Grade Canola', 'Canola Meal', 'Soyabean Meal'];
+        const mats = Array.isArray(availableMaterials) ? availableMaterials : ['Winter Maize', 'Summer Maize'];
         mats.forEach(m => {
             const opt = document.createElement('option');
             opt.value = m;
@@ -3745,7 +3752,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 availableMaterials.push(c.material);
                 populateRmMaterialsDropdown();
             }
-            sel.value = c.material || availableMaterials[0] || 'Maize';
+            sel.value = c.material || availableMaterials[0] || 'Winter Maize';
         }
         
         document.getElementById('rm-modal-vehicle').value = c.vehicle;
@@ -3776,7 +3783,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('rm-modal-shift').value = 'A';
         document.getElementById('rm-modal-officer').value = 'M. Zubair';
         const sel = document.getElementById('rm-modal-material');
-        if (sel) sel.value = availableMaterials[0] || 'Maize';
+        if (sel) sel.value = availableMaterials[0] || 'Winter Maize';
         document.getElementById('rm-modal-vehicle').value = '';
         document.getElementById('rm-modal-location').value = '';
         document.getElementById('rm-modal-moisture').value = '';
@@ -3849,7 +3856,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (typeof populateMaterialsDropdown === 'function') populateMaterialsDropdown();
                         rmSelectMaterial.value = name;
                     } else {
-                        rmSelectMaterial.value = availableMaterials[0] || 'Maize';
+                        rmSelectMaterial.value = availableMaterials[0] || 'Winter Maize';
                     }
                 }
             });

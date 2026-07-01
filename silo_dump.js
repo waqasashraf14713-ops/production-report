@@ -14,7 +14,7 @@ let activeSdId = null;
 const inp = (id, w = '100%') => `<input type="text" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;">`;
 
 const matInp = (id) => {
-    let mats = ['Maize', 'Rice', 'Wheat Bran', 'Low Grade Canola', 'Canola Meal', 'Soyabean Meal'];
+    let mats = ['Winter Maize', 'Summer Maize'];
     try {
         const stored = localStorage.getItem('fmpr_materials');
         if (stored) {
@@ -27,7 +27,7 @@ const matInp = (id) => {
         console.error("Error reading fmpr_materials", e);
     }
     return `
-        <input type="text" id="${id}" list="sd-mat-options-${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;" placeholder="Select or type" value="Maize">
+        <input type="text" id="${id}" list="sd-mat-options-${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;" placeholder="Select or type" value="Winter Maize">
         <datalist id="sd-mat-options-${id}">
             ${mats.map(m => `<option value="${m}">`).join('')}
         </datalist>

@@ -230,6 +230,7 @@ try {
                 const formulas = JSON.parse(localStorage.getItem('fm_daily_formula_moisture') || '{}');
                 formulas[date] = parseFloat(val);
                 localStorage.setItem('fm_daily_formula_moisture', JSON.stringify(formulas));
+                localStorage.setItem('fm_global_formula_moisture', val); // Save globally as default
                 
                 window.updateDailySiloMoistureSummary(date);
             });
@@ -255,9 +256,16 @@ try {
         const compEl = document.getElementById('dsms-comparison');
         if (!actualEl) return;
 
-        // Load formula if exists
+        // Load formula if exists, fallback to global default
         const formulas = JSON.parse(localStorage.getItem('fm_daily_formula_moisture') || '{}');
-        const formulaVal = formulas[date];
+        let formulaVal = formulas[date];
+        if (formulaVal === undefined) {
+            const globalVal = localStorage.getItem('fm_global_formula_moisture');
+            if (globalVal !== null) {
+                formulaVal = parseFloat(globalVal);
+            }
+        }
+        
         if (formulaVal !== undefined) {
             formulaInp.value = formulaVal;
         } else {
@@ -328,6 +336,7 @@ try {
 
     const buildChartData = (limitDays) => {
         const formulas = JSON.parse(localStorage.getItem('fm_daily_formula_moisture') || '{}');
+        const globalVal = localStorage.getItem('fm_global_formula_moisture');
 
         // Gather all dates that have silo moisture records
         const allDates = [...new Set(siloMoistData.map(r => r.date))].sort();
@@ -348,7 +357,10 @@ try {
             });
             if (count === 0) return;
             const avg = parseFloat((sum / count).toFixed(2));
-            const formula = formulas[date];
+            let formula = formulas[date];
+            if (formula === undefined && globalVal !== null) {
+                formula = parseFloat(globalVal);
+            }
             labels.push(date);
             actualValues.push(avg);
             formulaValues.push(formula !== undefined ? parseFloat(formula) : null);
