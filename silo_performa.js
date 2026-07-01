@@ -440,50 +440,79 @@ try {
             return;
         }
 
+        let headersMarkup = '';
         let rows = '';
-        [...filteredLogs].reverse().forEach(log => {
-            const hasInspection = log.inspection ? '✓ Yes' : '-';
-            const sealValue = log.sealNo || '-';
-            const supervisorValue = log.supervisor || '-';
-            const printBtn = log.operation === 'Filling' ? `<button class="btn btn-primary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#8b5cf6;border-color:#8b5cf6;" onclick="printSiloInspection(${log.id})">🖨️ Print</button>` : '';
 
-            rows += `
-                <tr style="border-bottom:1px solid #e2e8f0;">
-                    <td style="font-weight:600;padding:0.5rem;">${log.date}</td>
-                    <td style="padding:0.5rem;">${log.shift || 'A'}</td>
-                    <td style="padding:0.5rem;font-weight:600;">${log.material}</td>
-                    <td style="padding:0.5rem;font-weight:700;">${log.moisture ? log.moisture + '%' : '-'}</td>
-                    <td style="padding:0.5rem;font-weight:700;color:#2563eb;">${log.netQty || 0}</td>
-                    <td style="padding:0.5rem;">${log.temperature ? log.temperature + '°C' : '-'}</td>
-                    <td style="padding:0.5rem;">${log.operator || '-'}</td>
-                    <td style="padding:0.5rem;">${sealValue}</td>
-                    <td style="padding:0.5rem;">${supervisorValue}</td>
-                    <td style="padding:0.5rem;font-weight:700;color:#4f46e5;">${hasInspection}</td>
-                    <td class="no-print" style="padding:0.5rem;display:flex;gap:0.2rem;">
-                        <button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;" onclick="window.editSiloLog(${log.id})">✏️ Edit</button>
-                        ${printBtn}
-                        <button class="btn btn-danger" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#ef4444;" onclick="window.deleteSiloLog(${log.id})">🗑 Del</button>
-                    </td>
+        if (currentHistoryOperation === 'Filling') {
+            headersMarkup = `
+                <tr style="background:#e2e8f0; color:#334155; font-weight:700; text-align:left;">
+                    <th style="padding:0.5rem;">Date</th>
+                    <th style="padding:0.5rem;">Material</th>
+                    <th style="padding:0.5rem;">Officer Name</th>
+                    <th style="padding:0.5rem;">Supervisor</th>
+                    <th style="padding:0.5rem;">Seal No</th>
+                    <th style="padding:0.5rem;">Inspected</th>
+                    <th class="no-print" style="padding:0.5rem;">Actions</th>
                 </tr>
             `;
-        });
+
+            [...filteredLogs].reverse().forEach(log => {
+                const hasInspection = log.inspection ? '✓ Yes' : '-';
+                const printBtn = `<button class="btn btn-primary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#8b5cf6;border-color:#8b5cf6;" onclick="printSiloInspection(${log.id})">🖨️ Print</button>`;
+
+                rows += `
+                    <tr style="border-bottom:1px solid #e2e8f0;">
+                        <td style="font-weight:600;padding:0.5rem;">${log.date}</td>
+                        <td style="padding:0.5rem;font-weight:600;">${log.material}</td>
+                        <td style="padding:0.5rem;">${log.operator || '-'}</td>
+                        <td style="padding:0.5rem;">${log.supervisor || '-'}</td>
+                        <td style="padding:0.5rem;">${log.sealNo || '-'}</td>
+                        <td style="padding:0.5rem;font-weight:700;color:#4f46e5;">${hasInspection}</td>
+                        <td class="no-print" style="padding:0.5rem;display:flex;gap:0.2rem;">
+                            <button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;" onclick="window.editSiloLog(${log.id})">✏️ Edit</button>
+                            ${printBtn}
+                            <button class="btn btn-danger" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#ef4444;" onclick="window.deleteSiloLog(${log.id})">🗑 Del</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } else {
+            headersMarkup = `
+                <tr style="background:#e2e8f0; color:#334155; font-weight:700; text-align:left;">
+                    <th style="padding:0.5rem;">Date</th>
+                    <th style="padding:0.5rem;">Shift</th>
+                    <th style="padding:0.5rem;">Material</th>
+                    <th style="padding:0.5rem;">Moisture</th>
+                    <th style="padding:0.5rem;">Net Qty (T)</th>
+                    <th style="padding:0.5rem;">Temp</th>
+                    <th style="padding:0.5rem;">Performed By</th>
+                    <th class="no-print" style="padding:0.5rem;">Actions</th>
+                </tr>
+            `;
+
+            [...filteredLogs].reverse().forEach(log => {
+                rows += `
+                    <tr style="border-bottom:1px solid #e2e8f0;">
+                        <td style="font-weight:600;padding:0.5rem;">${log.date}</td>
+                        <td style="padding:0.5rem;">${log.shift || 'A'}</td>
+                        <td style="padding:0.5rem;font-weight:600;">${log.material}</td>
+                        <td style="padding:0.5rem;font-weight:700;">${log.moisture ? log.moisture + '%' : '-'}</td>
+                        <td style="padding:0.5rem;font-weight:700;color:#2563eb;">${log.netQty || 0}</td>
+                        <td style="padding:0.5rem;">${log.temperature ? log.temperature + '°C' : '-'}</td>
+                        <td style="padding:0.5rem;">${log.operator || '-'}</td>
+                        <td class="no-print" style="padding:0.5rem;display:flex;gap:0.2rem;">
+                            <button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;" onclick="window.editSiloLog(${log.id})">✏️ Edit</button>
+                            <button class="btn btn-danger" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#ef4444;" onclick="window.deleteSiloLog(${log.id})">🗑 Del</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
 
         tableContainer.innerHTML = `
             <table class="report-table" style="font-size:0.8rem;width:100%;border-collapse:collapse;background:#ffffff;">
                 <thead>
-                    <tr style="background:#e2e8f0; color:#334155; font-weight:700; text-align:left;">
-                        <th style="padding:0.5rem;">Date</th>
-                        <th style="padding:0.5rem;">Shift</th>
-                        <th style="padding:0.5rem;">Material</th>
-                        <th style="padding:0.5rem;">Moisture</th>
-                        <th style="padding:0.5rem;">Net Qty (T)</th>
-                        <th style="padding:0.5rem;">Temp</th>
-                        <th style="padding:0.5rem;">Operator</th>
-                        <th style="padding:0.5rem;">Seal No</th>
-                        <th style="padding:0.5rem;">Supervisor</th>
-                        <th style="padding:0.5rem;">Inspected</th>
-                        <th class="no-print" style="padding:0.5rem;">Actions</th>
-                    </tr>
+                    ${headersMarkup}
                 </thead>
                 <tbody>
                     ${rows}
