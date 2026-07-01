@@ -3150,23 +3150,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const label = document.createElement('label');
                 label.style.display = 'flex';
-                label.style.alignItems = 'flex-start';
-                label.style.gap = '0.75rem';
+                label.style.alignItems = 'center';
+                label.style.gap = '1rem';
                 label.style.cursor = 'pointer';
-                label.style.fontSize = '0.95rem';
                 label.style.color = 'var(--text-primary)';
-                label.style.padding = '0.5rem';
-                label.style.borderRadius = '6px';
+                label.style.padding = '0.75rem 1rem';
+                label.style.borderBottom = '1px solid var(--card-border)';
+                label.style.direction = 'rtl';
                 label.style.transition = 'background 0.2s';
-                label.addEventListener('mouseenter', () => label.style.background = 'rgba(255,255,255,0.05)');
+                label.style.fontFamily = "'JameelNooriNastaliq', 'Noto Nastaliq Urdu', serif";
+                label.addEventListener('mouseenter', () => label.style.background = 'rgba(255,255,255,0.03)');
                 label.addEventListener('mouseleave', () => label.style.background = 'transparent');
                 
                 label.innerHTML = `
-                    <input type="checkbox" class="dc-question-checkbox" data-index="${idx}" ${isChecked ? 'checked' : ''} style="margin-top: 0.2rem; width: 1.1rem; height: 1.1rem; cursor: pointer; accent-color: var(--accent-color);" />
-                    <span>${q}</span>
+                    <input type="checkbox" class="dc-question-checkbox" data-index="${idx}" ${isChecked ? 'checked' : ''} style="width: 1.25rem; height: 1.25rem; cursor: pointer; accent-color: var(--accent-color); flex-shrink: 0;" />
+                    <span class="urdu-text" style="font-size: 1.15rem; line-height: 1.8; text-align: right; width: 100%; margin: 0; padding: 0;">${q}</span>
                 `;
                 questionsContainer.appendChild(label);
             });
+            if (questionsContainer.firstElementChild) {
+                questionsContainer.firstElementChild.style.borderTop = '1px solid var(--card-border)';
+            }
         }
         
         modal.classList.add('show');
