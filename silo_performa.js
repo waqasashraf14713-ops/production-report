@@ -536,6 +536,43 @@ try {
         modal.classList.add('show');
     };
 
+    window.approveSiloLog = async (id) => {
+        const log = siloLogs.find(x => x.id === id);
+        if (!log) return;
+        if (!log.inspection) log.inspection = {};
+        log.inspection.managerApproved = true;
+        saveSiloLogs();
+        renderHistoryTable();
+        renderSiloPerformaDashboard();
+
+        initSupabase();
+        if (sbClient) {
+            try {
+                const dbRecord = {
+                    id: log.id,
+                    date: log.date.includes('-') && log.date.split('-').length === 3 ? `${log.date.split('-')[2]}-${log.date.split('-')[1] === 'Jan'?'01':log.date.split('-')[1] === 'Feb'?'02':log.date.split('-')[1] === 'Mar'?'03':log.date.split('-')[1] === 'Apr'?'04':log.date.split('-')[1] === 'May'?'05':log.date.split('-')[1] === 'Jun'?'06':log.date.split('-')[1] === 'Jul'?'07':log.date.split('-')[1] === 'Aug'?'08':log.date.split('-')[1] === 'Sep'?'09':log.date.split('-')[1] === 'Oct'?'10':log.date.split('-')[1] === 'Nov'?'11':'12'}-${log.date.split('-')[0].padStart(2,'0')}` : new Date().toISOString().split('T')[0],
+                    shift: log.shift,
+                    silo_number: log.siloNumber,
+                    operation_type: log.operation,
+                    material_name: log.material,
+                    moisture: log.moisture,
+                    net_qty: log.netQty,
+                    temperature: log.temperature,
+                    performed_by: log.operator,
+                    remarks: log.remarks,
+                    seal_no: log.sealNo,
+                    supervisor: log.supervisor,
+                    inspection: log.inspection
+                };
+                const { error } = await sbClient.from('silo_logs').upsert([dbRecord]);
+                if (error) throw error;
+                if (window.showToast) window.showToast('✓ Approved in Supabase');
+            } catch (err) {
+                console.error('Failed to approve in Supabase:', err);
+            }
+        }
+    };
+
     const renderHistoryTable = () => {
         const tableContainer = document.getElementById('sh-table-container');
         if (!tableContainer) return;
@@ -563,8 +600,8 @@ try {
                     <th style="padding:0.5rem;">Material</th>
                     <th style="padding:0.5rem;">Officer Name</th>
                     <th style="padding:0.5rem;">Operator Name</th>
-                    <th style="padding:0.5rem;">Seal No</th>
                     <th style="padding:0.5rem;">Inspected</th>
+                    <th style="padding:0.5rem;">Manager Approval</th>
                     <th class="no-print" style="padding:0.5rem;">Actions</th>
                 </tr>
             `;
@@ -574,6 +611,11 @@ try {
                 const viewBtn = `<button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#10b981;border-color:#10b981;color:#fff;" onclick="viewSiloInspection(${log.id})">👁️ View</button>`;
                 const printBtn = `<button class="btn btn-primary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#8b5cf6;border-color:#8b5cf6;" onclick="printSiloInspection(${log.id})">🖨️ Print</button>`;
 
+                const isApproved = log.inspection && log.inspection.managerApproved;
+                const approvalCell = isApproved 
+                    ? `<span style="color:#10b981;font-weight:800;font-size:0.8rem;">🟢 Approved</span>`
+                    : `<button class="btn" style="padding:0.15rem 0.4rem; font-size:0.72rem; background:#f59e0b; border:none; color:#fff; border-radius:4px; font-weight:700; cursor:pointer;" onclick="approveSiloLog(${log.id})">⚡ Approve</button>`;
+
                 rows += `
                     <tr style="border-bottom:1px solid #e2e8f0;">
                         <td style="font-weight:600;padding:0.5rem;">${log.date}</td>
@@ -581,8 +623,8 @@ try {
                         <td style="padding:0.5rem;font-weight:600;">${log.material}</td>
                         <td style="padding:0.5rem;">${log.supervisor || '-'}</td> <!-- stores officer name -->
                         <td style="padding:0.5rem;">${log.operator || '-'}</td>  <!-- stores operator name -->
-                        <td style="padding:0.5rem;">${log.sealNo || '-'}</td>
                         <td style="padding:0.5rem;font-weight:700;color:#4f46e5;">${hasInspection}</td>
+                        <td style="padding:0.5rem;vertical-align:middle;">${approvalCell}</td>
                         <td class="no-print" style="padding:0.5rem;display:flex;gap:0.2rem;">
                             <button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;" onclick="window.editSiloLog(${log.id})">✏️ Edit</button>
                             ${viewBtn}
@@ -884,6 +926,15 @@ try {
                     sealNo = document.getElementById('sl-modal-seal-no').value.trim();
                     supervisor = document.getElementById('sl-modal-officer').value; // Officer Name select value mapped to supervisor column
                     
+                    // Maintain existing approval state if editing
+                    let prevApproval = false;
+                    if (activeLogId) {
+                        const existing = siloLogs.find(x => x.id === activeLogId);
+                        if (existing && existing.inspection && existing.inspection.managerApproved) {
+                            prevApproval = true;
+                        }
+                    }
+
                     inspection = {
                         top1: document.getElementById('sl-chk-top1-yes').checked,
                         top2: document.getElementById('sl-chk-top2-yes').checked,
@@ -902,7 +953,8 @@ try {
                         bot11: document.getElementById('sl-chk-bot11-yes').checked,
                         bot12: document.getElementById('sl-chk-bot12-yes').checked,
                         lab1: document.getElementById('sl-chk-lab1-yes').checked,
-                        lab2: document.getElementById('sl-chk-lab2-yes').checked
+                        lab2: document.getElementById('sl-chk-lab2-yes').checked,
+                        managerApproved: prevApproval
                     };
                 }
 
