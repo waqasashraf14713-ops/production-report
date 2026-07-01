@@ -32,109 +32,109 @@ try {
         localStorage.setItem(LS_SILO_LOGS, JSON.stringify(siloLogs));
     };
 
-    // Helper to generate the exact HTML table rows with a separate Sr No column
+    // Helper to generate the exact HTML table rows with a separate Sr No column (RTL ordered: Sr No, Section, Description, Yes, No)
     const generateInspectionRowsHTML = (insp, renderTickFn) => {
         return `
             <!-- Silo Top -->
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">1</td>
-                <td rowspan="4" style="text-align:center;font-weight:bold;vertical-align:middle;border:1px solid #000;">Silo Top</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top1, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top1, true)}</td>
-                <td style="border:1px solid #000;">سائلو ٹاپ کی ائیر ٹائٹنس کو صاف کیا گیا ہے اور کھلا (Open) تو نہیں۔</td>
+                <td rowspan="4" style="text-align:center;font-weight:bold;vertical-align:middle;border:1px solid #000;background:#f8fafc;">Silo Top</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو ٹاپ کی ائیر ٹائٹنس کو صاف کیا گیا ہے اور کھلا (Open) تو نہیں۔</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top1, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top1, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">2</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top2, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top2, true)}</td>
-                <td style="border:1px solid #000;">اوپر دیکھو کہ ائیر ٹائٹنس کی کوئی بولٹ کھلی تو نہیں ہے۔</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">اوپر دیکھو کہ ائیر ٹائٹنس کی کوئی بولٹ کھلی تو نہیں ہے۔</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top2, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top2, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">3</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top3, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top3, true)}</td>
-                <td style="border:1px solid #000;">تمام بلور کو چلا کر دیکھیں کہ ہوا کا دباؤ درست ہے اور کوئی مٹی وغیرہ تو نہیں ہے۔</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">تمام بلور کو چلا کر دیکھیں کہ ہوا کا دباؤ درست ہے اور کوئی مٹی وغیرہ تو نہیں ہے۔</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top3, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top3, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">4</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top4, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top4, true)}</td>
-                <td style="border:1px solid #000;">فلنگ (Filling) سے پہلے والو کو آپریٹ کر کے دیکھ لیں۔</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">فلنگ (Filling) سے پہلے والو کو آپریٹ کر کے دیکھ لیں۔</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top4, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top4, false)}</td>
             </tr>
 
             <!-- Silo Bottom -->
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">5</td>
-                <td rowspan="12" style="text-align:center;font-weight:bold;vertical-align:middle;border:1px solid #000;">Silo Bottom</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot1, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot1, true)}</td>
-                <td style="border:1px solid #000;">سائلو کے اندر ائیر ڈکٹس (Aeration Ducts) کو صاف کیا گیا ہے؟</td>
+                <td rowspan="12" style="text-align:center;font-weight:bold;vertical-align:middle;border:1px solid #000;background:#f8fafc;">Silo Bottom</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر ائیر ڈکٹس (Aeration Ducts) کو صاف کیا گیا ہے؟</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot1, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot1, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">6</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot2, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot2, true)}</td>
-                <td style="border:1px solid #000;">سائلو کے اندر موجود تمام ہینڈل اور ڈسچارج گیٹ کو ٹیسٹ کیا گیا ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود تمام ہینڈل اور ڈسچارج گیٹ کو ٹیسٹ کیا گیا ہے؟</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot2, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot2, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">7</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot3, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot3, true)}</td>
-                <td style="border:1px solid #000;">سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچز (Ventilation Trenches) کو صاف کیا گیا ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچز (Ventilation Trenches) کو صاف کیا گیا ہے؟</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot3, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot3, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">8</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot4, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot4, true)}</td>
-                <td style="border:1px solid #000;">سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچ شیٹس (Ventilation Trench Sheets) کو اچھی طرح صاف اور فٹ کیا گیا ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچ شیٹس (Ventilation Trench Sheets) کو اچھی طرح صاف اور فٹ کیا گیا ہے؟</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot4, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot4, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">9</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot5, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot5, true)}</td>
-                <td style="border:1px solid #000;">سائلو کے اندر موجود سوئپر کنویئر فلیکسیبل ہے اور اپنی جگہ (درست پوزیشن) پر ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود سوئپر کنویئر فلیکسیبل ہے اور اپنی جگہ (درست پوزیشن) پر ہے؟</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot5, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot5, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">10</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot6, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot6, true)}</td>
-                <td style="border:1px solid #000;">سائلو کے اندر فرش کے ساتھ پلیٹس والا جوڑ ٹھیک ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر فرش کے ساتھ پلیٹس wala جوڑ ٹھیک ہے؟</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot6, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot6, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">11</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot7, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot7, true)}</td>
-                <td style="border:1px solid #000;">سائلو کے باہر شیٹس والا جوڑ ٹھیک ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے باہر شیٹس والا جوڑ ٹھیک ہے؟</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot7, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot7, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">12</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot8, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot8, true)}</td>
-                <td style="border:1px solid #000;">سائلو کے تمام ڈسچارج گیٹس کو مکمل بند کیا گیا ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے تمام ڈسچارج گیٹس کو مکمل بند کیا گیا ہے؟</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot8, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot8, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">13</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot9, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot9, true)}</td>
-                <td style="border:1px solid #000;">سائلو کے تمام ڈسچارج گیٹس لاک (SEAL) ہیں؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے تمام ڈسچارج گیٹس لاک (SEAL) ہیں؟</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot9, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot9, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">14</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot10, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot10, true)}</td>
-                <td style="border:1px solid #000;">سائلو کی مشین (Entrance) کا دروازہ اچھی طرح سے بند ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کی مشین (Entrance) کا دروازہ اچھی طرح سے بند ہے؟</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot10, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot10, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">15</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot11, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot11, true)}</td>
-                <td style="border:1px solid #000;">سردیوں میں گرین کا درجہ حرارت 16 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سردیوں میں گرین کا درجہ حرارت 16 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot11, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot11, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">16</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot12, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot12, true)}</td>
-                <td style="border:1px solid #000;">گرمیوں میں گرین کا درجہ حرارت 14 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">گرمیوں میں گرین کا درجہ حرارت 14 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot12, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot12, false)}</td>
             </tr>
         `;
     };
@@ -143,17 +143,17 @@ try {
         return `
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">1</td>
-                <td style="text-align:center;font-weight:bold;border:1px solid #000;">Lab Check</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.lab1, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.lab1, true)}</td>
-                <td style="border:1px solid #000;">سائلوز میں کوئی پرانا بیج یا اکسیڑا (Old Grain / Infestation) موجود نہیں ہے۔</td>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;background:#f8fafc;">Lab Check</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلوز میں کوئی پرانا بیج یا اکسیڑا (Old Grain / Infestation) موجود نہیں ہے۔</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.lab1, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.lab1, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">2</td>
-                <td style="text-align:center;font-weight:bold;border:1px solid #000;">Fumigation</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.lab2, false)}</td>
-                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.lab2, true)}</td>
-                <td style="border:1px solid #000;">کیا سائلو کو فیومیگیٹ (Fumigate) کرنے کی ضرورت ہے؟</td>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;background:#f8fafc;">Fumigation</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">کیا سائلو کو فیومیگیٹ (Fumigate) کرنے کی ضرورت ہے؟</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.lab2, true)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.lab2, false)}</td>
             </tr>
         `;
     };
@@ -174,9 +174,9 @@ try {
 
         const renderTick = (val, expectTrue = true) => {
             if (expectTrue) {
-                return val ? '<span style="font-family:Arial,sans-serif;font-size:1.1rem;">✔</span>' : '';
+                return val ? '<span style="font-family:Arial,sans-serif;font-size:1.25rem;color:#16a34a;">✔</span>' : '';
             } else {
-                return !val ? '<span style="font-family:Arial,sans-serif;font-size:1.1rem;">✔</span>' : '';
+                return !val ? '<span style="font-family:Arial,sans-serif;font-size:1.25rem;color:#dc2626;">✔</span>' : '';
             }
         };
 
@@ -191,7 +191,7 @@ try {
                         font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Urdu Typesetting', serif;
                         direction: rtl;
                         text-align: right;
-                        padding: 20px;
+                        padding: 30px;
                         background: #fff;
                         color: #000;
                         margin: 0;
@@ -199,43 +199,44 @@ try {
                     .header-table {
                         width: 100%;
                         border-collapse: collapse;
-                        margin-bottom: 15px;
+                        margin-bottom: 20px;
                     }
                     .header-table td {
                         border: none;
                         padding: 5px;
-                        font-size: 1.15rem;
+                        font-size: 1.2rem;
                     }
                     .title-block {
                         text-align: center;
                         font-weight: bold;
                         border: 2px solid #000 !important;
-                        padding: 10px !important;
+                        padding: 12px !important;
+                        border-radius: 4px;
                     }
                     .meta-table {
                         width: 100%;
                         border-collapse: collapse;
-                        margin-bottom: 15px;
+                        margin-bottom: 20px;
                     }
                     .meta-table td {
                         border: 1px solid #000;
-                        padding: 8px;
-                        font-size: 1.15rem;
+                        padding: 10px;
+                        font-size: 1.25rem;
                         text-align: right;
                     }
                     .main-table {
                         width: 100%;
                         border-collapse: collapse;
-                        margin-bottom: 15px;
+                        margin-bottom: 20px;
                     }
                     .main-table th, .main-table td {
                         border: 1px solid #000;
-                        padding: 6px 10px;
-                        font-size: 1.15rem;
+                        padding: 8px 10px;
+                        font-size: 1.2rem;
                         vertical-align: middle;
                     }
                     .main-table th {
-                        background: #f2f2f2;
+                        background: #f1f5f9;
                         text-align: center;
                         font-weight: bold;
                     }
@@ -249,10 +250,10 @@ try {
             <body onload="window.print();">
                 <table class="header-table">
                     <tr>
-                        <td style="width:30%; font-weight:bold;">Seal # <span style="font-family:Arial,sans-serif;font-size:1.1rem;border-bottom:1px solid #000;padding:0 5px;">${sealNo}</span></td>
+                        <td style="width:30%; font-weight:bold;">سیل نمبر: <span style="font-family:Arial,sans-serif;font-size:1.15rem;border-bottom:1px solid #000;padding:0 5px;">${sealNo}</span></td>
                         <td class="title-block" style="width:40%;">
-                            <div style="font-size:1.5rem;">سائلو انسپکشن رپورٹ - سٹیل سائلوز (Steel Silo)</div>
-                            <div style="font-size:1.2rem;margin-top:5px;">(فلنگ سے پہلے)</div>
+                            <div style="font-size:1.6rem;font-weight:bold;">سائلو انسپکشن رپورٹ - سٹیل سائلوز (Steel Silo)</div>
+                            <div style="font-size:1.25rem;margin-top:5px;color:#475569;">(فلنگ سے پہلے انسپکشن پرفارما)</div>
                         </td>
                         <td style="width:30%; text-align:left; font-weight:bold;">تاریخ: <span style="border-bottom:1px solid #000;padding:0 5px;">${date}</span></td>
                     </tr>
@@ -260,21 +261,21 @@ try {
 
                 <table class="meta-table">
                     <tr>
-                        <td><strong>سائلو نمبر:</strong> <span style="font-family:Arial,sans-serif;">${siloNo}</span></td>
-                        <td><strong>مٹیریل:</strong> ${material}</td>
-                        <td><strong>آفیسر کا نام:</strong> ${operator}</td>
-                        <td><strong>سپروائزر کا نام:</strong> ${supervisor}</td>
+                        <td style="width:25%;"><strong>سائلو نمبر:</strong> <span style="font-family:Arial,sans-serif;">${siloNo}</span></td>
+                        <td style="width:25%;"><strong>مٹیریل:</strong> ${material}</td>
+                        <td style="width:25%;"><strong>آفیسر کا نام:</strong> ${operator}</td>
+                        <td style="width:25%;"><strong>سپروائزر کا نام:</strong> ${supervisor}</td>
                     </tr>
                 </table>
 
                 <table class="main-table">
                     <thead>
-                        <tr>
-                            <th style="width:8%;">Sr. No</th>
-                            <th style="width:10%;">حصہ</th>
-                            <th style="width:7%;">نہیں</th>
-                            <th style="width:7%;">ہاں</th>
-                            <th style="width:68%; text-align:right;">مندرجہ ذیل نکات کو یقینی بنائیں (پروڈکشن ڈیپارٹمنٹ)</th>
+                        <tr style="background:#f2f2f2;">
+                            <th style="width:8%; text-align:center;">Sr. No</th>
+                            <th style="width:12%; text-align:center;">حصہ</th>
+                            <th style="width:64%; text-align:right; padding-right:12px;">نکات اور اہم چیک لسٹ (پروڈکشن ڈیپارٹمنٹ)</th>
+                            <th style="width:8%; text-align:center;">ہاں</th>
+                            <th style="width:8%; text-align:center;">نہیں</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -282,19 +283,19 @@ try {
                     </tbody>
                 </table>
 
-                <div style="font-size:1.15rem;margin-bottom:20px;font-weight:bold;">
-                    ریمارکس پروڈکشن آفیسر: <span style="font-weight:normal;border-bottom:1px dashed #000;display:inline-block;width:75%;padding-right:10px;">${remarks}</span>
+                <div style="font-size:1.2rem;margin-bottom:25px;font-weight:bold;margin-top:15px;">
+                    ریمارکس پروڈکشن آفیسر: <span style="font-weight:normal;border-bottom:1px dashed #000;display:inline-block;width:75%;padding-right:10px;">${remarks || 'کوئی ریمارکس درج نہیں ہیں۔'}</span>
                 </div>
 
-                <div style="font-size:1.25rem;font-weight:bold;margin-top:15px;margin-bottom:10px;border-bottom:1px solid #000;padding-bottom:5px;">لیبارٹری ریمارکس (Lab Remarks)</div>
+                <div style="font-size:1.3rem;font-weight:bold;margin-top:20px;margin-bottom:10px;border-bottom:2px solid #000;padding-bottom:5px;">لیبارٹری ریمارکس (Lab Remarks)</div>
                 <table class="main-table">
                     <thead>
-                        <tr>
-                            <th style="width:8%;">Sr. No</th>
-                            <th style="width:10%;">حصہ</th>
-                            <th style="width:7%;">نہیں</th>
-                            <th style="width:7%;">ہاں</th>
-                            <th style="width:68%; text-align:right;">ٹیسٹ کی تفصیل</th>
+                        <tr style="background:#f2f2f2;">
+                            <th style="width:8%; text-align:center;">Sr. No</th>
+                            <th style="width:12%; text-align:center;">حصہ</th>
+                            <th style="width:64%; text-align:right; padding-right:12px;">ٹیسٹ کی تفصیل</th>
+                            <th style="width:8%; text-align:center;">ہاں</th>
+                            <th style="width:8%; text-align:center;">نہیں</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -302,10 +303,10 @@ try {
                     </tbody>
                 </table>
 
-                <div class="footer-block" style="margin-top: 30px; display: flex; justify-content: space-between; font-size: 1.15rem;">
-                    <div class="footer-sig" style="width: 30%; text-align: center; border-top: 1px solid #000; padding-top: 5px; margin-top: 40px;">دستخط پلانٹ آپریٹر</div>
-                    <div class="footer-sig" style="width: 30%; text-align: center; border-top: 1px solid #000; padding-top: 5px; margin-top: 40px;">دستخط پروڈکشن آفیسر</div>
-                    <div class="footer-sig" style="width: 30%; text-align: center; border-top: 1px solid #000; padding-top: 5px; margin-top: 40px;">دستخط پروڈکشن مینیجر</div>
+                <div class="footer-block" style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 1.2rem; font-weight:bold;">
+                    <div style="width: 30%; text-align: center; border-top: 1px dashed #000; padding-top: 8px; margin-top: 40px;">دستخط پلانٹ آپریٹر</div>
+                    <div style="width: 30%; text-align: center; border-top: 1px dashed #000; padding-top: 8px; margin-top: 40px;">دستخط پروڈکشن آفیسر</div>
+                    <div style="width: 30%; text-align: center; border-top: 1px dashed #000; padding-top: 8px; margin-top: 40px;">دستخط پروڈکشن مینیجر</div>
                 </div>
             </body>
             </html>
@@ -339,34 +340,34 @@ try {
 
         const container = document.getElementById('silo-view-report-content');
         container.innerHTML = `
-            <div style="border: 2px solid #cbd5e1; padding: 2rem; border-radius: 8px; background: #fff; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+            <div style="border: 2px solid #cbd5e1; padding: 2.5rem; border-radius: 8px; background: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                 <!-- Header Info -->
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:3px double #e2e8f0; padding-bottom:1rem;">
-                    <div style="font-size:1.15rem;font-weight:bold;">سیل نمبر: <span style="color:#2563eb;font-family:sans-serif;">${sealNo}</span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; border-bottom:3px double #cbd5e1; padding-bottom:1.25rem;">
+                    <div style="font-size:1.25rem;font-weight:bold;">سیل نمبر: <span style="color:#2563eb;font-family:sans-serif;border-bottom:1px solid #94a3b8;padding:0 8px;">${sealNo}</span></div>
                     <div style="text-align:center;">
-                        <h2 style="font-size:1.6rem; color:#1e3a8a; margin:0; font-weight:bold;">سائلو انسپکشن رپورٹ - سٹیل سائلوز (Steel Silo)</h2>
-                        <span style="font-size:1.1rem;color:#64748b;">(فلنگ سے پہلے انسپکشن پرفارما)</span>
+                        <h2 style="font-size:1.85rem; color:#1e3a8a; margin:0; font-weight:bold;">سائلو انسپکشن رپورٹ - سٹیل سائلوز (Steel Silo)</h2>
+                        <span style="font-size:1.15rem;color:#475569;font-weight:600;">(فلنگ سے پہلے انسپکشن پرفارما)</span>
                     </div>
-                    <div style="font-size:1.15rem;font-weight:bold;">تاریخ: <span>${date}</span></div>
+                    <div style="font-size:1.25rem;font-weight:bold;">تاریخ: <span style="border-bottom:1px solid #94a3b8;padding:0 8px;">${date}</span></div>
                 </div>
 
                 <!-- Meta Row -->
-                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:1rem; margin-bottom:1.5rem;">
-                    <div><strong>سائلو نمبر:</strong> <span style="color:#2563eb;font-family:sans-serif;">${siloNo}</span></div>
-                    <div><strong>مٹیریل:</strong> <span style="color:#1e293b;">${material}</span></div>
-                    <div><strong>آفیسر کا نام:</strong> <span style="color:#1e293b;">${operator}</span></div>
-                    <div><strong>سپروائزر کا نام:</strong> <span style="color:#1e293b;">${supervisor}</span></div>
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:1.25rem; margin-bottom:2rem; font-size:1.15rem;">
+                    <div><strong>سائلو نمبر:</strong> <span style="color:#2563eb;font-family:sans-serif;font-weight:bold;margin-right:5px;">${siloNo}</span></div>
+                    <div><strong>مٹیریل:</strong> <span style="color:#1e293b;font-weight:bold;margin-right:5px;">${material}</span></div>
+                    <div><strong>آفیسر کا نام:</strong> <span style="color:#1e293b;font-weight:bold;margin-right:5px;">${operator}</span></div>
+                    <div><strong>سپروائزر کا نام:</strong> <span style="color:#1e293b;font-weight:bold;margin-right:5px;">${supervisor}</span></div>
                 </div>
 
                 <!-- Main Checklist Table -->
-                <table class="report-table" style="width:100%; border-collapse:collapse; margin-bottom:1.5rem; font-size:1.05rem;">
+                <table class="report-table" style="width:100%; border-collapse:collapse; margin-bottom:2rem; font-size:1.15rem;">
                     <thead>
                         <tr style="background:#f1f5f9; color:#1e293b; font-weight:700;">
-                            <th style="width:8%; border:1px solid #cbd5e1; padding:0.5rem; text-align:center;">Sr. No</th>
-                            <th style="width:12%; border:1px solid #cbd5e1; padding:0.5rem; text-align:center;">حصہ</th>
-                            <th style="width:8%; border:1px solid #cbd5e1; padding:0.5rem; text-align:center;">نہیں</th>
-                            <th style="width:8%; border:1px solid #cbd5e1; padding:0.5rem; text-align:center;">ہاں</th>
-                            <th style="width:64%; border:1px solid #cbd5e1; padding:0.5rem; text-align:right; padding-right:1rem;">نکات اور اہم چیک لسٹ (پروڈکشن ڈیپارٹمنٹ)</th>
+                            <th style="width:8%; border:1px solid #cbd5e1; padding:0.75rem; text-align:center;">Sr. No</th>
+                            <th style="width:12%; border:1px solid #cbd5e1; padding:0.75rem; text-align:center;">حصہ</th>
+                            <th style="width:64%; border:1px solid #cbd5e1; padding:0.75rem; text-align:right; padding-right:1rem;">نکات اور اہم چیک لسٹ (پروڈکشن ڈیپارٹمنٹ)</th>
+                            <th style="width:8%; border:1px solid #cbd5e1; padding:0.75rem; text-align:center;">ہاں</th>
+                            <th style="width:8%; border:1px solid #cbd5e1; padding:0.75rem; text-align:center;">نہیں</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -374,20 +375,20 @@ try {
                     </tbody>
                 </table>
 
-                <div style="font-size:1.15rem; margin-bottom:1.5rem; font-weight:bold; border-bottom:1px dashed #e2e8f0; padding-bottom:1rem;">
-                    ریمارکس پروڈکشن آفیسر: <span style="font-weight:normal; color:#475569; padding-right:10px;">${remarks || 'کوئی ریمارکس درج نہیں ہیں۔'}</span>
+                <div style="font-size:1.2rem; margin-bottom:2rem; font-weight:bold; border-bottom:1px dashed #cbd5e1; padding-bottom:1.25rem;">
+                    ریمارکس پروڈکشن آفیسر: <span style="font-weight:normal; color:#334155; padding-right:10px; border-bottom:1px solid #94a3b8; display:inline-block; width:70%;">${remarks || 'کوئی ریمارکس درج نہیں ہیں۔'}</span>
                 </div>
 
                 <!-- Lab Remarks Header -->
-                <h3 style="font-size:1.3rem; color:#b91c1c; border-bottom:2px solid #fecaca; padding-bottom:0.4rem; margin-bottom:1rem; font-weight:bold;">لیبارٹری ریمارکس (Lab Remarks)</h3>
-                <table class="report-table" style="width:100%; border-collapse:collapse; margin-bottom:2rem; font-size:1.05rem;">
+                <h3 style="font-size:1.4rem; color:#b91c1c; border-bottom:2px solid #fecaca; padding-bottom:0.5rem; margin-bottom:1.25rem; font-weight:bold;">لیبارٹری ریمارکس (Lab Remarks)</h3>
+                <table class="report-table" style="width:100%; border-collapse:collapse; margin-bottom:2.5rem; font-size:1.15rem;">
                     <thead>
                         <tr style="background:#fef2f2; color:#991b1b; font-weight:700;">
-                            <th style="width:8%; border:1px solid #fecaca; padding:0.5rem; text-align:center;">Sr. No</th>
-                            <th style="width:12%; border:1px solid #fecaca; padding:0.5rem; text-align:center;">حصہ</th>
-                            <th style="width:8%; border:1px solid #fecaca; padding:0.5rem; text-align:center;">نہیں</th>
-                            <th style="width:8%; border:1px solid #fecaca; padding:0.5rem; text-align:center;">ہاں</th>
-                            <th style="width:64%; border:1px solid #fecaca; padding:0.5rem; text-align:right; padding-right:1rem;">ٹیسٹ کی تفصیل</th>
+                            <th style="width:8%; border:1px solid #fecaca; padding:0.75rem; text-align:center;">Sr. No</th>
+                            <th style="width:12%; border:1px solid #fecaca; padding:0.75rem; text-align:center;">حصہ</th>
+                            <th style="width:64%; border:1px solid #fecaca; padding:0.75rem; text-align:right; padding-right:1rem;">ٹیسٹ کی تفصیل</th>
+                            <th style="width:8%; border:1px solid #fecaca; padding:0.75rem; text-align:center;">ہاں</th>
+                            <th style="width:8%; border:1px solid #fecaca; padding:0.75rem; text-align:center;">نہیں</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -396,10 +397,10 @@ try {
                 </table>
 
                 <!-- Signatures -->
-                <div style="display:flex; justify-content:space-between; margin-top:3rem; border-top:1px solid #e2e8f0; padding-top:1.5rem; font-size:1.1rem; font-weight:bold; color:#475569;">
-                    <div style="text-align:center; width:30%; border-top:1px dashed #cbd5e1; padding-top:0.5rem;">دستخط پلانٹ آپریٹر</div>
-                    <div style="text-align:center; width:30%; border-top:1px dashed #cbd5e1; padding-top:0.5rem;">دستخط پروڈکشن آفیسر</div>
-                    <div style="text-align:center; width:30%; border-top:1px dashed #cbd5e1; padding-top:0.5rem;">دستخط پروڈکشن مینیجر</div>
+                <div style="display:flex; justify-content:space-between; margin-top:4rem; border-top:1px solid #cbd5e1; padding-top:2rem; font-size:1.2rem; font-weight:bold; color:#475569;">
+                    <div style="text-align:center; width:30%; border-top:1px dashed #94a3b8; padding-top:0.75rem;">دستخط پلانٹ آپریٹر</div>
+                    <div style="text-align:center; width:30%; border-top:1px dashed #94a3b8; padding-top:0.75rem;">دستخط پروڈکشن آفیسر</div>
+                    <div style="text-align:center; width:30%; border-top:1px dashed #94a3b8; padding-top:0.75rem;">دستخط پروڈکشن مینیجر</div>
                 </div>
             </div>
         `;
