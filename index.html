@@ -443,6 +443,38 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Monthly Matrix Board Section -->
+                <div style="margin-top: 2.5rem; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom: 1.5rem;">
+                        <h3 style="margin:0; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; font-size:1.15rem;">
+                            📅 Monthly 5S Checklist Board (Grid Matrix)
+                        </h3>
+                        <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+                            <select id="matrix-dept-select" style="border-radius:6px; border:1px solid var(--card-border); padding:0.5rem; background:var(--card-bg); color:var(--text-primary); font-weight:600; outline:none; cursor:pointer;" onchange="window.renderChecklistMatrix()">
+                                <option value="Old Godown">Old Godown</option>
+                                <option value="Mechanical">Mechanical</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Control Room">Control Room</option>
+                                <option value="Premix">Premix</option>
+                                <option value="Other Department">Other Department</option>
+                            </select>
+                            <select id="matrix-month-select" style="border-radius:6px; border:1px solid var(--card-border); padding:0.5rem; background:var(--card-bg); color:var(--text-primary); font-weight:600; outline:none; cursor:pointer;" onchange="window.renderChecklistMatrix()">
+                                <!-- Will populate with months dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table" id="dc-matrix-table" style="font-size: 0.825rem; text-align: center; border-collapse: collapse; width:100%;">
+                            <thead>
+                                <!-- Populated dynamically (Checklist Item, 1, 2, ..., 31) -->
+                            </thead>
+                            <tbody>
+                                <!-- Populated dynamically (Item Rows with ticks/crosses) -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div><!-- /qs-panel-daily-checklist -->
 
         </div><!-- /view-five-s -->

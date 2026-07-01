@@ -1502,6 +1502,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.refreshPlantReportData) window.refreshPlantReportData();
         if (window.refreshQsData) window.refreshQsData();
 
+        initMatrixMonthSelect();
+        if (typeof window.renderChecklistMatrix === 'function') {
+            window.renderChecklistMatrix();
+        }
+
         switchView(navDashboard, viewDashboard);
     };
 
@@ -3107,6 +3112,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         renderDailyChecklistHistory();
+        if (typeof window.renderChecklistMatrix === 'function') {
+            window.renderChecklistMatrix();
+        }
     };
 
     window.toggleDcDetails = (id) => {
@@ -3189,6 +3197,88 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             tbody.appendChild(detailTr);
         });
+    };
+
+    const initMatrixMonthSelect = () => {
+        const select = document.getElementById('matrix-month-select');
+        if (!select) return;
+        select.innerHTML = '';
+        
+        // Generate last 6 months
+        const date = new Date();
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        for (let i = 0; i < 6; i++) {
+            const m = date.getMonth();
+            const y = date.getFullYear();
+            const optVal = `${months[m]}-${y}`;
+            const optText = `${date.toLocaleString('default', { month: 'long' })} ${y}`;
+            
+            const opt = document.createElement('option');
+            opt.value = optVal;
+            opt.textContent = optText;
+            select.appendChild(opt);
+            
+            date.setMonth(date.getMonth() - 1);
+        }
+    };
+
+    window.renderChecklistMatrix = () => {
+        const deptSelect = document.getElementById('matrix-dept-select');
+        const monthSelect = document.getElementById('matrix-month-select');
+        const table = document.getElementById('dc-matrix-table');
+        if (!deptSelect || !monthSelect || !table) return;
+
+        const deptName = deptSelect.value;
+        const [monthName, yearVal] = monthSelect.value.split('-'); 
+        
+        const daysInMonth = 31; 
+        
+        // Generate Header
+        const thead = table.querySelector('thead') || document.createElement('thead');
+        thead.innerHTML = `
+            <tr style="background:#f1f5f9; color:#334155; font-weight:700;">
+                <th style="text-align:right; width:280px; padding:0.55rem; font-family:'JameelNooriNastaliq', 'Noto Nastaliq Urdu', serif; font-size:1.05rem;">Checklist Point / 5S Item</th>
+                ${Array.from({ length: daysInMonth }, (_, i) => `<th style="padding:0.25rem; font-size:0.75rem; width:22px;">${i + 1}</th>`).join('')}
+            </tr>
+        `;
+        if (!table.querySelector('thead')) table.appendChild(thead);
+
+        // Generate Rows
+        const tbody = table.querySelector('tbody') || document.createElement('tbody');
+        tbody.innerHTML = '';
+        
+        const questions = DAILY_CHECKLIST_QUESTIONS[deptName] || [];
+        
+        questions.forEach((q, qIdx) => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--card-border)';
+            
+            let cells = `<td style="text-align:right; padding:0.6rem 1rem; font-family:'JameelNooriNastaliq', 'Noto Nastaliq Urdu', serif; font-size:1.05rem; font-weight:500;">${q}</td>`;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = `${day}-${monthName}-${yearVal}`; 
+                
+                const log = dailyChecklists.find(l => {
+                    const lDate = l.date.replace(/-\d{2}$/, `-${yearVal}`); 
+                    return (lDate === dateKey || l.date === `${day}-${monthName}`) && l.departmentName === deptName;
+                });
+
+                if (log && log.checkedItems && log.checkedItems[qIdx] !== undefined) {
+                    const isChecked = !!log.checkedItems[qIdx];
+                    cells += `
+                        <td style="padding:0.25rem 0; font-weight:bold; font-size:1.15rem; color:${isChecked ? 'var(--success-color)' : '#ef4444'}">
+                            ${isChecked ? '✔' : '✖'}
+                        </td>
+                    `;
+                } else {
+                    cells += `<td style="padding:0.25rem 0; color:#cbd5e1; font-weight:300;">-</td>`;
+                }
+            }
+            tr.innerHTML = cells;
+            tbody.appendChild(tr);
+        });
+        
+        if (!table.querySelector('tbody')) table.appendChild(tbody);
     };
 
     const openDailyChecklistForm = (deptName) => {
