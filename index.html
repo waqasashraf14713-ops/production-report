@@ -1277,23 +1277,48 @@ order by
                 <button id="ba-modal-close" class="modal-close-btn" style="color:#fff;font-size:1.5rem;background:none;border:none;cursor:pointer;">&times;</button>
             </div>
             <div class="modal-body" style="padding:0.75rem 1.5rem;flex-grow:1;display:flex;flex-direction:column;overflow:hidden;background:#f1f5f9;">
-                <!-- Header Fields -->
-                <div class="form-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;margin-bottom:0.75rem;background:#ffffff;padding:0.75rem;border-radius:8px;border:1px solid #cbd5e1;flex-shrink:0;">
-                    <div class="form-group" style="margin:0;">
-                        <label for="ba-modal-date" style="font-weight:700;font-size:0.8rem;margin-bottom:0.25rem;display:block;">Date</label>
-                        <input type="text" id="ba-modal-date" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
+                <!-- Header Fields & Formulations -->
+                <div style="display:grid;grid-template-columns:1fr 2fr;gap:0.75rem;margin-bottom:0.75rem;flex-shrink:0;">
+                    <!-- Basic details -->
+                    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;background:#ffffff;padding:0.75rem;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:0;">
+                        <div class="form-group" style="margin:0;">
+                            <label for="ba-modal-date" style="font-weight:700;font-size:0.8rem;margin-bottom:0.25rem;display:block;">Date</label>
+                            <input type="text" id="ba-modal-date" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="ba-modal-shift" style="font-weight:700;font-size:0.8rem;margin-bottom:0.25rem;display:block;">Shift</label>
+                            <input type="text" id="ba-modal-shift" value="ABC" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="ba-modal-limit" style="font-weight:700;font-size:0.8rem;margin-bottom:0.25rem;display:block;">Acceptable %age</label>
+                            <input type="number" step="any" id="ba-modal-limit" value="0.4" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="ba-modal-total-batches" style="font-weight:700;font-size:0.8rem;margin-bottom:0.25rem;display:block;color:#3b82f6;">Total Batches</label>
+                            <input type="number" step="any" id="ba-modal-total-batches" value="113" oninput="window.calcAllBaRows()" style="width:100%;border-radius:4px;border:1px solid #3b82f6;padding:0.3rem;background:#eff6ff;color:#1e3a8a;font-size:0.8rem;font-weight:700;" />
+                        </div>
                     </div>
-                    <div class="form-group" style="margin:0;">
-                        <label for="ba-modal-shift" style="font-weight:700;font-size:0.8rem;margin-bottom:0.25rem;display:block;">Shift</label>
-                        <input type="text" id="ba-modal-shift" value="ABC" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
-                    </div>
-                    <div class="form-group" style="margin:0;">
-                        <label for="ba-modal-limit" style="font-weight:700;font-size:0.8rem;margin-bottom:0.25rem;display:block;">Acceptable %age</label>
-                        <input type="number" step="any" id="ba-modal-limit" value="0.4" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
-                    </div>
-                    <div class="form-group" style="margin:0;">
-                        <label for="ba-modal-total-batches" style="font-weight:700;font-size:0.8rem;margin-bottom:0.25rem;display:block;">Total Batches</label>
-                        <input type="number" step="any" id="ba-modal-total-batches" value="113" oninput="window.calcAllBaRows()" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
+                    <!-- Formulations Batches Breakdown -->
+                    <div style="background:#ffffff;padding:0.75rem;border-radius:8px;border:1px solid #cbd5e1;display:flex;flex-direction:column;justify-content:center;">
+                        <div style="font-weight:700;font-size:0.82rem;color:#4f46e5;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.25rem;">📊 Formulation Batches Breakdown <span style="font-size:0.75rem;font-weight:normal;color:#64748b;">(Auto-sums to Total Batches)</span></div>
+                        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;">
+                            <div class="form-group" style="margin:0;">
+                                <label style="font-size:0.75rem;color:#475569;display:block;margin-bottom:0.15rem;white-space:nowrap;">Asia-Chenab</label>
+                                <input type="number" step="any" id="ba-form-chenab" value="56" oninput="window.updateBaTotalBatches()" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;font-size:0.8rem;text-align:center;" />
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label style="font-size:0.75rem;color:#475569;display:block;margin-bottom:0.15rem;white-space:nowrap;">Delta</label>
+                                <input type="number" step="any" id="ba-form-delta" value="0" oninput="window.updateBaTotalBatches()" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;font-size:0.8rem;text-align:center;" />
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label style="font-size:0.75rem;color:#475569;display:block;margin-bottom:0.15rem;white-space:nowrap;">Wanda</label>
+                                <input type="number" step="any" id="ba-form-wanda" value="57" oninput="window.updateBaTotalBatches()" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;font-size:0.8rem;text-align:center;" />
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label style="font-size:0.75rem;color:#475569;display:block;margin-bottom:0.15rem;white-space:nowrap;">Breeder</label>
+                                <input type="number" step="any" id="ba-form-breeder" value="0" oninput="window.updateBaTotalBatches()" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;font-size:0.8rem;text-align:center;" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 

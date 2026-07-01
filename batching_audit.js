@@ -103,6 +103,18 @@ try {
         document.getElementById(`ba-pct-excess-${i}`).value = issuance > 0 ? pctExcess.toFixed(2) + '%' : '#DIV/0!';
     };
 
+    window.updateBaTotalBatches = () => {
+        const chenab = parseFloat(document.getElementById('ba-form-chenab').value) || 0;
+        const delta = parseFloat(document.getElementById('ba-form-delta').value) || 0;
+        const wanda = parseFloat(document.getElementById('ba-form-wanda').value) || 0;
+        const breeder = parseFloat(document.getElementById('ba-form-breeder').value) || 0;
+        
+        const total = chenab + delta + wanda + breeder;
+        document.getElementById('ba-modal-total-batches').value = total;
+        
+        window.calcAllBaRows();
+    };
+
     window.calcBaRow = (i) => {
         calculateRow(i);
     };
@@ -133,12 +145,12 @@ try {
             <!-- Received -->
             <td style="padding:0.2rem;"><input type="number" step="any" id="ba-received-${i}" value="${item.received || ''}" oninput="window.calcBaRow(${i})" style="width:85px;border:1px solid #cbd5e1;padding:0.15rem 0.25rem;border-radius:3px;background:#ffffff;color:#0f172a;text-align:center;font-size:0.75rem;"></td>
             <!-- Net Opening -->
-            <td style="padding:0.2rem;"><input type="text" id="ba-net-opening-${i}" readonly style="width:90px;border:1px solid #cbd5e1;padding:0.15rem 0.25rem;border-radius:3px;background:#f1f5f9;color:#475569;text-align:center;font-weight:600;font-size:0.75rem;"></td>
+            <td style="padding:0.2rem;"><input type="text" id="ba-net-opening-${i}" readonly style="width:90px;border:1px solid #cbd5e1;padding:0.15rem 0.25rem;border-radius:3px;background:#e0f2fe;color:#1e3a8a;text-align:center;font-weight:700;font-size:0.75rem;"></td>
             <!-- Closing -->
             <td style="padding:0.2rem;"><input type="number" step="any" id="ba-close-loose-${i}" value="${item.closeLoose || ''}" oninput="window.calcBaRow(${i})" style="width:85px;border:1px solid #cbd5e1;padding:0.15rem 0.25rem;border-radius:3px;background:#ffffff;color:#0f172a;text-align:center;font-size:0.75rem;"></td>
             <td style="padding:0.2rem;"><input type="number" step="any" id="ba-close-bags-${i}" value="${item.closeBags || ''}" oninput="window.calcBaRow(${i})" style="width:75px;border:1px solid #cbd5e1;padding:0.15rem 0.25rem;border-radius:3px;background:#ffffff;color:#0f172a;text-align:center;font-size:0.75rem;"></td>
             <!-- Net Closing -->
-            <td style="padding:0.2rem;"><input type="text" id="ba-net-closing-${i}" readonly style="width:90px;border:1px solid #cbd5e1;padding:0.15rem 0.25rem;border-radius:3px;background:#f1f5f9;color:#475569;text-align:center;font-weight:600;font-size:0.75rem;"></td>
+            <td style="padding:0.2rem;"><input type="text" id="ba-net-closing-${i}" readonly style="width:90px;border:1px solid #cbd5e1;padding:0.15rem 0.25rem;border-radius:3px;background:#fee2e2;color:#991b1b;text-align:center;font-weight:700;font-size:0.75rem;"></td>
             <!-- Stats -->
             <td style="padding:0.2rem;"><input type="number" step="any" id="ba-bags-used-${i}" value="${item.bagsUsed || ''}" oninput="window.calcBaRow(${i})" style="width:75px;border:1px solid #cbd5e1;padding:0.15rem 0.25rem;border-radius:3px;background:#ffffff;color:#0f172a;text-align:center;font-size:0.75rem;"></td>
             <td style="padding:0.2rem;"><input type="number" step="any" id="ba-avg-excess-${i}" value="${item.avgExcessLess || ''}" oninput="window.calcBaRow(${i})" style="width:75px;border:1px solid #cbd5e1;padding:0.15rem 0.25rem;border-radius:3px;background:#ffffff;color:#0f172a;text-align:center;font-size:0.75rem;"></td>
@@ -213,6 +225,10 @@ try {
         document.getElementById('ba-modal-shift').value = audit.shift || 'ABC';
         document.getElementById('ba-modal-limit').value = audit.acceptableLimit !== undefined ? audit.acceptableLimit : '0.4';
         document.getElementById('ba-modal-total-batches').value = audit.totalBatches !== undefined ? audit.totalBatches : '113';
+        document.getElementById('ba-form-chenab').value = audit.formChenab !== undefined ? audit.formChenab : '56';
+        document.getElementById('ba-form-delta').value = audit.formDelta !== undefined ? audit.formDelta : '0';
+        document.getElementById('ba-form-wanda').value = audit.formWanda !== undefined ? audit.formWanda : '57';
+        document.getElementById('ba-form-breeder').value = audit.formBreeder !== undefined ? audit.formBreeder : '0';
 
         const tbody = document.getElementById('ba-rows-tbody');
         tbody.innerHTML = '';
@@ -258,6 +274,10 @@ try {
                 document.getElementById('ba-modal-shift').value = 'ABC';
                 document.getElementById('ba-modal-limit').value = '0.4';
                 document.getElementById('ba-modal-total-batches').value = '113';
+                document.getElementById('ba-form-chenab').value = '56';
+                document.getElementById('ba-form-delta').value = '0';
+                document.getElementById('ba-form-wanda').value = '57';
+                document.getElementById('ba-form-breeder').value = '0';
 
                 const tbody = document.getElementById('ba-rows-tbody');
                 tbody.innerHTML = '';
@@ -277,6 +297,10 @@ try {
                 const shift = document.getElementById('ba-modal-shift').value.trim();
                 const acceptableLimit = parseFloat(document.getElementById('ba-modal-limit').value) || 0.4;
                 const totalBatches = parseFloat(document.getElementById('ba-modal-total-batches').value) || 113;
+                const formChenab = parseFloat(document.getElementById('ba-form-chenab').value) || 0;
+                const formDelta = parseFloat(document.getElementById('ba-form-delta').value) || 0;
+                const formWanda = parseFloat(document.getElementById('ba-form-wanda').value) || 0;
+                const formBreeder = parseFloat(document.getElementById('ba-form-breeder').value) || 0;
 
                 if (!date) return alert('Please enter Date.');
 
@@ -310,6 +334,10 @@ try {
                     shift,
                     acceptableLimit,
                     totalBatches,
+                    formChenab,
+                    formDelta,
+                    formWanda,
+                    formBreeder,
                     items
                 };
 
@@ -336,6 +364,10 @@ try {
                             shift: report.shift,
                             total_batches: report.totalBatches,
                             acceptable_limit: report.acceptableLimit,
+                            form_chenab: report.formChenab,
+                            form_delta: report.formDelta,
+                            form_wanda: report.formWanda,
+                            form_breeder: report.formBreeder,
                             items: report.items
                         };
                         const { error } = await sbClient.from('batching_audits').upsert([dbRecord]);
