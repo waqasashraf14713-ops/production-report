@@ -3105,6 +3105,90 @@ document.addEventListener('DOMContentLoaded', () => {
             
             grid.appendChild(card);
         });
+        
+        renderDailyChecklistHistory();
+    };
+
+    window.toggleDcDetails = (id) => {
+        const row = document.getElementById(`dc-details-${id}`);
+        if (row) {
+            row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+        }
+    };
+
+    const renderDailyChecklistHistory = () => {
+        const tbody = document.querySelector('#dc-history-table tbody');
+        if (!tbody) return;
+
+        if (dailyChecklists.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--text-secondary);">No checklists submitted yet.</td></tr>`;
+            return;
+        }
+
+        // Sort checklist history chronologically (latest first)
+        const sorted = [...dailyChecklists].sort((a, b) => {
+            const timeA = parseChecklistDateToISO(a.date).getTime();
+            const timeB = parseChecklistDateToISO(b.date).getTime();
+            return timeB - timeA;
+        });
+
+        const parseChecklistDateToISO = (dateStr) => {
+            if (!dateStr) return new Date(0);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return new Date(dateStr);
+            const parts = dateStr.split('-');
+            if (parts.length >= 2) {
+                const day = parts[0].padStart(2, '0');
+                const months = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
+                const month = months[parts[1]] || '01';
+                const year = parts[2] || new Date().getFullYear();
+                return new Date(`${year}-${month}-${day}`);
+            }
+            return new Date(dateStr);
+        };
+
+        tbody.innerHTML = '';
+        sorted.forEach(log => {
+            const questions = DAILY_CHECKLIST_QUESTIONS[log.departmentName] || [];
+            const checkedCount = log.checkedItems ? log.checkedItems.filter(Boolean).length : 0;
+            const totalCount = questions.length;
+            const remainingCount = totalCount - checkedCount;
+
+            let detailsList = `<div style="background:var(--card-bg); padding:1rem; border-radius:8px; border:1px solid var(--card-border); margin:0.5rem 0; font-family:'JameelNooriNastaliq', 'Noto Nastaliq Urdu', serif; direction:rtl; text-align:right;">`;
+            questions.forEach((q, idx) => {
+                const checked = log.checkedItems ? !!log.checkedItems[idx] : false;
+                detailsList += `
+                    <div style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0; border-bottom:1px solid var(--card-border); font-size:1.05rem; color:${checked ? 'var(--success-color)' : '#ef4444'}">
+                        <span style="font-size:1.2rem;">${checked ? '✅' : '❌'}</span>
+                        <span style="${checked ? '' : 'text-decoration:line-through; opacity:0.6;'}">${q}</span>
+                    </div>
+                `;
+            });
+            detailsList += `</div>`;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${log.date}</strong></td>
+                <td>${log.departmentName}</td>
+                <td>👷 ${log.filledBy || 'Pending'}</td>
+                <td style="color:var(--success-color); font-weight:600;">✅ ${checkedCount} Done</td>
+                <td style="color:#ef4444; font-weight:600;">❌ ${remainingCount} Pending</td>
+                <td>
+                    <button class="btn btn-secondary" style="padding:0.25rem 0.5rem; font-size:0.8rem;" onclick="window.toggleDcDetails(${log.id})">🔍 View Points</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            const detailTr = document.createElement('tr');
+            detailTr.id = `dc-details-${log.id}`;
+            detailTr.style.display = 'none';
+            detailTr.style.background = 'rgba(0,0,0,0.02)';
+            detailTr.innerHTML = `
+                <td colspan="6" style="padding:0.75rem 1.5rem;">
+                    ${detailsList}
+                </td>
+            `;
+            tbody.appendChild(detailTr);
+        });
     };
 
     const openDailyChecklistForm = (deptName) => {

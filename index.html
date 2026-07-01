@@ -419,6 +419,30 @@
                 <div class="dc-dept-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1rem; margin-bottom: 2rem;">
                     <!-- Cards will be dynamically populated by JS -->
                 </div>
+
+                <!-- Monthly History / Log Section -->
+                <div style="margin-top: 2.5rem; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <h3 style="margin-top:0; margin-bottom: 1.25rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; font-size:1.15rem;">
+                        📋 Monthly Date-wise Checklist Log
+                    </h3>
+                    <div class="table-responsive">
+                        <table class="report-table" id="dc-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Department</th>
+                                    <th>Auditor / Head</th>
+                                    <th>Completed Tasks</th>
+                                    <th>Pending / Missed Tasks</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div><!-- /qs-panel-daily-checklist -->
 
         </div><!-- /view-five-s -->
