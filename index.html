@@ -66,13 +66,9 @@
                     <span class="nav-icon">🏭</span>
                     <span>Silo Status</span>
                 </a>
-                <a href="#silo-filling" class="nav-item" id="nav-silo-filling">
+                <a href="#silo-performa" class="nav-item" id="nav-silo-performa">
                     <span class="nav-icon">📥</span>
-                    <span>Silo Filling Performa</span>
-                </a>
-                <a href="#silo-discharge" class="nav-item" id="nav-silo-discharge">
-                    <span class="nav-icon">📤</span>
-                    <span>Silo Discharge Performa</span>
+                    <span>Silo Performa (1-16)</span>
                 </a>
                 <a href="#daily-report" class="nav-item" id="nav-daily-report">
                     <span class="nav-icon">📋</span>
@@ -168,15 +164,10 @@
                     <div class="dash-quick-label">Pellet Efficiency</div>
                     <div class="dash-quick-desc">Pellet mill energy & PDI</div>
                 </div>
-                <div class="dash-quick-card" onclick="document.getElementById('nav-silo-filling').click()">
-                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#10b981,#34d399);">📥</div>
-                    <div class="dash-quick-label">Silo Filling Performa</div>
-                    <div class="dash-quick-desc">Filling logs (Silo 1-16)</div>
-                </div>
-                <div class="dash-quick-card" onclick="document.getElementById('nav-silo-discharge').click()">
-                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#ef4444,#f87171);">📤</div>
-                    <div class="dash-quick-label">Silo Discharge Performa</div>
-                    <div class="dash-quick-desc">Discharge logs (Silo 1-16)</div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-silo-performa').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);">📥</div>
+                    <div class="dash-quick-label">Silo Performa (1-16)</div>
+                    <div class="dash-quick-desc">Filling & Discharge logs</div>
                 </div>
             </section>
         </div>
@@ -187,30 +178,15 @@
             </section>
         </div>
 
-        <div id="view-silo-filling" class="view-section" style="display: none;">
+        <div id="view-silo-performa" class="view-section" style="display: none;">
             <section class="table-container">
-                <div class="table-header">
-                    <h2>📥 Silo Filling Performa (Stock In)</h2>
-                    <div class="header-actions">
-                        <button class="btn btn-secondary" onclick="window.openSiloLogModal('Filling')">➕ New Filling Entry</button>
-                    </div>
+                <div class="table-header" style="border-bottom: 2px solid var(--card-border); padding-bottom: 0.75rem;">
+                    <h2>📥 Silo Filling & Discharge Performa Dashboard</h2>
+                    <span style="font-size:0.9rem;color:var(--text-secondary);font-weight:600;">Silos 1 to 16 Database Control</span>
                 </div>
-                <div id="silo-filling-container" style="margin-top:1.5rem;">
-                    <!-- Silo filling logs table populated dynamically -->
-                </div>
-            </section>
-        </div>
-
-        <div id="view-silo-discharge" class="view-section" style="display: none;">
-            <section class="table-container">
-                <div class="table-header">
-                    <h2>📤 Silo Discharge Performa (Stock Out)</h2>
-                    <div class="header-actions">
-                        <button class="btn btn-secondary" onclick="window.openSiloLogModal('Discharging')">➕ New Discharge Entry</button>
-                    </div>
-                </div>
-                <div id="silo-discharge-container" style="margin-top:1.5rem;">
-                    <!-- Silo discharge logs table populated dynamically -->
+                <!-- 16 Silos Grid -->
+                <div style="margin-top:1.5rem;display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:1.25rem;" id="silo-performas-grid">
+                    <!-- Populated dynamically by JS -->
                 </div>
             </section>
         </div>
@@ -1686,6 +1662,25 @@ order by
                 <div class="modal-actions" style="margin-top:1.5rem;display:flex;justify-content:flex-end;gap:1rem;">
                     <button class="btn btn-secondary" id="btn-cancel-silo-log" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
                     <button class="btn btn-primary" id="btn-save-silo-log" style="background:#3b82f6;border-color:#3b82f6;width:auto;padding:0.5rem 2rem;">💾 Save Performa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Silo Logs History Modal -->
+    <div id="silo-history-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:950px;width:95%;border-radius:12px;max-height:92vh;display:flex;flex-direction:column;background:#ffffff;border:1px solid rgba(99,102,241,0.3);">
+            <div class="modal-header" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;border-bottom:none;padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;">
+                <h2 id="sh-modal-title" style="color:#fff;margin:0;font-size:1.25rem;">Silo 1 - Performa History</h2>
+                <button id="sh-modal-close" class="modal-close-btn" style="color:#fff;font-size:1.5rem;background:none;border:none;cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem;background:#f8fafc;display:flex;flex-direction:column;gap:1rem;overflow-y:auto;flex-grow:1;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span id="sh-modal-subtitle" style="font-weight:600;font-size:0.9rem;color:#475569;">Recorded entries</span>
+                    <button class="btn btn-primary" id="sh-btn-add-entry" style="background:#3b82f6;border-color:#3b82f6;width:auto;padding:0.4rem 1.25rem;">➕ Add Log Entry</button>
+                </div>
+                <div id="sh-table-container" style="flex-grow:1;overflow-y:auto;">
+                    <!-- Table dynamically generated -->
                 </div>
             </div>
         </div>
