@@ -32,6 +32,132 @@ try {
         localStorage.setItem(LS_SILO_LOGS, JSON.stringify(siloLogs));
     };
 
+    // Helper to generate the exact HTML table rows with a separate Sr No column
+    const generateInspectionRowsHTML = (insp, renderTickFn) => {
+        return `
+            <!-- Silo Top -->
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">1</td>
+                <td rowspan="4" style="text-align:center;font-weight:bold;vertical-align:middle;border:1px solid #000;">Silo Top</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top1, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top1, true)}</td>
+                <td style="border:1px solid #000;">سائلو ٹاپ کی ائیر ٹائٹنس کو صاف کیا گیا ہے اور کھلا (Open) تو نہیں۔</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">2</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top2, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top2, true)}</td>
+                <td style="border:1px solid #000;">اوپر دیکھو کہ ائیر ٹائٹنس کی کوئی بولٹ کھلی تو نہیں ہے۔</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">3</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top3, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top3, true)}</td>
+                <td style="border:1px solid #000;">تمام بلور کو چلا کر دیکھیں کہ ہوا کا دباؤ درست ہے اور کوئی مٹی وغیرہ تو نہیں ہے۔</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">4</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top4, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.top4, true)}</td>
+                <td style="border:1px solid #000;">فلنگ (Filling) سے پہلے والو کو آپریٹ کر کے دیکھ لیں۔</td>
+            </tr>
+
+            <!-- Silo Bottom -->
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">5</td>
+                <td rowspan="12" style="text-align:center;font-weight:bold;vertical-align:middle;border:1px solid #000;">Silo Bottom</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot1, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot1, true)}</td>
+                <td style="border:1px solid #000;">سائلو کے اندر ائیر ڈکٹس (Aeration Ducts) کو صاف کیا گیا ہے؟</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">6</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot2, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot2, true)}</td>
+                <td style="border:1px solid #000;">سائلو کے اندر موجود تمام ہینڈل اور ڈسچارج گیٹ کو ٹیسٹ کیا گیا ہے؟</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">7</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot3, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot3, true)}</td>
+                <td style="border:1px solid #000;">سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچز (Ventilation Trenches) کو صاف کیا گیا ہے؟</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">8</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot4, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot4, true)}</td>
+                <td style="border:1px solid #000;">سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچ شیٹس (Ventilation Trench Sheets) کو اچھی طرح صاف اور فٹ کیا گیا ہے؟</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">9</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot5, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot5, true)}</td>
+                <td style="border:1px solid #000;">سائلو کے اندر موجود سوئپر کنویئر فلیکسیبل ہے اور اپنی جگہ (درست پوزیشن) پر ہے؟</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">10</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot6, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot6, true)}</td>
+                <td style="border:1px solid #000;">سائلو کے اندر فرش کے ساتھ پلیٹس والا جوڑ ٹھیک ہے؟</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">11</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot7, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot7, true)}</td>
+                <td style="border:1px solid #000;">سائلو کے باہر شیٹس والا جوڑ ٹھیک ہے؟</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">12</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot8, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot8, true)}</td>
+                <td style="border:1px solid #000;">سائلو کے تمام ڈسچارج گیٹس کو مکمل بند کیا گیا ہے؟</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">13</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot9, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot9, true)}</td>
+                <td style="border:1px solid #000;">سائلو کے تمام ڈسچارج گیٹس لاک (SEAL) ہیں؟</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">14</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot10, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot10, true)}</td>
+                <td style="border:1px solid #000;">سائلو کی مشین (Entrance) کا دروازہ اچھی طرح سے بند ہے؟</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">15</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot11, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot11, true)}</td>
+                <td style="border:1px solid #000;">سردیوں میں گرین کا درجہ حرارت 16 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">16</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot12, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.bot12, true)}</td>
+                <td style="border:1px solid #000;">گرمیوں میں گرین کا درجہ حرارت 14 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+            </tr>
+        `;
+    };
+
+    const generateLabRowsHTML = (insp, renderTickFn) => {
+        return `
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">1</td>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">Lab Check</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.lab1, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.lab1, true)}</td>
+                <td style="border:1px solid #000;">سائلوز میں کوئی پرانا بیج یا اکسیڑا (Old Grain / Infestation) موجود نہیں ہے۔</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">2</td>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;">Fumigation</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.lab2, false)}</td>
+                <td style="text-align:center;border:1px solid #000;font-weight:bold;">${renderTickFn(insp.lab2, true)}</td>
+                <td style="border:1px solid #000;">کیا سائلو کو فیومیگیٹ (Fumigate) کرنے کی ضرورت ہے؟</td>
+            </tr>
+        `;
+    };
+
     // Print Silo Inspection Report as beautiful paper
     window.printSiloInspection = (id) => {
         const log = siloLogs.find(x => x.id === id);
@@ -43,13 +169,14 @@ try {
         const siloNo = log.siloNumber ? log.siloNumber.replace('Silo ', '') : '';
         const material = log.material || '';
         const supervisor = log.supervisor || '';
+        const operator = log.operator || '';
         const remarks = log.remarks || '';
 
         const renderTick = (val, expectTrue = true) => {
             if (expectTrue) {
-                return val ? '<span style="font-family:Arial,sans-serif;font-size:1.2rem;font-weight:bold;">✔</span>' : '';
+                return val ? '<span style="font-family:Arial,sans-serif;font-size:1.1rem;">✔</span>' : '';
             } else {
-                return !val ? '<span style="font-family:Arial,sans-serif;font-size:1.2rem;font-weight:bold;">✔</span>' : '';
+                return !val ? '<span style="font-family:Arial,sans-serif;font-size:1.1rem;">✔</span>' : '';
             }
         };
 
@@ -112,29 +239,6 @@ try {
                         text-align: center;
                         font-weight: bold;
                     }
-                    .tick-cell {
-                        text-align: center;
-                        width: 55px;
-                        font-weight: bold;
-                    }
-                    .section-cell {
-                        text-align: center;
-                        font-weight: bold;
-                        width: 80px;
-                    }
-                    .footer-block {
-                        margin-top: 30px;
-                        display: flex;
-                        justify-content: space-between;
-                        font-size: 1.15rem;
-                    }
-                    .footer-sig {
-                        width: 30%;
-                        text-align: center;
-                        border-top: 1px solid #000;
-                        padding-top: 5px;
-                        margin-top: 40px;
-                    }
                     @media print {
                         body {
                             padding: 0;
@@ -158,6 +262,7 @@ try {
                     <tr>
                         <td><strong>سائلو نمبر:</strong> <span style="font-family:Arial,sans-serif;">${siloNo}</span></td>
                         <td><strong>مٹیریل:</strong> ${material}</td>
+                        <td><strong>آفیسر کا نام:</strong> ${operator}</td>
                         <td><strong>سپروائزر کا نام:</strong> ${supervisor}</td>
                     </tr>
                 </table>
@@ -165,98 +270,15 @@ try {
                 <table class="main-table">
                     <thead>
                         <tr>
+                            <th style="width:8%;">Sr. No</th>
                             <th style="width:10%;">حصہ</th>
                             <th style="width:7%;">نہیں</th>
                             <th style="width:7%;">ہاں</th>
-                            <th style="width:76%; text-align:right;">مندرجہ ذیل نکات کو یقینی بنائیں (پروڈکشن ڈیپارٹمنٹ)</th>
+                            <th style="width:68%; text-align:right;">مندرجہ ذیل نکات کو یقینی بنائیں (پروڈکشن ڈیپارٹمنٹ)</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Silo Top -->
-                        <tr>
-                            <td rowspan="4" class="section-cell">Silo Top</td>
-                            <td class="tick-cell">${renderTick(insp.top1, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.top1, true)}</td>
-                            <td>1. سائلو ٹاپ کی ائیر ٹائٹنس کو صاف کیا گیا ہے اور کھلا (Open) تو نہیں۔</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.top2, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.top2, true)}</td>
-                            <td>2. اوپر دیکھو کہ ائیر ٹائٹنس کی کوئی بولٹ کھلی تو نہیں ہے۔</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.top3, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.top3, true)}</td>
-                            <td>3. تمام بلور کو چلا کر دیکھیں کہ ہوا کا دباؤ درست ہے اور کوئی مٹی وغیرہ تو نہیں ہے۔</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.top4, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.top4, true)}</td>
-                            <td>4. فلنگ (Filling) سے پہلے والو کو آپریٹ کر کے دیکھ لیں۔</td>
-                        </tr>
-
-                        <!-- Silo Bottom -->
-                        <tr>
-                            <td rowspan="12" class="section-cell">Silo Bottom</td>
-                            <td class="tick-cell">${renderTick(insp.bot1, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.bot1, true)}</td>
-                            <td>1. سائلو کے اندر ائیر ڈکٹس (Aeration Ducts) کو صاف کیا گیا ہے؟</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.bot2, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.bot2, true)}</td>
-                            <td>2. سائلو کے اندر موجود تمام ہینڈل اور ڈسچارج گیٹ کو ٹیسٹ کیا گیا ہے؟</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.bot3, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.bot3, true)}</td>
-                            <td>3. سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچز (Ventilation Trenches) کو صاف کیا گیا ہے؟</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.bot4, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.bot4, true)}</td>
-                            <td>4. سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچ شیٹس (Ventilation Trench Sheets) کو اچھی طرح صاف اور فٹ کیا گیا ہے؟</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.bot5, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.bot5, true)}</td>
-                            <td>5. سائلو کے اندر موجود سوئپر کنویئر فلیکسیبل ہے اور اپنی جگہ (درست پوزیشن) پر ہے؟</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.bot6, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.bot6, true)}</td>
-                            <td>6. سائلو کے اندر فرش کے ساتھ پلیٹس والا جوڑ ٹھیک ہے؟</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.bot7, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.bot7, true)}</td>
-                            <td>7. سائلو کے باہر شیٹس والا جوڑ ٹھیک ہے؟</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.bot8, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.bot8, true)}</td>
-                            <td>8. سائلو کے تمام ڈسچارج گیٹس کو مکمل بند کیا گیا ہے؟</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.bot9, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.bot9, true)}</td>
-                            <td>9. سائلو کے تمام ڈسچارج گیٹس لاک (SEAL) ہیں؟</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.bot10, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.bot10, true)}</td>
-                            <td>10. سائلو کی مشین (Entrance) کا دروازہ اچھی طرح سے بند ہے؟</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.bot11, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.bot11, true)}</td>
-                            <td>11. سردیوں میں گرین کا درجہ حرارت 16 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
-                        </tr>
-                        <tr>
-                            <td class="tick-cell">${renderTick(insp.bot12, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.bot12, true)}</td>
-                            <td>12. گرمیوں میں گرین کا درجہ حرارت 14 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
-                        </tr>
+                        ${generateInspectionRowsHTML(insp, renderTick)}
                     </tbody>
                 </table>
 
@@ -268,37 +290,122 @@ try {
                 <table class="main-table">
                     <thead>
                         <tr>
+                            <th style="width:8%;">Sr. No</th>
                             <th style="width:10%;">حصہ</th>
                             <th style="width:7%;">نہیں</th>
                             <th style="width:7%;">ہاں</th>
-                            <th style="width:76%; text-align:right;">ٹیسٹ کی تفصیل</th>
+                            <th style="width:68%; text-align:right;">ٹیسٹ کی تفصیل</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="section-cell">Lab Check</td>
-                            <td class="tick-cell">${renderTick(insp.lab1, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.lab1, true)}</td>
-                            <td>سائلوز میں کوئی پرانا بیج یا اکسیڑا (Old Grain / Infestation) موجود نہیں ہے۔</td>
-                        </tr>
-                        <tr>
-                            <td class="section-cell">Fumigation</td>
-                            <td class="tick-cell">${renderTick(insp.lab2, false)}</td>
-                            <td class="tick-cell">${renderTick(insp.lab2, true)}</td>
-                            <td>کیا سائلو کو فیومیگیٹ (Fumigate) کرنے کی ضرورت ہے؟</td>
-                        </tr>
+                        ${generateLabRowsHTML(insp, renderTick)}
                     </tbody>
                 </table>
 
-                <div class="footer-block">
-                    <div class="footer-sig">دستخط پلانٹ آپریٹر</div>
-                    <div class="footer-sig">دستخط پروڈکشن آفیسر</div>
-                    <div class="footer-sig">دستخط پروڈکشن مینیجر</div>
+                <div class="footer-block" style="margin-top: 30px; display: flex; justify-content: space-between; font-size: 1.15rem;">
+                    <div class="footer-sig" style="width: 30%; text-align: center; border-top: 1px solid #000; padding-top: 5px; margin-top: 40px;">دستخط پلانٹ آپریٹر</div>
+                    <div class="footer-sig" style="width: 30%; text-align: center; border-top: 1px solid #000; padding-top: 5px; margin-top: 40px;">دستخط پروڈکشن آفیسر</div>
+                    <div class="footer-sig" style="width: 30%; text-align: center; border-top: 1px solid #000; padding-top: 5px; margin-top: 40px;">دستخط پروڈکشن مینیجر</div>
                 </div>
             </body>
             </html>
         `);
         printWindow.document.close();
+    };
+
+    // Full screen view of the report
+    let currentlyViewingLogId = null;
+    window.viewSiloInspection = (id) => {
+        const log = siloLogs.find(x => x.id === id);
+        if (!log) return alert('Record not found.');
+        currentlyViewingLogId = id;
+
+        const insp = log.inspection || {};
+        const sealNo = log.sealNo || '';
+        const date = log.date || '';
+        const siloNo = log.siloNumber ? log.siloNumber.replace('Silo ', '') : '';
+        const material = log.material || '';
+        const supervisor = log.supervisor || '';
+        const operator = log.operator || '';
+        const remarks = log.remarks || '';
+
+        const renderTick = (val, expectTrue = true) => {
+            if (expectTrue) {
+                return val ? '<span style="color:#16a34a;font-family:Arial,sans-serif;font-size:1.3rem;">✔</span>' : '';
+            } else {
+                return !val ? '<span style="color:#dc2626;font-family:Arial,sans-serif;font-size:1.3rem;">✔</span>' : '';
+            }
+        };
+
+        const container = document.getElementById('silo-view-report-content');
+        container.innerHTML = `
+            <div style="border: 2px solid #cbd5e1; padding: 2rem; border-radius: 8px; background: #fff; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                <!-- Header Info -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:3px double #e2e8f0; padding-bottom:1rem;">
+                    <div style="font-size:1.15rem;font-weight:bold;">سیل نمبر: <span style="color:#2563eb;font-family:sans-serif;">${sealNo}</span></div>
+                    <div style="text-align:center;">
+                        <h2 style="font-size:1.6rem; color:#1e3a8a; margin:0; font-weight:bold;">سائلو انسپکشن رپورٹ - سٹیل سائلوز (Steel Silo)</h2>
+                        <span style="font-size:1.1rem;color:#64748b;">(فلنگ سے پہلے انسپکشن پرفارما)</span>
+                    </div>
+                    <div style="font-size:1.15rem;font-weight:bold;">تاریخ: <span>${date}</span></div>
+                </div>
+
+                <!-- Meta Row -->
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:1rem; margin-bottom:1.5rem;">
+                    <div><strong>سائلو نمبر:</strong> <span style="color:#2563eb;font-family:sans-serif;">${siloNo}</span></div>
+                    <div><strong>مٹیریل:</strong> <span style="color:#1e293b;">${material}</span></div>
+                    <div><strong>آفیسر کا نام:</strong> <span style="color:#1e293b;">${operator}</span></div>
+                    <div><strong>سپروائزر کا نام:</strong> <span style="color:#1e293b;">${supervisor}</span></div>
+                </div>
+
+                <!-- Main Checklist Table -->
+                <table class="report-table" style="width:100%; border-collapse:collapse; margin-bottom:1.5rem; font-size:1.05rem;">
+                    <thead>
+                        <tr style="background:#f1f5f9; color:#1e293b; font-weight:700;">
+                            <th style="width:8%; border:1px solid #cbd5e1; padding:0.5rem; text-align:center;">Sr. No</th>
+                            <th style="width:12%; border:1px solid #cbd5e1; padding:0.5rem; text-align:center;">حصہ</th>
+                            <th style="width:8%; border:1px solid #cbd5e1; padding:0.5rem; text-align:center;">نہیں</th>
+                            <th style="width:8%; border:1px solid #cbd5e1; padding:0.5rem; text-align:center;">ہاں</th>
+                            <th style="width:64%; border:1px solid #cbd5e1; padding:0.5rem; text-align:right; padding-right:1rem;">نکات اور اہم چیک لسٹ (پروڈکشن ڈیپارٹمنٹ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${generateInspectionRowsHTML(insp, renderTick)}
+                    </tbody>
+                </table>
+
+                <div style="font-size:1.15rem; margin-bottom:1.5rem; font-weight:bold; border-bottom:1px dashed #e2e8f0; padding-bottom:1rem;">
+                    ریمارکس پروڈکشن آفیسر: <span style="font-weight:normal; color:#475569; padding-right:10px;">${remarks || 'کوئی ریمارکس درج نہیں ہیں۔'}</span>
+                </div>
+
+                <!-- Lab Remarks Header -->
+                <h3 style="font-size:1.3rem; color:#b91c1c; border-bottom:2px solid #fecaca; padding-bottom:0.4rem; margin-bottom:1rem; font-weight:bold;">لیبارٹری ریمارکس (Lab Remarks)</h3>
+                <table class="report-table" style="width:100%; border-collapse:collapse; margin-bottom:2rem; font-size:1.05rem;">
+                    <thead>
+                        <tr style="background:#fef2f2; color:#991b1b; font-weight:700;">
+                            <th style="width:8%; border:1px solid #fecaca; padding:0.5rem; text-align:center;">Sr. No</th>
+                            <th style="width:12%; border:1px solid #fecaca; padding:0.5rem; text-align:center;">حصہ</th>
+                            <th style="width:8%; border:1px solid #fecaca; padding:0.5rem; text-align:center;">نہیں</th>
+                            <th style="width:8%; border:1px solid #fecaca; padding:0.5rem; text-align:center;">ہاں</th>
+                            <th style="width:64%; border:1px solid #fecaca; padding:0.5rem; text-align:right; padding-right:1rem;">ٹیسٹ کی تفصیل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${generateLabRowsHTML(insp, renderTick)}
+                    </tbody>
+                </table>
+
+                <!-- Signatures -->
+                <div style="display:flex; justify-content:space-between; margin-top:3rem; border-top:1px solid #e2e8f0; padding-top:1.5rem; font-size:1.1rem; font-weight:bold; color:#475569;">
+                    <div style="text-align:center; width:30%; border-top:1px dashed #cbd5e1; padding-top:0.5rem;">دستخط پلانٹ آپریٹر</div>
+                    <div style="text-align:center; width:30%; border-top:1px dashed #cbd5e1; padding-top:0.5rem;">دستخط پروڈکشن آفیسر</div>
+                    <div style="text-align:center; width:30%; border-top:1px dashed #cbd5e1; padding-top:0.5rem;">دستخط پروڈکشن مینیجر</div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('silo-history-modal').classList.remove('show');
+        document.getElementById('silo-report-view-modal').classList.add('show');
     };
 
     const renderTableMarkup = (logsList) => {
@@ -458,6 +565,7 @@ try {
 
             [...filteredLogs].reverse().forEach(log => {
                 const hasInspection = log.inspection ? '✓ Yes' : '-';
+                const viewBtn = `<button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#10b981;border-color:#10b981;color:#fff;" onclick="viewSiloInspection(${log.id})">👁️ View</button>`;
                 const printBtn = `<button class="btn btn-primary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#8b5cf6;border-color:#8b5cf6;" onclick="printSiloInspection(${log.id})">🖨️ Print</button>`;
 
                 rows += `
@@ -470,6 +578,7 @@ try {
                         <td style="padding:0.5rem;font-weight:700;color:#4f46e5;">${hasInspection}</td>
                         <td class="no-print" style="padding:0.5rem;display:flex;gap:0.2rem;">
                             <button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;" onclick="window.editSiloLog(${log.id})">✏️ Edit</button>
+                            ${viewBtn}
                             ${printBtn}
                             <button class="btn btn-danger" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#ef4444;" onclick="window.deleteSiloLog(${log.id})">🗑 Del</button>
                         </td>
@@ -708,6 +817,36 @@ try {
         const historyModal = document.getElementById('silo-history-modal');
         const historyClose = document.getElementById('sh-modal-close');
         const historyAdd = document.getElementById('sh-btn-add-entry');
+
+        // View Report Modal hooks
+        const viewModal = document.getElementById('silo-report-view-modal');
+        const viewClose = document.getElementById('silo-report-view-close');
+        const viewCloseBtn = document.getElementById('silo-report-view-close-btn');
+        const viewPrintBtn = document.getElementById('silo-report-view-print-btn');
+
+        if (viewClose) {
+            viewClose.addEventListener('click', () => {
+                viewModal.classList.remove('show');
+                if (currentHistorySilo && currentHistoryOperation) {
+                    historyModal.classList.add('show');
+                }
+            });
+        }
+        if (viewCloseBtn) {
+            viewCloseBtn.addEventListener('click', () => {
+                viewModal.classList.remove('show');
+                if (currentHistorySilo && currentHistoryOperation) {
+                    historyModal.classList.add('show');
+                }
+            });
+        }
+        if (viewPrintBtn) {
+            viewPrintBtn.addEventListener('click', () => {
+                if (currentlyViewingLogId) {
+                    window.printSiloInspection(currentlyViewingLogId);
+                }
+            });
+        }
 
         if (navPerforma) {
             navPerforma.addEventListener('click', (e) => {
