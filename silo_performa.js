@@ -32,21 +32,10 @@ try {
         localStorage.setItem(LS_SILO_LOGS, JSON.stringify(siloLogs));
     };
 
-    window.calcSlNet = () => {
-        const start = parseFloat(document.getElementById('sl-modal-start-wt').value) || 0;
-        const end = parseFloat(document.getElementById('sl-modal-end-wt').value) || 0;
-        const net = Math.abs(end - start);
-        document.getElementById('sl-modal-net-wt').value = net.toFixed(2);
-    };
-
     window.slToggleInspectionChecklist = () => {
         const section = document.getElementById('sl-modal-inspection-section');
         if (!section) return;
-        if (section.style.display === 'none') {
-            section.style.display = 'block';
-        } else {
-            section.style.display = 'none';
-        }
+        section.style.display = (section.style.display === 'none') ? 'block' : 'none';
     };
 
     const renderTableMarkup = (logsList) => {
@@ -69,8 +58,6 @@ try {
                     <td style="font-weight:700;color:${log.operation === 'Filling'?'#10b981':'#ef4444'};">${log.operation}</td>
                     <td>${log.material}</td>
                     <td>${log.moisture ? log.moisture + '%' : '-'}</td>
-                    <td>${log.startWeight || 0}</td>
-                    <td>${log.endWeight || 0}</td>
                     <td style="font-weight:700;color:#2563eb;">${log.netQty || 0}</td>
                     <td>${log.temperature ? log.temperature + '°C' : '-'}</td>
                     <td>${log.operator || '-'}</td>
@@ -95,8 +82,6 @@ try {
                             <th>Operation</th>
                             <th>Material</th>
                             <th>Moisture %</th>
-                            <th>Start Wt (T)</th>
-                            <th>End Wt (T)</th>
                             <th>Net Qty (T)</th>
                             <th>Temp (°C)</th>
                             <th>Performed By</th>
@@ -202,8 +187,6 @@ try {
                     <td style="padding:0.5rem;">${log.shift || 'A'}</td>
                     <td style="padding:0.5rem;font-weight:600;">${log.material}</td>
                     <td style="padding:0.5rem;font-weight:700;">${log.moisture ? log.moisture + '%' : '-'}</td>
-                    <td style="padding:0.5rem;">${log.startWeight || 0}</td>
-                    <td style="padding:0.5rem;">${log.endWeight || 0}</td>
                     <td style="padding:0.5rem;font-weight:700;color:#2563eb;">${log.netQty || 0}</td>
                     <td style="padding:0.5rem;">${log.temperature ? log.temperature + '°C' : '-'}</td>
                     <td style="padding:0.5rem;">${log.operator || '-'}</td>
@@ -226,8 +209,6 @@ try {
                         <th style="padding:0.5rem;">Shift</th>
                         <th style="padding:0.5rem;">Material</th>
                         <th style="padding:0.5rem;">Moisture</th>
-                        <th style="padding:0.5rem;">Start Wt (T)</th>
-                        <th style="padding:0.5rem;">End Wt (T)</th>
                         <th style="padding:0.5rem;">Net Qty (T)</th>
                         <th style="padding:0.5rem;">Temp</th>
                         <th style="padding:0.5rem;">Operator</th>
@@ -257,11 +238,9 @@ try {
         operationSelect.value = operationType;
         operationSelect.disabled = true;
 
-        // Reset custom filling fields & inspection
         document.getElementById('sl-modal-seal-no').value = '';
         document.getElementById('sl-modal-supervisor').value = '';
         
-        // Uncheck all checklist boxes
         for (let i = 1; i <= 4; i++) document.getElementById(`sl-chk-top${i}`).checked = false;
         for (let i = 1; i <= 12; i++) document.getElementById(`sl-chk-bot${i}`).checked = false;
         for (let i = 1; i <= 2; i++) document.getElementById(`sl-chk-lab${i}`).checked = false;
@@ -282,9 +261,7 @@ try {
 
         document.getElementById('sl-modal-material').value = 'Maize';
         document.getElementById('sl-modal-moisture').value = '';
-        document.getElementById('sl-modal-start-wt').value = '';
-        document.getElementById('sl-modal-end-wt').value = '';
-        document.getElementById('sl-modal-net-wt').value = '0.00';
+        document.getElementById('sl-modal-net-wt').value = '';
         document.getElementById('sl-modal-temp').value = '';
         document.getElementById('sl-modal-operator').value = '';
         document.getElementById('sl-modal-remarks').value = '';
@@ -330,8 +307,6 @@ try {
 
         document.getElementById('sl-modal-material').value = log.material || '';
         document.getElementById('sl-modal-moisture').value = log.moisture !== undefined ? log.moisture : '';
-        document.getElementById('sl-modal-start-wt').value = log.startWeight !== undefined ? log.startWeight : '';
-        document.getElementById('sl-modal-end-wt').value = log.endWeight !== undefined ? log.endWeight : '';
         document.getElementById('sl-modal-net-wt').value = log.netQty !== undefined ? log.netQty : '';
         document.getElementById('sl-modal-temp').value = log.temperature !== undefined ? log.temperature : '';
         document.getElementById('sl-modal-operator').value = log.operator || '';
@@ -416,8 +391,6 @@ try {
                 const operation = document.getElementById('sl-modal-operation').value;
                 const material = document.getElementById('sl-modal-material').value.trim();
                 const moisture = parseFloat(document.getElementById('sl-modal-moisture').value) || 0;
-                const startWeight = parseFloat(document.getElementById('sl-modal-start-wt').value) || 0;
-                const endWeight = parseFloat(document.getElementById('sl-modal-end-wt').value) || 0;
                 const netQty = parseFloat(document.getElementById('sl-modal-net-wt').value) || 0;
                 const temperature = parseFloat(document.getElementById('sl-modal-temp').value) || 0;
                 const operator = document.getElementById('sl-modal-operator').value.trim();
@@ -426,7 +399,6 @@ try {
                 if (!date) return alert('Please enter Date.');
                 if (!material) return alert('Please enter Material Name.');
 
-                // Capture pre-filling inspection checks if operation is Filling
                 let sealNo = '';
                 let supervisor = '';
                 let inspection = null;
@@ -460,7 +432,7 @@ try {
                 const log = {
                     id: activeLogId || Date.now(),
                     date, shift, siloNumber, operation, material, moisture,
-                    startWeight, endWeight, netQty, temperature, operator, remarks,
+                    netQty, temperature, operator, remarks,
                     sealNo, supervisor, inspection
                 };
 
@@ -486,8 +458,6 @@ try {
                             operation_type: log.operation,
                             material_name: log.material,
                             moisture: log.moisture,
-                            start_weight: log.startWeight,
-                            end_weight: log.endWeight,
                             net_qty: log.netQty,
                             temperature: log.temperature,
                             performed_by: log.operator,
@@ -533,8 +503,6 @@ try {
                             operation: r.operation_type,
                             material: r.material_name,
                             moisture: r.moisture || 0,
-                            startWeight: r.start_weight || 0,
-                            endWeight: r.end_weight || 0,
                             netQty: r.net_qty || 0,
                             temperature: r.temperature || 0,
                             operator: r.performed_by,
