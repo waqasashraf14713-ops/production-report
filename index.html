@@ -691,6 +691,7 @@
                             <label for="ba-filter-date" style="font-weight:600;color:var(--text-secondary);font-size:0.9rem;">Date:</label>
                             <input type="text" id="ba-filter-date" placeholder="e.g., 26-Jun" style="border-radius:4px;border:1px solid var(--card-border);padding:0.4rem 0.6rem;background:var(--card-bg);color:var(--text-primary);outline:none;font-weight:600;width:110px;text-align:center;" />
                         </div>
+                        <button class="btn btn-secondary" id="btn-manage-recipes" style="background:#4f46e5;color:#fff;">⚙️ Manage Recipes</button>
                         <button class="btn btn-secondary" id="btn-add-batching-audit">➕ New Audit</button>
                         <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
                     </div>
@@ -1390,6 +1391,63 @@ order by
                 <div class="modal-actions" style="margin-top:1.5rem;display:flex;justify-content:flex-end;gap:1rem;">
                     <button class="btn btn-secondary" id="btn-cancel-ba-modal" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
                     <button class="btn btn-primary" id="btn-save-ba-modal" style="background:#4f46e5;border-color:#4f46e5;width:auto;padding:0.5rem 2rem;">💾 Save Audit Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Formulation Recipes Modal -->
+    <div id="manage-recipes-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:800px;width:95%;border-radius:12px;max-height:92vh;display:flex;flex-direction:column;border:1px solid rgba(99,102,241,0.3);background:#ffffff;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff;border-bottom:none;padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;">
+                <h2 style="color:#fff;margin:0;font-size:1.25rem;">⚙️ Manage Formulation Recipes</h2>
+                <button id="mr-modal-close" class="modal-close-btn" style="color:#fff;opacity:0.8;font-size:1.5rem;background:none;border:none;cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem;background:#f8fafc;display:flex;flex-direction:column;gap:1rem;overflow-y:auto;flex-grow:1;">
+                <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:1.5rem;align-items:start;">
+                    <!-- Left: Select Group & Recipe Code -->
+                    <div style="background:#ffffff;padding:1rem;border-radius:8px;border:1px solid #cbd5e1;display:flex;flex-direction:column;gap:1rem;">
+                        <div class="form-group">
+                            <label style="font-weight:700;font-size:0.85rem;color:#475569;margin-bottom:0.25rem;display:block;">Select Formulation Group</label>
+                            <select id="mr-select-group" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;font-size:0.85rem;outline:none;" onchange="window.mrOnGroupChange()">
+                                <option value="chenab">Asia-Chenab</option>
+                                <option value="delta">Delta</option>
+                                <option value="wanda">Wanda</option>
+                                <option value="breeder">Breeder</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label style="font-weight:700;font-size:0.85rem;color:#475569;margin-bottom:0.25rem;display:block;">Select Recipe Code</label>
+                            <select id="mr-select-code" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;font-size:0.85rem;outline:none;" onchange="window.mrOnCodeChange()">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div style="border-top:1px dashed #cbd5e1;padding-top:0.75rem;">
+                            <label style="font-weight:700;font-size:0.85rem;color:#475569;margin-bottom:0.25rem;display:block;">Or Add New Recipe Code</label>
+                            <div style="display:flex;gap:0.5rem;">
+                                <input type="text" id="mr-new-code" placeholder="e.g. 435(280)" style="flex-grow:1;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;font-size:0.85rem;" />
+                                <button class="btn btn-secondary" onclick="window.mrAddCode()" style="width:auto;padding:0.4rem 1rem;font-size:0.8rem;">Add</button>
+                            </div>
+                        </div>
+                        <div style="border-top:1px dashed #cbd5e1;padding-top:0.75rem;display:flex;justify-content:space-between;">
+                            <button class="btn btn-danger" onclick="window.mrDeleteCode()" style="background:#ef4444;color:#fff;border:none;font-size:0.8rem;width:auto;padding:0.4rem 1rem;">🗑 Delete Code</button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Edit ingredient values -->
+                    <div style="background:#ffffff;padding:1.25rem;border-radius:8px;border:1px solid #cbd5e1;display:flex;flex-direction:column;gap:0.75rem;">
+                        <div style="font-weight:700;font-size:0.9rem;color:#0f172a;border-bottom:1px solid #e2e8f0;padding-bottom:0.4rem;display:flex;justify-content:space-between;align-items:center;">
+                            <span>Ingredients weight per batch (in kg/g)</span>
+                            <span id="mr-active-code-label" style="background:#eff6ff;color:#1e40af;padding:0.15rem 0.5rem;border-radius:4px;font-size:0.75rem;">Code: -</span>
+                        </div>
+                        <div id="mr-ingredients-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;max-height:360px;overflow-y:auto;padding-right:0.25rem;">
+                            <!-- Ingredients inputs populated by JS -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions" style="margin-top:1rem;display:flex;justify-content:flex-end;gap:1rem;border-top:1px solid #e2e8f0;padding-top:1rem;">
+                    <button class="btn btn-secondary" id="mr-btn-cancel" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" onclick="window.mrSaveRecipe()" style="background:#4f46e5;border-color:#4f46e5;width:auto;padding:0.5rem 2rem;">💾 Save Recipe Template</button>
                 </div>
             </div>
         </div>

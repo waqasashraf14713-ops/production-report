@@ -2,6 +2,9 @@
 (() => {
 try {
     const LS_BATCHING_AUDIT = 'fm_batching_audit';
+    const LS_RECIPES = 'fm_batching_custom_recipes';
+    const LS_RECIPE_GROUPS = 'fm_batching_custom_groups';
+
     let batchingAudits = [];
     try {
         batchingAudits = JSON.parse(localStorage.getItem(LS_BATCHING_AUDIT) || '[]');
@@ -37,14 +40,23 @@ try {
         { name: 'Soya Bean Oil', config: 'Local', standWeight: 0.00, emptyTub: 0.000 }
     ];
 
-    const RECIPE_GROUPS = {
+    let customRecipes = null;
+    let customRecipeGroups = null;
+    try {
+        customRecipes = JSON.parse(localStorage.getItem(LS_RECIPES));
+        customRecipeGroups = JSON.parse(localStorage.getItem(LS_RECIPE_GROUPS));
+    } catch(e) {
+        console.error("Failed to parse custom recipes/groups:", e);
+    }
+
+    const RECIPE_GROUPS = customRecipeGroups || {
         chenab: ['430(278)', '431(279)', '432(278)', '433(290)', '432(265)', '433(289)', '431(262)', '434(276)', '432(252)', '432(257)', '434(271)', '31A(288)', '31A(291)', '33Y(298)', '34A(287)', '34M(187)', '33P(290)', '33A(305)', '34A(282)', '33A(304)', '33P(288)', '31A(285)', '33A(33)LS', '34M(186)', '34Y(260)'],
         delta: ['41A(298)', '42A(297)', '33A(296)', '43A(309)', '33M(185)', '34A(284)', '33Y(282)', '33A(315)', '34M(186)-delta', '34Y(260)-delta', 'sample-delta'],
         wanda: ['733(98)', '731(103)', '723(99)', '721(104)', '732(102)', '741(104)', '743(108)', '742(106)', '744(78)', '712(103)', '743(0)'],
         breeder: ['324LC(76)', '521(22)', '5212(52)', '5221(52)', '521(20)', '522(1)', '5211(52)', 'sample-breeder']
     };
 
-    const RECIPES = {
+    const RECIPES = customRecipes || {
         // Asia-Chenab
         '430(278)': { 'SALT': 8.7, 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 31.07, 'DL.METHININE': 17.09, 'L THREONINE': 9.85, 'YIDUOZYME': 0.5, 'L.VALINE': 4.9, 'L.ISOLEUCINE': 4.26, 'L ARGINUNE': 1.08, 'L Glycine': 5, 'Soya Bean Oil': 20 },
         '431(279)': { 'SODIUM BICARBONATE': 6, 'LYSINE SULPHATE 70%': 32.79, 'DL.METHININE': 12.6, 'L THREONINE': 8.78, 'L.VALINE': 2.66, 'L.ISOLEUCINE': 3.97, 'L Glycine': 4.73 },
@@ -130,13 +142,11 @@ try {
     const calculateRow = (i) => {
         const standWeight = parseFloat(document.getElementById(`ba-stand-weight-${i}`).value) || 0;
         
-        // Opening inputs
         const openLoose = parseFloat(document.getElementById(`ba-open-loose-${i}`).value) || 0;
         const openBags = parseFloat(document.getElementById(`ba-open-bags-${i}`).value) || 0;
         const openEmptyTub = parseFloat(document.getElementById(`ba-open-emptytub-${i}`).value) || 0;
         const received = parseFloat(document.getElementById(`ba-received-${i}`).value) || 0;
         
-        // Closing inputs
         const closeLoose = parseFloat(document.getElementById(`ba-close-loose-${i}`).value) || 0;
         const closeBags = parseFloat(document.getElementById(`ba-close-bags-${i}`).value) || 0;
         
@@ -284,7 +294,6 @@ try {
         buildCol('ba-recipes-wanda', 'wanda');
         buildCol('ba-recipes-breeder', 'breeder');
 
-        // Bind update handler to all inputs
         document.querySelectorAll('.ba-recipe-input').forEach(input => {
             input.addEventListener('input', () => {
                 window.updateRecipesCalculation();
@@ -353,7 +362,6 @@ try {
         document.getElementById('ba-modal-limit').value = audit.acceptableLimit !== undefined ? audit.acceptableLimit : '0.4';
         document.getElementById('ba-modal-total-batches').value = audit.totalBatches !== undefined ? audit.totalBatches : '113';
 
-        // Load recipe values
         const savedRecipes = audit.recipes || {};
         document.querySelectorAll('.ba-recipe-input').forEach(input => {
             const code = input.getAttribute('data-code');
@@ -391,6 +399,112 @@ try {
         }
     };
 
+    // ─── Manage Recipes Modal Logic ───
+    window.mrOnGroupChange = () => {
+        const group = document.getElementById('mr-select-group').value;
+        const codeSelect = document.getElementById('mr-select-code');
+        if (!codeSelect) return;
+        codeSelect.innerHTML = '';
+        
+        const codes = RECIPE_GROUPS[group] || [];
+        codes.forEach(c => {
+            const clean = c.replace('-delta', '').replace('-breeder', '');
+            const opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = clean;
+            codeSelect.appendChild(opt);
+        });
+
+        window.mrOnCodeChange();
+    };
+
+    window.mrOnCodeChange = () => {
+        const codeSelect = document.getElementById('mr-select-code');
+        const code = codeSelect ? codeSelect.value : '';
+        const cleanLabel = code.replace('-delta', '').replace('-breeder', '');
+        document.getElementById('mr-active-code-label').textContent = `Code: ${cleanLabel || '-'}`;
+
+        const grid = document.getElementById('mr-ingredients-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const vals = RECIPES[code] || {};
+        DEFAULT_ITEMS.forEach(it => {
+            const val = vals[it.name] !== undefined ? vals[it.name] : '';
+            const row = document.createElement('div');
+            row.style = 'display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding:0.25rem 0;';
+            row.innerHTML = `
+                <span style="font-size:0.75rem;font-weight:600;color:#334155;">${it.name}</span>
+                <input type="number" step="any" class="mr-ing-input" data-ing="${it.name}" value="${val}" style="width:75px;border:1px solid #cbd5e1;padding:0.2rem 0.4rem;border-radius:3px;font-size:0.75rem;text-align:center;">
+            `;
+            grid.appendChild(row);
+        });
+    };
+
+    window.mrAddCode = () => {
+        const newCode = document.getElementById('mr-new-code').value.trim();
+        if (!newCode) return alert('Enter recipe code.');
+        
+        const group = document.getElementById('mr-select-group').value;
+        let finalCode = newCode;
+        if (group === 'delta') finalCode = newCode + '-delta';
+        if (group === 'breeder') finalCode = newCode + '-breeder';
+
+        if (RECIPE_GROUPS[group].includes(finalCode)) {
+            return alert('Code already exists in this group.');
+        }
+
+        RECIPE_GROUPS[group].push(finalCode);
+        RECIPES[finalCode] = {};
+
+        localStorage.setItem(LS_RECIPES, JSON.stringify(RECIPES));
+        localStorage.setItem(LS_RECIPE_GROUPS, JSON.stringify(RECIPE_GROUPS));
+
+        document.getElementById('mr-new-code').value = '';
+        window.mrOnGroupChange();
+        
+        const codeSelect = document.getElementById('mr-select-code');
+        codeSelect.value = finalCode;
+        window.mrOnCodeChange();
+    };
+
+    window.mrDeleteCode = () => {
+        const group = document.getElementById('mr-select-group').value;
+        const code = document.getElementById('mr-select-code').value;
+        if (!code) return alert('No code selected.');
+
+        if (!confirm(`Delete recipe code "${code.replace('-delta', '').replace('-breeder', '')}"?`)) return;
+
+        RECIPE_GROUPS[group] = RECIPE_GROUPS[group].filter(c => c !== code);
+        delete RECIPES[code];
+
+        localStorage.setItem(LS_RECIPES, JSON.stringify(RECIPES));
+        localStorage.setItem(LS_RECIPE_GROUPS, JSON.stringify(RECIPE_GROUPS));
+
+        window.mrOnGroupChange();
+    };
+
+    window.mrSaveRecipe = () => {
+        const code = document.getElementById('mr-select-code').value;
+        if (!code) return alert('No code selected.');
+
+        const recipeData = {};
+        document.querySelectorAll('.mr-ing-input').forEach(input => {
+            const ing = input.getAttribute('data-ing');
+            const val = parseFloat(input.value);
+            if (!isNaN(val) && val > 0) {
+                recipeData[ing] = val;
+            }
+        });
+
+        RECIPES[code] = recipeData;
+        localStorage.setItem(LS_RECIPES, JSON.stringify(RECIPES));
+        
+        alert(`✓ Formulation code ${code.replace('-delta', '').replace('-breeder', '')} saved successfully!`);
+        populateRecipeInputsUI();
+        document.getElementById('manage-recipes-modal').classList.remove('show');
+    };
+
     const initBaEvents = () => {
         const btnAdd = document.getElementById('btn-add-batching-audit');
         const modal = document.getElementById('batching-audit-modal');
@@ -399,8 +513,24 @@ try {
         const btnSave = document.getElementById('btn-save-ba-modal');
         const btnClear = document.getElementById('btn-clear-recipes');
 
-        // Populate recipe entries UI
+        // Manage recipes events
+        const btnManage = document.getElementById('btn-manage-recipes');
+        const manageModal = document.getElementById('manage-recipes-modal');
+        const manageClose = document.getElementById('mr-modal-close');
+        const manageCancel = document.getElementById('mr-btn-cancel');
+
         populateRecipeInputsUI();
+
+        if (btnManage) {
+            btnManage.addEventListener('click', () => {
+                window.mrOnGroupChange();
+                manageModal.classList.add('show');
+            });
+        }
+
+        const closeManageModal = () => manageModal.classList.remove('show');
+        if (manageClose) manageClose.addEventListener('click', closeManageModal);
+        if (manageCancel) manageCancel.addEventListener('click', closeManageModal);
 
         if (btnAdd) {
             btnAdd.addEventListener('click', () => {
@@ -411,7 +541,6 @@ try {
                 document.getElementById('ba-modal-limit').value = '0.4';
                 document.getElementById('ba-modal-total-batches').value = '0';
 
-                // Clear recipe inputs
                 document.querySelectorAll('.ba-recipe-input').forEach(input => {
                     input.value = '';
                 });
@@ -480,7 +609,6 @@ try {
                     });
                 }
 
-                // Gather recipe inputs values
                 const recipes = {};
                 document.querySelectorAll('.ba-recipe-input').forEach(input => {
                     const code = input.getAttribute('data-code');
@@ -517,7 +645,6 @@ try {
                 renderBaTable();
                 closeModal();
 
-                // Save to Supabase
                 initSupabase();
                 if (sbClient) {
                     try {
