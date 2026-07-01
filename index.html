@@ -929,14 +929,15 @@ create table if not exists public.shift_reports (
 -- Create batching_audits table
 create table if not exists public.batching_audits (
   id bigint primary key,
-  audit_date text not null,
-  audit_time text not null,
-  medicine_name text not null,
-  batch_no text not null default '',
-  expected_qty numeric not null default 0,
-  actual_qty numeric not null default 0,
-  remarks text not null default '',
-  auditor_name text not null default '',
+  date date not null,
+  shift varchar(50),
+  total_batches numeric not null default 0,
+  acceptable_limit numeric not null default 0.4,
+  form_chenab numeric not null default 0,
+  form_delta numeric not null default 0,
+  form_wanda numeric not null default 0,
+  form_breeder numeric not null default 0,
+  items jsonb not null default '[]'::jsonb,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
