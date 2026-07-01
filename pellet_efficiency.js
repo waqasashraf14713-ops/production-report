@@ -399,13 +399,16 @@ try {
                         const { error } = await sbClient.from('pellet_efficiency').upsert([dbRecord]);
                         if (error) throw error;
                         if (window.showToast) window.showToast('✓ Saved to Supabase');
+                        alert('✓ Pellet Efficiency Report saved to Supabase successfully!');
+                    } catch (err) {
                         console.error('Failed to save to Supabase:', err);
                         const errorMsg = err.message || err.details || JSON.stringify(err);
                         if (window.showToast) window.showToast(`✗ Supabase Error: ${errorMsg}`);
-                        else alert(`Supabase Error: ${errorMsg}`);
+                        alert(`✗ Supabase Save Error:\n${errorMsg}\n\nPlease check if your table exists and RLS is disabled.`);
                     }
                 } else {
                     if (window.showToast) window.showToast('✓ Saved locally (Supabase not configured)');
+                    alert('✓ Saved locally (Supabase not configured or offline).');
                 }
             });
         }
