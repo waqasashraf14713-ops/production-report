@@ -66,6 +66,10 @@
                     <span class="nav-icon">🏭</span>
                     <span>Silo Status</span>
                 </a>
+                <a href="#silo-performa" class="nav-item" id="nav-silo-performa">
+                    <span class="nav-icon">📥</span>
+                    <span>Silo Filling/Discharge</span>
+                </a>
                 <a href="#daily-report" class="nav-item" id="nav-daily-report">
                     <span class="nav-icon">📋</span>
                     <span>Daily Report</span>
@@ -160,12 +164,31 @@
                     <div class="dash-quick-label">Pellet Efficiency</div>
                     <div class="dash-quick-desc">Pellet mill energy & PDI</div>
                 </div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-silo-performa').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);">📥</div>
+                    <div class="dash-quick-label">Silo Performa</div>
+                    <div class="dash-quick-desc">Filling & discharge records</div>
+                </div>
             </section>
         </div>
 
         <div id="view-silo-status" class="view-section" style="display: none;">
             <section class="silo-grid" id="silo-grid">
                 <!-- Silo cards will be generated dynamically by JavaScript -->
+            </section>
+        </div>
+
+        <div id="view-silo-performa" class="view-section" style="display: none;">
+            <section class="table-container">
+                <div class="table-header">
+                    <h2>📥 Silo Filling and Discharge Performa</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" id="btn-add-silo-log">➕ New Entry</button>
+                    </div>
+                </div>
+                <div id="silo-logs-container" style="margin-top:1.5rem;">
+                    <!-- Silo logs table populated dynamically -->
+                </div>
             </section>
         </div>
 
@@ -1545,6 +1568,100 @@ order by
         </div>
     </div>
 
+    <!-- Silo Log Modal -->
+    <div id="silo-log-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:550px;width:90%;border-radius:12px;background:var(--card-bg);border:1px solid rgba(99,102,241,0.3);">
+            <div class="modal-header" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;border-bottom:none;padding:1rem 1.5rem;">
+                <h2 id="silo-log-modal-title" style="color:#fff;margin:0;font-size:1.25rem;">New Silo Filling/Discharge Entry</h2>
+                <button id="silo-log-modal-close" class="modal-close-btn" style="color:#fff;font-size:1.5rem;background:none;border:none;cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem 2rem;background:linear-gradient(to bottom, var(--card-bg), var(--bg-color));">
+                <div style="display:flex;flex-direction:column;gap:1rem;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                        <div class="form-group">
+                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Date</label>
+                            <input type="text" id="sl-modal-date" placeholder="e.g. 01-Jul-2026" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                        </div>
+                        <div class="form-group">
+                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Shift</label>
+                            <select id="sl-modal-shift" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
+                                <option value="A">Shift A</option>
+                                <option value="B">Shift B</option>
+                                <option value="C">Shift C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                        <div class="form-group">
+                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Select Silo</label>
+                            <select id="sl-modal-silo" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
+                                <option value="Silo 1">Silo 1</option>
+                                <option value="Silo 2">Silo 2</option>
+                                <option value="Silo 3">Silo 3</option>
+                                <option value="Silo 4">Silo 4</option>
+                                <option value="Silo 5">Silo 5</option>
+                                <option value="Silo 6">Silo 6</option>
+                                <option value="Silo 7">Silo 7</option>
+                                <option value="Silo 8">Silo 8</option>
+                                <option value="Silo 9">Silo 9</option>
+                                <option value="Silo 10">Silo 10</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Operation Type</label>
+                            <select id="sl-modal-operation" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
+                                <option value="Filling">Filling (Stock In)</option>
+                                <option value="Discharging">Discharging (Stock Out)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:1rem;">
+                        <div class="form-group">
+                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Material Name</label>
+                            <input type="text" id="sl-modal-material" placeholder="e.g. Maize" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                        </div>
+                        <div class="form-group">
+                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Moisture %</label>
+                            <input type="number" step="any" id="sl-modal-moisture" placeholder="e.g. 14.5" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;">
+                        <div class="form-group">
+                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Starting Wt (Tons)</label>
+                            <input type="number" step="any" id="sl-modal-start-wt" oninput="window.calcSlNet()" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                        </div>
+                        <div class="form-group">
+                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Ending Wt (Tons)</label>
+                            <input type="number" step="any" id="sl-modal-end-wt" oninput="window.calcSlNet()" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                        </div>
+                        <div class="form-group">
+                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Net Qty (Tons)</label>
+                            <input type="number" step="any" id="sl-modal-net-wt" readonly style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--bg-color);color:var(--text-primary);opacity:0.8;font-weight:700;outline:none;" />
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:1rem;">
+                        <div class="form-group">
+                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Temperature (°C)</label>
+                            <input type="number" step="any" id="sl-modal-temp" placeholder="e.g. 35" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                        </div>
+                        <div class="form-group">
+                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Performed By</label>
+                            <input type="text" id="sl-modal-operator" placeholder="e.g. Zubair" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Remarks</label>
+                        <textarea id="sl-modal-remarks" placeholder="Any additional notes..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);height:60px;resize:none;outline:none;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions" style="margin-top:1.5rem;display:flex;justify-content:flex-end;gap:1rem;">
+                    <button class="btn btn-secondary" id="btn-cancel-silo-log" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-silo-log" style="background:#3b82f6;border-color:#3b82f6;width:auto;padding:0.5rem 2rem;">💾 Save Performa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Performa Check List Modal -->
     <div id="performa-modal" class="modal-overlay">
         <div class="modal-card" style="max-width:950px;width:95%;background:#ffffff;">
@@ -2309,6 +2426,7 @@ order by
     <script src="silo_moisture.js?v=4"></script>
     <script src="pellet_efficiency.js?v=5"></script>
     <script src="batching_audit.js?v=1"></script>
+    <script src="silo_performa.js?v=1"></script>
     <script src="script.js?v=4"></script>
     <script src="shift_report_pdf.js?v=4"></script>
     <script src="less_excess_pdf.js?v=4"></script>
