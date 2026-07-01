@@ -594,10 +594,9 @@ try {
 
             // Draw arc zones
             const zones = [
-                { from: 0, to: 50, color: '#ef4444' },    // poor - red
-                { from: 50, to: 75, color: '#f59e0b' },   // moderate - yellow
-                { from: 75, to: 90, color: '#60a5fa' },   // good - light blue
-                { from: 90, to: 120, color: '#10b981' }   // excellent - green
+                { from: 0, to: 60, color: '#ef4444' },    // below 60 - red
+                { from: 60, to: 80, color: '#f59e0b' },   // 60 to 80 - yellow/orange
+                { from: 80, to: 120, color: '#10b981' }   // 80 and above - green
             ];
 
             zones.forEach(z => {
@@ -642,19 +641,27 @@ try {
                 ctx.fillText(v + '%', cx + labelR * Math.cos(a), cy - labelR * Math.sin(a));
             });
 
+            // Determine needle color based on value
+            let needleColor = '#f59e0b'; // orange/yellow (60-80)
+            if (value >= 80) {
+                needleColor = '#10b981'; // green (80+)
+            } else if (value < 60) {
+                needleColor = '#ef4444'; // red (<60)
+            }
+
             // Needle
             ctx.beginPath();
             ctx.moveTo(cx - 6 * Math.sin(angle), cy - 6 * Math.cos(angle));
             ctx.lineTo(cx + R * Math.cos(angle), cy - R * Math.sin(angle));
             ctx.lineTo(cx + 6 * Math.sin(angle), cy + 6 * Math.cos(angle));
             ctx.closePath();
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = needleColor;
             ctx.fill();
 
             // Pivot center circle
             ctx.beginPath();
             ctx.arc(cx, cy, 8, 0, 2 * Math.PI);
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = needleColor;
             ctx.fill();
             ctx.beginPath();
             ctx.arc(cx, cy, 3, 0, 2 * Math.PI);
@@ -676,6 +683,7 @@ try {
         }
 
         label.textContent = `${Math.round(value)}%`;
+    };
     const savePeData = () => {
         localStorage.setItem(LS_PELLET_EFFICIENCY, JSON.stringify(pelletEffData));
     };
