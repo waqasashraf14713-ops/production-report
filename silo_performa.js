@@ -38,6 +38,275 @@ try {
         section.style.display = (section.style.display === 'none') ? 'block' : 'none';
     };
 
+    // Print Silo Inspection Report as beautiful paper
+    window.printSiloInspection = (id) => {
+        const log = siloLogs.find(x => x.id === id);
+        if (!log) return alert('Record not found.');
+
+        const insp = log.inspection || {};
+        const sealNo = log.sealNo || '';
+        const date = log.date || '';
+        const siloNo = log.siloNumber ? log.siloNumber.replace('Silo ', '') : '';
+        const material = log.material || '';
+        const supervisor = log.supervisor || '';
+        const remarks = log.remarks || '';
+
+        const renderTick = (val, expectTrue = true) => {
+            if (expectTrue) {
+                return val ? '<span style="font-family:Arial,sans-serif;font-size:1.2rem;font-weight:bold;">✔</span>' : '';
+            } else {
+                return !val ? '<span style="font-family:Arial,sans-serif;font-size:1.2rem;font-weight:bold;">✔</span>' : '';
+            }
+        };
+
+        const printWindow = window.open('', '_blank', 'width=900,height=950');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Silo Inspection Report - Silo ${siloNo}</title>
+                <link href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css" rel="stylesheet">
+                <style>
+                    body {
+                        font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Urdu Typesetting', serif;
+                        direction: rtl;
+                        text-align: right;
+                        padding: 20px;
+                        background: #fff;
+                        color: #000;
+                        margin: 0;
+                    }
+                    .header-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 15px;
+                    }
+                    .header-table td {
+                        border: none;
+                        padding: 5px;
+                        font-size: 1.15rem;
+                    }
+                    .title-block {
+                        text-align: center;
+                        font-weight: bold;
+                        border: 2px solid #000 !important;
+                        padding: 10px !important;
+                    }
+                    .meta-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 15px;
+                    }
+                    .meta-table td {
+                        border: 1px solid #000;
+                        padding: 8px;
+                        font-size: 1.15rem;
+                        text-align: right;
+                    }
+                    .main-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 15px;
+                    }
+                    .main-table th, .main-table td {
+                        border: 1px solid #000;
+                        padding: 6px 10px;
+                        font-size: 1.15rem;
+                        vertical-align: middle;
+                    }
+                    .main-table th {
+                        background: #f2f2f2;
+                        text-align: center;
+                        font-weight: bold;
+                    }
+                    .tick-cell {
+                        text-align: center;
+                        width: 55px;
+                        font-weight: bold;
+                    }
+                    .section-cell {
+                        text-align: center;
+                        font-weight: bold;
+                        width: 80px;
+                    }
+                    .footer-block {
+                        margin-top: 30px;
+                        display: flex;
+                        justify-content: space-between;
+                        font-size: 1.15rem;
+                    }
+                    .footer-sig {
+                        width: 30%;
+                        text-align: center;
+                        border-top: 1px solid #000;
+                        padding-top: 5px;
+                        margin-top: 40px;
+                    }
+                    @media print {
+                        body {
+                            padding: 0;
+                        }
+                    }
+                </style>
+            </head>
+            <body onload="window.print();">
+                <table class="header-table">
+                    <tr>
+                        <td style="width:30%; font-weight:bold;">Seal # <span style="font-family:Arial,sans-serif;font-size:1.1rem;border-bottom:1px solid #000;padding:0 5px;">${sealNo}</span></td>
+                        <td class="title-block" style="width:40%;">
+                            <div style="font-size:1.5rem;">سائلو انسپکشن رپورٹ - سٹیل سائلوز (Steel Silo)</div>
+                            <div style="font-size:1.2rem;margin-top:5px;">(فلنگ سے پہلے)</div>
+                        </td>
+                        <td style="width:30%; text-align:left; font-weight:bold;">تاریخ: <span style="border-bottom:1px solid #000;padding:0 5px;">${date}</span></td>
+                    </tr>
+                </table>
+
+                <table class="meta-table">
+                    <tr>
+                        <td><strong>سائلو نمبر:</strong> <span style="font-family:Arial,sans-serif;">${siloNo}</span></td>
+                        <td><strong>مٹیریل:</strong> ${material}</td>
+                        <td><strong>سپروائزر کا نام:</strong> ${supervisor}</td>
+                    </tr>
+                </table>
+
+                <table class="main-table">
+                    <thead>
+                        <tr>
+                            <th style="width:10%;">حصہ</th>
+                            <th style="width:7%;">نہیں</th>
+                            <th style="width:7%;">ہاں</th>
+                            <th style="width:76%; text-align:right;">مندرجہ ذیل نکات کو یقینی بنائیں (پروڈکشن ڈیپارٹمنٹ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Silo Top -->
+                        <tr>
+                            <td rowspan="4" class="section-cell">Silo Top</td>
+                            <td class="tick-cell">${renderTick(insp.top1, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.top1, true)}</td>
+                            <td>1. سائلو ٹاپ کی ائیر ٹائٹنس کو صاف کیا گیا ہے اور کھلا (Open) تو نہیں۔</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.top2, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.top2, true)}</td>
+                            <td>2. اوپر دیکھو کہ ائیر ٹائٹنس کی کوئی بولٹ کھلی تو نہیں ہے۔</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.top3, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.top3, true)}</td>
+                            <td>3. تمام بلور کو چلا کر دیکھیں کہ ہوا کا دباؤ درست ہے اور کوئی مٹی وغیرہ تو نہیں ہے۔</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.top4, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.top4, true)}</td>
+                            <td>4. فلنگ (Filling) سے پہلے والو کو آپریٹ کر کے دیکھ لیں۔</td>
+                        </tr>
+
+                        <!-- Silo Bottom -->
+                        <tr>
+                            <td rowspan="12" class="section-cell">Silo Bottom</td>
+                            <td class="tick-cell">${renderTick(insp.bot1, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.bot1, true)}</td>
+                            <td>1. سائلو کے اندر ائیر ڈکٹس (Aeration Ducts) کو صاف کیا گیا ہے؟</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.bot2, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.bot2, true)}</td>
+                            <td>2. سائلو کے اندر موجود تمام ہینڈل اور ڈسچارج گیٹ کو ٹیسٹ کیا گیا ہے؟</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.bot3, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.bot3, true)}</td>
+                            <td>3. سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچز (Ventilation Trenches) کو صاف کیا گیا ہے؟</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.bot4, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.bot4, true)}</td>
+                            <td>4. سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچ شیٹس (Ventilation Trench Sheets) کو اچھی طرح صاف اور فٹ کیا گیا ہے؟</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.bot5, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.bot5, true)}</td>
+                            <td>5. سائلو کے اندر موجود سوئپر کنویئر فلیکسیبل ہے اور اپنی جگہ (درست پوزیشن) پر ہے؟</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.bot6, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.bot6, true)}</td>
+                            <td>6. سائلو کے اندر فرش کے ساتھ پلیٹس والا جوڑ ٹھیک ہے؟</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.bot7, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.bot7, true)}</td>
+                            <td>7. سائلو کے باہر شیٹس والا جوڑ ٹھیک ہے؟</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.bot8, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.bot8, true)}</td>
+                            <td>8. سائلو کے تمام ڈسچارج گیٹس کو مکمل بند کیا گیا ہے؟</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.bot9, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.bot9, true)}</td>
+                            <td>9. سائلو کے تمام ڈسچارج گیٹس لاک (SEAL) ہیں؟</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.bot10, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.bot10, true)}</td>
+                            <td>10. سائلو کی مشین (Entrance) کا دروازہ اچھی طرح سے بند ہے؟</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.bot11, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.bot11, true)}</td>
+                            <td>11. سردیوں میں گرین کا درجہ حرارت 16 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+                        </tr>
+                        <tr>
+                            <td class="tick-cell">${renderTick(insp.bot12, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.bot12, true)}</td>
+                            <td>12. گرمیوں میں گرین کا درجہ حرارت 14 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="font-size:1.15rem;margin-bottom:20px;font-weight:bold;">
+                    ریمارکس پروڈکشن آفیسر: <span style="font-weight:normal;border-bottom:1px dashed #000;display:inline-block;width:75%;padding-right:10px;">${remarks}</span>
+                </div>
+
+                <div style="font-size:1.25rem;font-weight:bold;margin-top:15px;margin-bottom:10px;border-bottom:1px solid #000;padding-bottom:5px;">لیبارٹری ریمارکس (Lab Remarks)</div>
+                <table class="main-table">
+                    <thead>
+                        <tr>
+                            <th style="width:10%;">حصہ</th>
+                            <th style="width:7%;">نہیں</th>
+                            <th style="width:7%;">ہاں</th>
+                            <th style="width:76%; text-align:right;">ٹیسٹ کی تفصیل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="section-cell">Lab Check</td>
+                            <td class="tick-cell">${renderTick(insp.lab1, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.lab1, true)}</td>
+                            <td>سائلوز میں کوئی پرانا بیج یا اکسیڑا (Old Grain / Infestation) موجود نہیں ہے۔</td>
+                        </tr>
+                        <tr>
+                            <td class="section-cell">Fumigation</td>
+                            <td class="tick-cell">${renderTick(insp.lab2, false)}</td>
+                            <td class="tick-cell">${renderTick(insp.lab2, true)}</td>
+                            <td>کیا سائلو کو فیومیگیٹ (Fumigate) کرنے کی ضرورت ہے؟</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="footer-block">
+                    <div class="footer-sig">دستخط پلانٹ آپریٹر</div>
+                    <div class="footer-sig">دستخط پروڈکشن آفیسر</div>
+                    <div class="footer-sig">دستخط پروڈکشن مینیجر</div>
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    };
+
     const renderTableMarkup = (logsList) => {
         if (logsList.length === 0) {
             return `
@@ -50,6 +319,7 @@ try {
         let rows = '';
         [...logsList].reverse().forEach(log => {
             const hasInspection = log.inspection ? '✓ Yes' : '-';
+            const printBtn = log.operation === 'Filling' ? `<button class="btn btn-primary" style="padding:0.2rem 0.4rem; font-size:0.75rem; background:#8b5cf6; border-color:#8b5cf6;" onclick="printSiloInspection(${log.id})">🖨️ Print</button>` : '';
             rows += `
                 <tr style="border-bottom:1px solid var(--card-border);">
                     <td style="font-weight:600;">${log.date}</td>
@@ -63,8 +333,9 @@ try {
                     <td>${log.operator || '-'}</td>
                     <td>${log.sealNo || '-'}</td>
                     <td>${hasInspection}</td>
-                    <td class="no-print">
+                    <td class="no-print" style="display:flex;gap:0.25rem;">
                         <button class="btn btn-secondary" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="editSiloLog(${log.id})">✏️ Edit</button>
+                        ${printBtn}
                         <button class="btn btn-danger" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="deleteSiloLog(${log.id})">🗑 Del</button>
                     </td>
                 </tr>
@@ -180,6 +451,7 @@ try {
             const hasInspection = log.inspection ? '✓ Yes' : '-';
             const sealValue = log.sealNo || '-';
             const supervisorValue = log.supervisor || '-';
+            const printBtn = log.operation === 'Filling' ? `<button class="btn btn-primary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#8b5cf6;border-color:#8b5cf6;" onclick="printSiloInspection(${log.id})">🖨️ Print</button>` : '';
 
             rows += `
                 <tr style="border-bottom:1px solid #e2e8f0;">
@@ -193,8 +465,9 @@ try {
                     <td style="padding:0.5rem;">${sealValue}</td>
                     <td style="padding:0.5rem;">${supervisorValue}</td>
                     <td style="padding:0.5rem;font-weight:700;color:#4f46e5;">${hasInspection}</td>
-                    <td class="no-print" style="padding:0.5rem;">
+                    <td class="no-print" style="padding:0.5rem;display:flex;gap:0.2rem;">
                         <button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;" onclick="window.editSiloLog(${log.id})">✏️ Edit</button>
+                        ${printBtn}
                         <button class="btn btn-danger" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#ef4444;" onclick="window.deleteSiloLog(${log.id})">🗑 Del</button>
                     </td>
                 </tr>
