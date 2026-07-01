@@ -66,9 +66,13 @@
                     <span class="nav-icon">🏭</span>
                     <span>Silo Status</span>
                 </a>
-                <a href="#silo-performa" class="nav-item" id="nav-silo-performa">
+                <a href="#silo-filling" class="nav-item" id="nav-silo-filling">
                     <span class="nav-icon">📥</span>
-                    <span>Silo Filling/Discharge</span>
+                    <span>Silo Filling Performa</span>
+                </a>
+                <a href="#silo-discharge" class="nav-item" id="nav-silo-discharge">
+                    <span class="nav-icon">📤</span>
+                    <span>Silo Discharge Performa</span>
                 </a>
                 <a href="#daily-report" class="nav-item" id="nav-daily-report">
                     <span class="nav-icon">📋</span>
@@ -164,10 +168,15 @@
                     <div class="dash-quick-label">Pellet Efficiency</div>
                     <div class="dash-quick-desc">Pellet mill energy & PDI</div>
                 </div>
-                <div class="dash-quick-card" onclick="document.getElementById('nav-silo-performa').click()">
-                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);">📥</div>
-                    <div class="dash-quick-label">Silo Performa</div>
-                    <div class="dash-quick-desc">Filling & discharge records</div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-silo-filling').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#10b981,#34d399);">📥</div>
+                    <div class="dash-quick-label">Silo Filling Performa</div>
+                    <div class="dash-quick-desc">Filling logs (Silo 1-16)</div>
+                </div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-silo-discharge').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#ef4444,#f87171);">📤</div>
+                    <div class="dash-quick-label">Silo Discharge Performa</div>
+                    <div class="dash-quick-desc">Discharge logs (Silo 1-16)</div>
                 </div>
             </section>
         </div>
@@ -178,16 +187,30 @@
             </section>
         </div>
 
-        <div id="view-silo-performa" class="view-section" style="display: none;">
+        <div id="view-silo-filling" class="view-section" style="display: none;">
             <section class="table-container">
                 <div class="table-header">
-                    <h2>📥 Silo Filling and Discharge Performa</h2>
+                    <h2>📥 Silo Filling Performa (Stock In)</h2>
                     <div class="header-actions">
-                        <button class="btn btn-secondary" id="btn-add-silo-log">➕ New Entry</button>
+                        <button class="btn btn-secondary" onclick="window.openSiloLogModal('Filling')">➕ New Filling Entry</button>
                     </div>
                 </div>
-                <div id="silo-logs-container" style="margin-top:1.5rem;">
-                    <!-- Silo logs table populated dynamically -->
+                <div id="silo-filling-container" style="margin-top:1.5rem;">
+                    <!-- Silo filling logs table populated dynamically -->
+                </div>
+            </section>
+        </div>
+
+        <div id="view-silo-discharge" class="view-section" style="display: none;">
+            <section class="table-container">
+                <div class="table-header">
+                    <h2>📤 Silo Discharge Performa (Stock Out)</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="window.openSiloLogModal('Discharging')">➕ New Discharge Entry</button>
+                    </div>
+                </div>
+                <div id="silo-discharge-container" style="margin-top:1.5rem;">
+                    <!-- Silo discharge logs table populated dynamically -->
                 </div>
             </section>
         </div>
@@ -1605,6 +1628,12 @@ order by
                                 <option value="Silo 8">Silo 8</option>
                                 <option value="Silo 9">Silo 9</option>
                                 <option value="Silo 10">Silo 10</option>
+                                <option value="Silo 11">Silo 11</option>
+                                <option value="Silo 12">Silo 12</option>
+                                <option value="Silo 13">Silo 13</option>
+                                <option value="Silo 14">Silo 14</option>
+                                <option value="Silo 15">Silo 15</option>
+                                <option value="Silo 16">Silo 16</option>
                             </select>
                         </div>
                         <div class="form-group">

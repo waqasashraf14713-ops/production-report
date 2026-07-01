@@ -32,28 +32,46 @@ try {
     window.calcSlNet = () => {
         const start = parseFloat(document.getElementById('sl-modal-start-wt').value) || 0;
         const end = parseFloat(document.getElementById('sl-modal-end-wt').value) || 0;
-        // Net is absolute difference
         const net = Math.abs(end - start);
         document.getElementById('sl-modal-net-wt').value = net.toFixed(2);
     };
 
-    const renderSiloLogs = () => {
-        const container = document.getElementById('silo-logs-container');
-        if (!container) return;
-
-        if (siloLogs.length === 0) {
-            container.innerHTML = `
+    const renderTableMarkup = (logsList) => {
+        if (logsList.length === 0) {
+            return `
                 <div style="text-align:center;padding:3rem 1rem;color:var(--text-secondary);opacity:0.65;">
-                    <div style="font-size:3rem;margin-bottom:1rem;">📥</div>
-                    <div style="font-size:1.1rem;font-weight:600;">No Silo Performa entries found.</div>
-                    <div style="font-size:0.9rem;margin-top:0.5rem;">Click "➕ New Entry" to record a log.</div>
+                    <div style="font-size:3rem;margin-bottom:1rem;">📋</div>
+                    <div style="font-size:1.1rem;font-weight:600;">No records found.</div>
                 </div>`;
-            return;
         }
 
-        container.innerHTML = `
+        let rows = '';
+        [...logsList].reverse().forEach(log => {
+            rows += `
+                <tr style="border-bottom:1px solid var(--card-border);">
+                    <td style="font-weight:600;">${log.date}</td>
+                    <td>${log.shift || 'A'}</td>
+                    <td style="font-weight:700;">${log.siloNumber}</td>
+                    <td style="font-weight:700;color:${log.operation === 'Filling'?'#10b981':'#ef4444'};">${log.operation}</td>
+                    <td>${log.material}</td>
+                    <td>${log.moisture ? log.moisture + '%' : '-'}</td>
+                    <td>${log.startWeight || 0}</td>
+                    <td>${log.endWeight || 0}</td>
+                    <td style="font-weight:700;color:#2563eb;">${log.netQty || 0}</td>
+                    <td>${log.temperature ? log.temperature + '°C' : '-'}</td>
+                    <td>${log.operator || '-'}</td>
+                    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${log.remarks || ''}">${log.remarks || '-'}</td>
+                    <td class="no-print">
+                        <button class="btn btn-secondary" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="editSiloLog(${log.id})">✏️ Edit</button>
+                        <button class="btn btn-danger" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="deleteSiloLog(${log.id})">🗑 Del</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        return `
             <div class="table-responsive">
-                <table class="report-table" id="silo-logs-table" style="font-size:0.9rem;width:100%;">
+                <table class="report-table" style="font-size:0.9rem;width:100%;">
                     <thead>
                         <tr style="background:#f1f5f9; color:#334155; font-weight:700;">
                             <th>Date</th>
@@ -71,35 +89,51 @@ try {
                             <th class="no-print">Actions</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody>
+                        ${rows}
+                    </tbody>
                 </table>
             </div>
         `;
+    };
 
-        const tbody = container.querySelector('#silo-logs-table tbody');
-        [...siloLogs].reverse().forEach(log => {
-            const tr = document.createElement('tr');
-            tr.style.borderBottom = '1px solid var(--card-border)';
-            tr.innerHTML = `
-                <td style="font-weight:600;">${log.date}</td>
-                <td>${log.shift || 'A'}</td>
-                <td style="font-weight:700;">${log.siloNumber}</td>
-                <td style="font-weight:700;color:${log.operation === 'Filling'?'#10b981':'#ef4444'};">${log.operation}</td>
-                <td>${log.material}</td>
-                <td>${log.moisture ? log.moisture + '%' : '-'}</td>
-                <td>${log.startWeight || 0}</td>
-                <td>${log.endWeight || 0}</td>
-                <td style="font-weight:700;color:#2563eb;">${log.netQty || 0}</td>
-                <td>${log.temperature ? log.temperature + '°C' : '-'}</td>
-                <td>${log.operator || '-'}</td>
-                <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${log.remarks || ''}">${log.remarks || '-'}</td>
-                <td class="no-print">
-                    <button class="btn btn-secondary" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="editSiloLog(${log.id})">✏️ Edit</button>
-                    <button class="btn btn-danger" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="deleteSiloLog(${log.id})">🗑 Del</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
+    const renderSiloLogs = () => {
+        const fillContainer = document.getElementById('silo-filling-container');
+        const dischargeContainer = document.getElementById('silo-discharge-container');
+
+        if (fillContainer) {
+            const fillLogs = siloLogs.filter(log => log.operation === 'Filling');
+            fillContainer.innerHTML = renderTableMarkup(fillLogs);
+        }
+        if (dischargeContainer) {
+            const dischargeLogs = siloLogs.filter(log => log.operation === 'Discharging');
+            dischargeContainer.innerHTML = renderTableMarkup(dischargeLogs);
+        }
+    };
+
+    window.openSiloLogModal = (operationType) => {
+        activeLogId = null;
+        document.getElementById('silo-log-modal-title').textContent = `New Silo ${operationType} Entry`;
+        const today = new Date();
+        document.getElementById('sl-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
+        document.getElementById('sl-modal-shift').value = 'A';
+        document.getElementById('sl-modal-silo').value = 'Silo 1';
+        
+        const operationSelect = document.getElementById('sl-modal-operation');
+        operationSelect.value = operationType;
+        // Keep disabled to prevent toggling wrong type
+        operationSelect.disabled = true;
+
+        document.getElementById('sl-modal-material').value = 'Maize';
+        document.getElementById('sl-modal-moisture').value = '';
+        document.getElementById('sl-modal-start-wt').value = '';
+        document.getElementById('sl-modal-end-wt').value = '';
+        document.getElementById('sl-modal-net-wt').value = '0.00';
+        document.getElementById('sl-modal-temp').value = '';
+        document.getElementById('sl-modal-operator').value = '';
+        document.getElementById('sl-modal-remarks').value = '';
+
+        document.getElementById('silo-log-modal').classList.add('show');
     };
 
     window.editSiloLog = (id) => {
@@ -107,11 +141,15 @@ try {
         if (!log) return;
         activeLogId = id;
 
-        document.getElementById('silo-log-modal-title').textContent = 'Edit Silo Filling/Discharge Entry';
+        document.getElementById('silo-log-modal-title').textContent = `Edit Silo ${log.operation} Entry`;
         document.getElementById('sl-modal-date').value = log.date || '';
         document.getElementById('sl-modal-shift').value = log.shift || 'A';
         document.getElementById('sl-modal-silo').value = log.siloNumber || 'Silo 1';
-        document.getElementById('sl-modal-operation').value = log.operation || 'Filling';
+        
+        const operationSelect = document.getElementById('sl-modal-operation');
+        operationSelect.value = log.operation || 'Filling';
+        operationSelect.disabled = true; // prevent changing type on edit
+
         document.getElementById('sl-modal-material').value = log.material || '';
         document.getElementById('sl-modal-moisture').value = log.moisture !== undefined ? log.moisture : '';
         document.getElementById('sl-modal-start-wt').value = log.startWeight !== undefined ? log.startWeight : '';
@@ -143,46 +181,32 @@ try {
     };
 
     const initSiloEvents = () => {
-        const btnAdd = document.getElementById('btn-add-silo-log');
         const modal = document.getElementById('silo-log-modal');
         const btnClose = document.getElementById('silo-log-modal-close');
         const btnCancel = document.getElementById('btn-cancel-silo-log');
         const btnSave = document.getElementById('btn-save-silo-log');
 
-        const navSiloPerforma = document.getElementById('nav-silo-performa');
+        const navFilling = document.getElementById('nav-silo-filling');
+        const navDischarging = document.getElementById('nav-silo-discharge');
 
-        if (navSiloPerforma) {
-            navSiloPerforma.addEventListener('click', (e) => {
+        const switchSectionView = (navBtn, viewId) => {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            navBtn.classList.add('active');
+            document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
+            document.getElementById(viewId).style.display = 'block';
+            renderSiloLogs();
+        };
+
+        if (navFilling) {
+            navFilling.addEventListener('click', (e) => {
                 e.preventDefault();
-                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-                navSiloPerforma.classList.add('active');
-                
-                document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
-                document.getElementById('view-silo-performa').style.display = 'block';
-                
-                renderSiloLogs();
+                switchSectionView(navFilling, 'view-silo-filling');
             });
         }
-
-        if (btnAdd) {
-            btnAdd.addEventListener('click', () => {
-                activeLogId = null;
-                document.getElementById('silo-log-modal-title').textContent = 'New Silo Filling/Discharge Entry';
-                const today = new Date();
-                document.getElementById('sl-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
-                document.getElementById('sl-modal-shift').value = 'A';
-                document.getElementById('sl-modal-silo').value = 'Silo 1';
-                document.getElementById('sl-modal-operation').value = 'Filling';
-                document.getElementById('sl-modal-material').value = 'Maize';
-                document.getElementById('sl-modal-moisture').value = '';
-                document.getElementById('sl-modal-start-wt').value = '';
-                document.getElementById('sl-modal-end-wt').value = '';
-                document.getElementById('sl-modal-net-wt').value = '0.00';
-                document.getElementById('sl-modal-temp').value = '';
-                document.getElementById('sl-modal-operator').value = '';
-                document.getElementById('sl-modal-remarks').value = '';
-
-                modal.classList.add('show');
+        if (navDischarging) {
+            navDischarging.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchSectionView(navDischarging, 'view-silo-discharge');
             });
         }
 
@@ -195,7 +219,7 @@ try {
                 const date = document.getElementById('sl-modal-date').value.trim();
                 const shift = document.getElementById('sl-modal-shift').value;
                 const siloNumber = document.getElementById('sl-modal-silo').value;
-                const operation = document.getElementById('sl-modal-operation').value;
+                const operation = document.getElementById('sl-modal-operation').value; // disabled select still has value
                 const material = document.getElementById('sl-modal-material').value.trim();
                 const moisture = parseFloat(document.getElementById('sl-modal-moisture').value) || 0;
                 const startWeight = parseFloat(document.getElementById('sl-modal-start-wt').value) || 0;
@@ -247,7 +271,7 @@ try {
                         const { error } = await sbClient.from('silo_logs').upsert([dbRecord]);
                         if (error) throw error;
                         if (window.showToast) window.showToast('✓ Saved to Supabase');
-                        alert('✓ Silo Performa saved to Supabase successfully!');
+                        alert(`✓ Silo ${log.operation} Performa saved to Supabase successfully!`);
                     } catch (err) {
                         console.error('Failed to save to Supabase:', err);
                         const errorMsg = err.message || err.details || JSON.stringify(err);
@@ -256,7 +280,7 @@ try {
                     }
                 } else {
                     if (window.showToast) window.showToast('✓ Saved locally');
-                    alert('✓ Saved locally (offline/Supabase not active).');
+                    alert('✓ Saved locally.');
                 }
             });
         }
