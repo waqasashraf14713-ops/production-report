@@ -3125,13 +3125,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Sort checklist history chronologically (latest first)
-        const sorted = [...dailyChecklists].sort((a, b) => {
-            const timeA = parseChecklistDateToISO(a.date).getTime();
-            const timeB = parseChecklistDateToISO(b.date).getTime();
-            return timeB - timeA;
-        });
-
         const parseChecklistDateToISO = (dateStr) => {
             if (!dateStr) return new Date(0);
             if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return new Date(dateStr);
@@ -3145,6 +3138,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return new Date(dateStr);
         };
+
+        // Sort checklist history chronologically (latest first)
+        const sorted = [...dailyChecklists].sort((a, b) => {
+            const timeA = parseChecklistDateToISO(a.date).getTime();
+            const timeB = parseChecklistDateToISO(b.date).getTime();
+            return timeB - timeA;
+        });
 
         tbody.innerHTML = '';
         sorted.forEach(log => {
