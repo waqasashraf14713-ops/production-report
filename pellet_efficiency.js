@@ -399,12 +399,13 @@ try {
                         const { error } = await sbClient.from('pellet_efficiency').upsert([dbRecord]);
                         if (error) throw error;
                         if (window.showToast) window.showToast('✓ Saved to Supabase');
-                    } catch (err) {
                         console.error('Failed to save to Supabase:', err);
-                        if (window.showToast) window.showToast('✓ Saved locally (Supabase offline)');
+                        const errorMsg = err.message || err.details || JSON.stringify(err);
+                        if (window.showToast) window.showToast(`✗ Supabase Error: ${errorMsg}`);
+                        else alert(`Supabase Error: ${errorMsg}`);
                     }
                 } else {
-                    if (window.showToast) window.showToast('✓ Saved locally');
+                    if (window.showToast) window.showToast('✓ Saved locally (Supabase not configured)');
                 }
             });
         }
