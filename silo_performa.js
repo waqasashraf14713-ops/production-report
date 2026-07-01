@@ -32,12 +32,6 @@ try {
         localStorage.setItem(LS_SILO_LOGS, JSON.stringify(siloLogs));
     };
 
-    window.slToggleInspectionChecklist = () => {
-        const section = document.getElementById('sl-modal-inspection-section');
-        if (!section) return;
-        section.style.display = (section.style.display === 'none') ? 'block' : 'none';
-    };
-
     // Print Silo Inspection Report as beautiful paper
     window.printSiloInspection = (id) => {
         const log = siloLogs.find(x => x.id === id);
@@ -500,7 +494,7 @@ try {
 
     window.openSiloLogModal = (operationType, siloNum) => {
         activeLogId = null;
-        document.getElementById('silo-log-modal-title').textContent = `New Silo ${operationType} Entry`;
+        document.getElementById('silo-log-modal-title').textContent = `New Silo ${siloNum} - ${operationType} Performa`;
         const today = new Date();
         document.getElementById('sl-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
         document.getElementById('sl-modal-shift').value = 'A';
@@ -509,27 +503,40 @@ try {
         
         const operationSelect = document.getElementById('sl-modal-operation');
         operationSelect.value = operationType;
-        operationSelect.disabled = true;
 
         document.getElementById('sl-modal-seal-no').value = '';
         document.getElementById('sl-modal-supervisor').value = '';
-        
-        for (let i = 1; i <= 4; i++) document.getElementById(`sl-chk-top${i}`).checked = false;
-        for (let i = 1; i <= 12; i++) document.getElementById(`sl-chk-bot${i}`).checked = false;
-        for (let i = 1; i <= 2; i++) document.getElementById(`sl-chk-lab${i}`).checked = false;
 
-        const fillingFields = document.getElementById('sl-modal-filling-only-fields');
-        const inspectionBtn = document.getElementById('sl-modal-inspection-btn-container');
-        const inspectionSect = document.getElementById('sl-modal-inspection-section');
+        // Reset radio buttons to default "no"
+        for (let i = 1; i <= 4; i++) {
+            document.getElementById(`sl-chk-top${i}-no`).checked = true;
+            document.getElementById(`sl-chk-top${i}-yes`).checked = false;
+        }
+        for (let i = 1; i <= 12; i++) {
+            document.getElementById(`sl-chk-bot${i}-no`).checked = true;
+            document.getElementById(`sl-chk-bot${i}-yes`).checked = false;
+        }
+        for (let i = 1; i <= 2; i++) {
+            document.getElementById(`sl-chk-lab${i}-no`).checked = true;
+            document.getElementById(`sl-chk-lab${i}-yes`).checked = false;
+        }
+
+        const modalCard = document.getElementById('silo-log-modal-card');
+        const sealGroup = document.getElementById('fg-seal-no');
+        const supervisorGroup = document.getElementById('fg-supervisor');
+        const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
 
         if (operationType === 'Filling') {
-            if (fillingFields) fillingFields.style.display = 'grid';
-            if (inspectionBtn) inspectionBtn.style.display = 'block';
-            if (inspectionSect) inspectionSect.style.display = 'none';
+            if (modalCard) modalCard.style.maxWidth = '900px';
+            if (sealGroup) sealGroup.style.display = 'block';
+            if (supervisorGroup) supervisorGroup.style.display = 'block';
+            if (inspectionSection) inspectionSection.style.display = 'block';
         } else {
-            if (fillingFields) fillingFields.style.display = 'none';
-            if (inspectionBtn) inspectionBtn.style.display = 'none';
-            if (inspectionSect) inspectionSect.style.display = 'none';
+            // Discharging: simple form layout
+            if (modalCard) modalCard.style.maxWidth = '550px';
+            if (sealGroup) sealGroup.style.display = 'none';
+            if (supervisorGroup) supervisorGroup.style.display = 'none';
+            if (inspectionSection) inspectionSection.style.display = 'none';
         }
 
         document.getElementById('sl-modal-material').value = 'Maize';
@@ -547,35 +554,49 @@ try {
         if (!log) return;
         activeLogId = id;
 
-        document.getElementById('silo-log-modal-title').textContent = `Edit Silo ${log.operation} Entry`;
+        document.getElementById('silo-log-modal-title').textContent = `Edit Silo ${log.siloNumber} - ${log.operation} Performa`;
         document.getElementById('sl-modal-date').value = log.date || '';
         document.getElementById('sl-modal-shift').value = log.shift || 'A';
         document.getElementById('sl-modal-silo').value = log.siloNumber || 'Silo 1';
         
         const operationSelect = document.getElementById('sl-modal-operation');
         operationSelect.value = log.operation || 'Filling';
-        operationSelect.disabled = true;
 
-        const fillingFields = document.getElementById('sl-modal-filling-only-fields');
-        const inspectionBtn = document.getElementById('sl-modal-inspection-btn-container');
-        const inspectionSect = document.getElementById('sl-modal-inspection-section');
+        const modalCard = document.getElementById('silo-log-modal-card');
+        const sealGroup = document.getElementById('fg-seal-no');
+        const supervisorGroup = document.getElementById('fg-supervisor');
+        const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
 
         if (log.operation === 'Filling') {
-            if (fillingFields) fillingFields.style.display = 'grid';
-            if (inspectionBtn) inspectionBtn.style.display = 'block';
-            if (inspectionSect) inspectionSect.style.display = log.inspection ? 'block' : 'none';
+            if (modalCard) modalCard.style.maxWidth = '900px';
+            if (sealGroup) sealGroup.style.display = 'block';
+            if (supervisorGroup) supervisorGroup.style.display = 'block';
+            if (inspectionSection) inspectionSection.style.display = 'block';
 
             document.getElementById('sl-modal-seal-no').value = log.sealNo || '';
             document.getElementById('sl-modal-supervisor').value = log.supervisor || '';
 
             const insp = log.inspection || {};
-            for (let i = 1; i <= 4; i++) document.getElementById(`sl-chk-top${i}`).checked = !!insp[`top${i}`];
-            for (let i = 1; i <= 12; i++) document.getElementById(`sl-chk-bot${i}`).checked = !!insp[`bot${i}`];
-            for (let i = 1; i <= 2; i++) document.getElementById(`sl-chk-lab${i}`).checked = !!insp[`lab${i}`];
+            for (let i = 1; i <= 4; i++) {
+                const checked = !!insp[`top${i}`];
+                document.getElementById(`sl-chk-top${i}-yes`).checked = checked;
+                document.getElementById(`sl-chk-top${i}-no`).checked = !checked;
+            }
+            for (let i = 1; i <= 12; i++) {
+                const checked = !!insp[`bot${i}`];
+                document.getElementById(`sl-chk-bot${i}-yes`).checked = checked;
+                document.getElementById(`sl-chk-bot${i}-no`).checked = !checked;
+            }
+            for (let i = 1; i <= 2; i++) {
+                const checked = !!insp[`lab${i}`];
+                document.getElementById(`sl-chk-lab${i}-yes`).checked = checked;
+                document.getElementById(`sl-chk-lab${i}-no`).checked = !checked;
+            }
         } else {
-            if (fillingFields) fillingFields.style.display = 'none';
-            if (inspectionBtn) inspectionBtn.style.display = 'none';
-            if (inspectionSect) inspectionSect.style.display = 'none';
+            if (modalCard) modalCard.style.maxWidth = '550px';
+            if (sealGroup) sealGroup.style.display = 'none';
+            if (supervisorGroup) supervisorGroup.style.display = 'none';
+            if (inspectionSection) inspectionSection.style.display = 'none';
         }
 
         document.getElementById('sl-modal-material').value = log.material || '';
@@ -681,24 +702,24 @@ try {
                     supervisor = document.getElementById('sl-modal-supervisor').value.trim();
                     
                     inspection = {
-                        top1: document.getElementById('sl-chk-top1').checked,
-                        top2: document.getElementById('sl-chk-top2').checked,
-                        top3: document.getElementById('sl-chk-top3').checked,
-                        top4: document.getElementById('sl-chk-top4').checked,
-                        bot1: document.getElementById('sl-chk-bot1').checked,
-                        bot2: document.getElementById('sl-chk-bot2').checked,
-                        bot3: document.getElementById('sl-chk-bot3').checked,
-                        bot4: document.getElementById('sl-chk-bot4').checked,
-                        bot5: document.getElementById('sl-chk-bot5').checked,
-                        bot6: document.getElementById('sl-chk-bot6').checked,
-                        bot7: document.getElementById('sl-chk-bot7').checked,
-                        bot8: document.getElementById('sl-chk-bot8').checked,
-                        bot9: document.getElementById('sl-chk-bot9').checked,
-                        bot10: document.getElementById('sl-chk-bot10').checked,
-                        bot11: document.getElementById('sl-chk-bot11').checked,
-                        bot12: document.getElementById('sl-chk-bot12').checked,
-                        lab1: document.getElementById('sl-chk-lab1').checked,
-                        lab2: document.getElementById('sl-chk-lab2').checked
+                        top1: document.getElementById('sl-chk-top1-yes').checked,
+                        top2: document.getElementById('sl-chk-top2-yes').checked,
+                        top3: document.getElementById('sl-chk-top3-yes').checked,
+                        top4: document.getElementById('sl-chk-top4-yes').checked,
+                        bot1: document.getElementById('sl-chk-bot1-yes').checked,
+                        bot2: document.getElementById('sl-chk-bot2-yes').checked,
+                        bot3: document.getElementById('sl-chk-bot3-yes').checked,
+                        bot4: document.getElementById('sl-chk-bot4-yes').checked,
+                        bot5: document.getElementById('sl-chk-bot5-yes').checked,
+                        bot6: document.getElementById('sl-chk-bot6-yes').checked,
+                        bot7: document.getElementById('sl-chk-bot7-yes').checked,
+                        bot8: document.getElementById('sl-chk-bot8-yes').checked,
+                        bot9: document.getElementById('sl-chk-bot9-yes').checked,
+                        bot10: document.getElementById('sl-chk-bot10-yes').checked,
+                        bot11: document.getElementById('sl-chk-bot11-yes').checked,
+                        bot12: document.getElementById('sl-chk-bot12-yes').checked,
+                        lab1: document.getElementById('sl-chk-lab1-yes').checked,
+                        lab2: document.getElementById('sl-chk-lab2-yes').checked
                     };
                 }
 
@@ -747,8 +768,7 @@ try {
                     } catch (err) {
                         console.error('Failed to save to Supabase:', err);
                         const errorMsg = err.message || err.details || JSON.stringify(err);
-                        if (window.showToast) window.showToast(`✗ Supabase Error: ${errorMsg}`);
-                        alert(`✗ Supabase Save Error:\n${errorMsg}\n\nPlease check table columns or schema.`);
+                        if (window.showToast) window.showToast('✗ Supabase Save Error');
                     }
                 } else {
                     if (window.showToast) window.showToast('✓ Saved locally');

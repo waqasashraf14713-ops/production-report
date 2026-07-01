@@ -1569,206 +1569,213 @@ order by
 
     <!-- Silo Log Modal -->
     <div id="silo-log-modal" class="modal-overlay">
-        <div class="modal-card" style="max-width:550px;width:90%;border-radius:12px;background:var(--card-bg);border:1px solid rgba(99,102,241,0.3);">
-            <div class="modal-header" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;border-bottom:none;padding:1rem 1.5rem;">
-                <h2 id="silo-log-modal-title" style="color:#fff;margin:0;font-size:1.25rem;">New Silo Filling/Discharge Entry</h2>
+        <div id="silo-log-modal-card" class="modal-card" style="max-width:900px;width:95%;border-radius:12px;background:#ffffff;border:1px solid rgba(99,102,241,0.3);max-height:92vh;display:flex;flex-direction:column;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;border-bottom:none;padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+                <h2 id="silo-log-modal-title" style="color:#fff;margin:0;font-size:1.25rem;">New Silo Filling Entry</h2>
                 <button id="silo-log-modal-close" class="modal-close-btn" style="color:#fff;font-size:1.5rem;background:none;border:none;cursor:pointer;">&times;</button>
             </div>
-            <div class="modal-body" style="padding:1.5rem 2rem;background:linear-gradient(to bottom, var(--card-bg), var(--bg-color));">
-                <div style="display:flex;flex-direction:column;gap:1rem;">
-                    <!-- Filling only custom fields -->
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" id="sl-modal-filling-only-fields">
-                        <div class="form-group">
-                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Seal Number (سیل نمبر)</label>
-                            <input type="text" id="sl-modal-seal-no" placeholder="e.g. 257459 -> 62" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
-                        </div>
-                        <div class="form-group">
-                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Supervisor Name (سپروائزر کا نام)</label>
-                            <input type="text" id="sl-modal-supervisor" placeholder="e.g. Ramzan" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
-                        </div>
-                    </div>
+            
+            <div class="modal-body" style="padding:1.5rem 2rem;background:#f8fafc;overflow-y:auto;flex-grow:1;">
+                <!-- Hideable generic select helper elements (hidden in UI but accessible in JS) -->
+                <div style="display:none;">
+                    <select id="sl-modal-silo">
+                        <option value="Silo 1">Silo 1</option><option value="Silo 2">Silo 2</option><option value="Silo 3">Silo 3</option><option value="Silo 4">Silo 4</option>
+                        <option value="Silo 5">Silo 5</option><option value="Silo 6">Silo 6</option><option value="Silo 7">Silo 7</option><option value="Silo 8">Silo 8</option>
+                        <option value="Silo 9">Silo 9</option><option value="Silo 10">Silo 10</option><option value="Silo 11">Silo 11</option><option value="Silo 12">Silo 12</option>
+                        <option value="Silo 13">Silo 13</option><option value="Silo 14">Silo 14</option><option value="Silo 15">Silo 15</option><option value="Silo 16">Silo 16</option>
+                    </select>
+                    <select id="sl-modal-operation">
+                        <option value="Filling">Filling</option>
+                        <option value="Discharging">Discharging</option>
+                    </select>
+                </div>
 
-                    <!-- Inspection checklist toggle & panel -->
-                    <div id="sl-modal-inspection-btn-container" style="display:none;">
-                        <button type="button" class="btn btn-secondary" onclick="window.slToggleInspectionChecklist()" style="width:100%;background:#4f46e5;color:#fff;border:none;font-weight:700;font-size:0.85rem;padding:0.5rem;border-radius:4px;cursor:pointer;">📋 Fill Pre-Filling Inspection Checklist (سائلو انسپکشن رپورٹ)</button>
+                <!-- 1. Metadata Block (Header Info) -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:1rem;background:#ffffff;padding:1.25rem;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+                    <div class="form-group" id="fg-seal-no">
+                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Seal Number (سیل نمبر)</label>
+                        <input type="text" id="sl-modal-seal-no" placeholder="e.g. 257459 -> 62" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;font-weight:700;outline:none;" />
                     </div>
-
-                    <div id="sl-modal-inspection-section" style="display:none;background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:1rem;max-height:220px;overflow-y:auto;box-shadow:inset 0 1px 3px rgba(0,0,0,0.05);">
-                        <h3 class="urdu-text" style="color:#4f46e5;font-size:1.25rem;border-bottom:1px solid #e2e8f0;padding-bottom:0.5rem;margin-bottom:0.75rem;font-weight:bold;">سائلو انسپکشن رپورٹ (Steel Silo) - فلنگ سے پہلے</h3>
-                        
-                        <!-- Top Checklist Group -->
-                        <div style="margin-bottom:1rem;">
-                            <h4 class="urdu-text" style="color:#2563eb;font-size:1.05rem;margin-bottom:0.5rem;font-weight:bold;border-bottom:1px dashed #e2e8f0;padding-bottom:0.25rem;">سائلو ٹاپ (Silo Top)</h4>
-                            <div style="display:flex;flex-direction:column;gap:0.75rem;">
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-top1" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">1. سائلو ٹاپ کی ائیر ٹائٹنس کو صاف کیا گیا ہے اور کھلا (Open) تو نہیں۔</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-top2" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">2. اوپر دیکھو کہ ائیر ٹائٹنس کی کوئی بولٹ کھلی تو نہیں ہے۔</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-top3" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">3. تمام بلور کو چلا کر دیکھیں کہ ہوا کا دباؤ درست ہے اور کوئی مٹی وغیرہ تو نہیں ہے۔</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-top4" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">4. فلنگ (Filling) سے پہلے والو کو آپریٹ کر کے دیکھ لیں۔</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Bottom Checklist Group -->
-                        <div style="margin-bottom:1rem;">
-                            <h4 class="urdu-text" style="color:#2563eb;font-size:1.05rem;margin-bottom:0.5rem;font-weight:bold;border-bottom:1px dashed #e2e8f0;padding-bottom:0.25rem;">سائلو باٹم (Silo Bottom)</h4>
-                            <div style="display:flex;flex-direction:column;gap:0.75rem;">
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-bot1" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">1. سائلو کے اندر ائیر ڈکٹس (Aeration Ducts) کو صاف کیا گیا ہے؟</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-bot2" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">2. سائلو کے اندر موجود تمام ہینڈل اور ڈسچارج گیٹ کو ٹیسٹ کیا گیا ہے؟</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-bot3" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">3. سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچز (Ventilation Trenches) کو صاف کیا گیا ہے؟</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-bot4" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">4. سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچ شیٹس (Ventilation Trench Sheets) کو اچھی طرح صاف اور فٹ کیا گیا ہے؟</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-bot5" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">5. سائلو کے اندر موجود سوئپر کنویئر فلیکسیبل ہے اور اپنی جگہ (درست پوزیشن) پر ہے؟</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-bot6" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">6. سائلو کے اندر فرش کے ساتھ پلیٹس والا جوڑ ٹھیک ہے؟</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-bot7" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">7. سائلو کے باہر شیٹس والا جوڑ ٹھیک ہے؟</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-bot8" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">8. سائلو کے تمام ڈسچارج گیٹس کو مکمل بند کیا گیا ہے؟</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-bot9" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">9. سائلو کے تمام ڈسچارج گیٹس لاک (SEAL) ہیں؟</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-bot10" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">10. سائلو کی مشین (Entrance) کا دروازہ اچھی طرح سے بند ہے؟</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-bot11" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">11. سردیوں میں گرین کا درجہ حرارت 16 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-bot12" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">12. گرمیوں میں گرین کا درجہ حرارت 14 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Lab Check Group -->
-                        <div style="margin-bottom:0.5rem;">
-                            <h4 class="urdu-text" style="color:#e11d48;font-size:1.05rem;margin-bottom:0.5rem;font-weight:bold;border-bottom:1px dashed #e2e8f0;padding-bottom:0.25rem;">لیبارٹری ریمارکس (Lab Checks)</h4>
-                            <div style="display:flex;flex-direction:column;gap:0.75rem;">
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-lab1" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">سائلوز میں کوئی پرانا بیج یا اکسیڑا (Old Grain / Infestation) موجود نہیں ہے۔</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:0.4rem;">
-                                    <input type="checkbox" id="sl-chk-lab2" style="transform:scale(1.2);margin-left:0.5rem;">
-                                    <span class="urdu-text" style="flex-grow:1;">کیا سائلو کو فیومیگیٹ (Fumigate) کرنے کی ضرورت ہے؟</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                        <div class="form-group">
-                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Date</label>
-                            <input type="text" id="sl-modal-date" placeholder="e.g. 01-Jul-2026" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
-                        </div>
-                        <div class="form-group">
-                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Shift</label>
-                            <select id="sl-modal-shift" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
-                                <option value="A">Shift A</option>
-                                <option value="B">Shift B</option>
-                                <option value="C">Shift C</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div style="display:none;">
-                        <div class="form-group">
-                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Select Silo</label>
-                            <select id="sl-modal-silo" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
-                                <option value="Silo 1">Silo 1</option>
-                                <option value="Silo 2">Silo 2</option>
-                                <option value="Silo 3">Silo 3</option>
-                                <option value="Silo 4">Silo 4</option>
-                                <option value="Silo 5">Silo 5</option>
-                                <option value="Silo 6">Silo 6</option>
-                                <option value="Silo 7">Silo 7</option>
-                                <option value="Silo 8">Silo 8</option>
-                                <option value="Silo 9">Silo 9</option>
-                                <option value="Silo 10">Silo 10</option>
-                                <option value="Silo 11">Silo 11</option>
-                                <option value="Silo 12">Silo 12</option>
-                                <option value="Silo 13">Silo 13</option>
-                                <option value="Silo 14">Silo 14</option>
-                                <option value="Silo 15">Silo 15</option>
-                                <option value="Silo 16">Silo 16</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Operation Type</label>
-                            <select id="sl-modal-operation" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
-                                <option value="Filling">Filling (Stock In)</option>
-                                <option value="Discharging">Discharging (Stock Out)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:1rem;">
-                        <div class="form-group">
-                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Material Name</label>
-                            <input type="text" id="sl-modal-material" placeholder="e.g. Maize" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
-                        </div>
-                        <div class="form-group">
-                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Moisture %</label>
-                            <input type="number" step="any" id="sl-modal-moisture" placeholder="e.g. 14.5" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
-                        </div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr;gap:1rem;">
-                        <div class="form-group">
-                            <label style="font-weight:700;font-size:0.9rem;color:var(--text-primary);margin-bottom:0.25rem;display:block;">Net Qty (Tons) / نیٹ وزن</label>
-                            <input type="number" step="any" id="sl-modal-net-wt" placeholder="e.g. 50.25" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);font-weight:700;outline:none;" />
-                        </div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:1rem;">
-                        <div class="form-group">
-                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Temperature (°C)</label>
-                            <input type="number" step="any" id="sl-modal-temp" placeholder="e.g. 35" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
-                        </div>
-                        <div class="form-group">
-                            <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Performed By</label>
-                            <input type="text" id="sl-modal-operator" placeholder="e.g. Zubair" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
-                        </div>
+                    <div class="form-group" id="fg-supervisor">
+                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Supervisor (سپروائزر کا نام)</label>
+                        <input type="text" id="sl-modal-supervisor" placeholder="e.g. Ramzan" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;" />
                     </div>
                     <div class="form-group">
-                        <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Remarks</label>
-                        <textarea id="sl-modal-remarks" placeholder="Any additional notes..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);height:60px;resize:none;outline:none;"></textarea>
+                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Date (تاریخ)</label>
+                        <input type="text" id="sl-modal-date" placeholder="e.g. 01-Jul-2026" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Shift (شفٹ)</label>
+                        <select id="sl-modal-shift" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;">
+                            <option value="A">Shift A</option>
+                            <option value="B">Shift B</option>
+                            <option value="C">Shift C</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Material (مٹیریل)</label>
+                        <input type="text" id="sl-modal-material" placeholder="e.g. Maize" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Moisture % (نمی)</label>
+                        <input type="number" step="any" id="sl-modal-moisture" placeholder="e.g. 14.5" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Net Weight (نیٹ وزن - Tons)</label>
+                        <input type="number" step="any" id="sl-modal-net-wt" placeholder="e.g. 50" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;font-weight:700;outline:none;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Temp °C (درجہ حرارت)</label>
+                        <input type="number" step="any" id="sl-modal-temp" placeholder="e.g. 35" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Operator (آپریٹر)</label>
+                        <input type="text" id="sl-modal-operator" placeholder="e.g. Zubair" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;" />
                     </div>
                 </div>
-                <div class="modal-actions" style="margin-top:1.5rem;display:flex;justify-content:flex-end;gap:1rem;">
-                    <button class="btn btn-secondary" id="btn-cancel-silo-log" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
-                    <button class="btn btn-primary" id="btn-save-silo-log" style="background:#3b82f6;border-color:#3b82f6;width:auto;padding:0.5rem 2rem;">💾 Save Performa</button>
+
+                <!-- 2. Inspection checklist table (ONLY displayed for Filling) -->
+                <div id="sl-modal-inspection-section-direct" style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.02);margin-bottom:1.5rem;">
+                    <h3 class="urdu-text" style="color:#2563eb;font-size:1.4rem;border-bottom:2px solid #e2e8f0;padding-bottom:0.5rem;margin-bottom:1rem;font-weight:bold;">سائلو انسپکشن رپورٹ (Steel Silo) - فلنگ سے پہلے</h3>
+                    
+                    <div class="table-responsive">
+                        <table class="report-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                            <thead>
+                                <tr style="background:#f1f5f9;color:#334155;font-weight:700;">
+                                    <th style="width:10%;text-align:center;">حصہ</th>
+                                    <th style="width:8%;text-align:center;">نہیں</th>
+                                    <th style="width:8%;text-align:center;">ہاں</th>
+                                    <th class="urdu-text" style="width:74%;text-align:right;">مندرجہ ذیل نکات کو یقینی بنائیں (پروڈکشن ڈیپارٹمنٹ)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Silo Top -->
+                                <tr>
+                                    <td rowspan="4" style="text-align:center;font-weight:bold;background:#fafafa;vertical-align:middle;border:1px solid #cbd5e1;">Silo Top</td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top1" id="sl-chk-top1-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top1" id="sl-chk-top1-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">1. سائلو ٹاپ کی ائیر ٹائٹنس کو صاف کیا گیا ہے اور کھلا (Open) تو نہیں۔</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top2" id="sl-chk-top2-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top2" id="sl-chk-top2-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">2. اوپر دیکھو کہ ائیر ٹائٹنس کی کوئی بولٹ کھلی تو نہیں ہے۔</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top3" id="sl-chk-top3-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top3" id="sl-chk-top3-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">3. تمام بلور کو چلا کر دیکھیں کہ ہوا کا دباؤ درست ہے اور کوئی مٹی وغیرہ تو نہیں ہے۔</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top4" id="sl-chk-top4-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top4" id="sl-chk-top4-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">4. فلنگ (Filling) سے پہلے والو کو آپریٹ کر کے دیکھ لیں۔</td>
+                                </tr>
+
+                                <!-- Silo Bottom -->
+                                <tr>
+                                    <td rowspan="12" style="text-align:center;font-weight:bold;background:#fafafa;vertical-align:middle;border:1px solid #cbd5e1;">Silo Bottom</td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot1" id="sl-chk-bot1-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot1" id="sl-chk-bot1-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">1. سائلو کے اندر ائیر ڈکٹس (Aeration Ducts) کو صاف کیا گیا ہے؟</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot2" id="sl-chk-bot2-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot2" id="sl-chk-bot2-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">2. سائلو کے اندر موجود تمام ہینڈل اور ڈسچارج گیٹ کو ٹیسٹ کیا گیا ہے؟</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot3" id="sl-chk-bot3-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot3" id="sl-chk-bot3-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">3. سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچز (Ventilation Trenches) کو صاف کیا گیا ہے؟</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot4" id="sl-chk-bot4-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot4" id="sl-chk-bot4-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">4. سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچ شیٹس (Ventilation Trench Sheets) کو اچھی طرح صاف اور فٹ کیا گیا ہے؟</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot5" id="sl-chk-bot5-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot5" id="sl-chk-bot5-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">5. سائلو کے اندر موجود سوئپر کنویئر فلیکسیبل ہے اور اپنی جگہ (درست پوزیشن) پر ہے؟</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot6" id="sl-chk-bot6-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot6" id="sl-chk-bot6-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">6. سائلو کے اندر فرش کے ساتھ پلیٹس والا جوڑ ٹھیک ہے؟</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot7" id="sl-chk-bot7-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot7" id="sl-chk-bot7-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">7. سائلو کے باہر شیٹس والا جوڑ ٹھیک ہے؟</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot8" id="sl-chk-bot8-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot8" id="sl-chk-bot8-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">8. سائلو کے تمام ڈسچارج گیٹس کو مکمل بند کیا گیا ہے؟</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot9" id="sl-chk-bot9-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot9" id="sl-chk-bot9-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">9. سائلو کے تمام ڈسچارج گیٹس لاک (SEAL) ہیں؟</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot10" id="sl-chk-bot10-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot10" id="sl-chk-bot10-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">10. سائلو کی مشین (Entrance) کا دروازہ اچھی طرح سے بند ہے؟</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot11" id="sl-chk-bot11-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot11" id="sl-chk-bot11-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">11. سردیوں میں گرین کا درجہ حرارت 16 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot12" id="sl-chk-bot12-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot12" id="sl-chk-bot12-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">12. گرمیوں میں گرین کا درجہ حرارت 14 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="urdu-text" style="color:#e11d48;font-size:1.25rem;border-bottom:2px solid #e2e8f0;padding-bottom:0.5rem;margin-top:1.5rem;margin-bottom:1rem;font-weight:bold;">لیبارٹری ریمارکس (Lab Checks)</h3>
+                    <div class="table-responsive">
+                        <table class="report-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                            <thead>
+                                <tr style="background:#f1f5f9;color:#334155;font-weight:700;">
+                                    <th style="width:10%;text-align:center;">حصہ</th>
+                                    <th style="width:8%;text-align:center;">نہیں</th>
+                                    <th style="width:8%;text-align:center;">ہاں</th>
+                                    <th class="urdu-text" style="width:74%;text-align:right;">ٹیسٹ کی تفصیل</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="text-align:center;font-weight:bold;background:#fafafa;vertical-align:middle;border:1px solid #cbd5e1;">Lab Check</td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-lab1" id="sl-chk-lab1-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-lab1" id="sl-chk-lab1-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">سائلوز میں کوئی پرانا بیج یا اکسیڑا (Old Grain / Infestation) موجود نہیں ہے۔</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;font-weight:bold;background:#fafafa;vertical-align:middle;border:1px solid #cbd5e1;">Fumigation</td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-lab2" id="sl-chk-lab2-no" value="no" checked></td>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-lab2" id="sl-chk-lab2-yes" value="yes"></td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">کیا سائلو کو فیومیگیٹ (Fumigate) کرنے کی ضرورت ہے؟</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
+                <div class="form-group" style="background:#ffffff;padding:1.25rem;border-radius:8px;border:1px solid #cbd5e1;box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+                    <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Remarks / Any Issue (ریمارکس)</label>
+                    <textarea id="sl-modal-remarks" placeholder="Any remarks or improvements..." style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;height:60px;resize:none;outline:none;"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="padding:1rem 1.5rem;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:1rem;flex-shrink:0;background:#fafafa;">
+                <button class="btn btn-secondary" id="btn-cancel-silo-log" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                <button class="btn btn-primary" id="btn-save-silo-log" style="background:#3b82f6;border-color:#3b82f6;width:auto;padding:0.5rem 2rem;">💾 Save Performa</button>
             </div>
         </div>
     </div>
