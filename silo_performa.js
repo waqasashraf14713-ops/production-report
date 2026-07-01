@@ -170,6 +170,7 @@ try {
         const material = log.material || '';
         const officer = log.supervisor || ''; // officer name (mapped to supervisor)
         const operator = log.operator || '';  // operator name
+        const shift = log.shift || 'A';
         const remarks = log.remarks || '';
 
         const renderTick = (val, expectTrue = true) => {
@@ -261,10 +262,11 @@ try {
 
                 <table class="meta-table">
                     <tr>
-                        <td style="width:25%;"><strong>سائلو نمبر:</strong> <span style="font-family:Arial,sans-serif;">${siloNo}</span></td>
-                        <td style="width:25%;"><strong>مٹیریل:</strong> ${material}</td>
-                        <td style="width:25%;"><strong>آفیسر کا نام:</strong> ${officer}</td>
-                        <td style="width:25%;"><strong>آپریٹر کا نام:</strong> ${operator}</td>
+                        <td style="width:20%;"><strong>سائلو نمبر:</strong> <span style="font-family:Arial,sans-serif;">${siloNo}</span></td>
+                        <td style="width:20%;"><strong>مٹیریل:</strong> ${material}</td>
+                        <td style="width:20%;"><strong>شفٹ:</strong> ${shift}</td>
+                        <td style="width:20%;"><strong>آفیسر کا نام:</strong> ${officer}</td>
+                        <td style="width:20%;"><strong>آپریٹر کا نام:</strong> ${operator}</td>
                     </tr>
                 </table>
 
@@ -328,6 +330,7 @@ try {
         const material = log.material || '';
         const officer = log.supervisor || ''; // officer name (mapped to supervisor field)
         const operator = log.operator || '';  // operator name
+        const shift = log.shift || 'A';
         const remarks = log.remarks || '';
 
         const renderTick = (val, expectTrue = true) => {
@@ -352,9 +355,10 @@ try {
                 </div>
 
                 <!-- Meta Row -->
-                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:1.25rem; margin-bottom:2rem; font-size:1.15rem;">
+                <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap: 1.25rem; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:1.25rem; margin-bottom:2rem; font-size:1.15rem;">
                     <div><strong>سائلو نمبر:</strong> <span style="color:#2563eb;font-family:sans-serif;font-weight:bold;margin-right:5px;">${siloNo}</span></div>
                     <div><strong>مٹیریل:</strong> <span style="color:#1e293b;font-weight:bold;margin-right:5px;">${material}</span></div>
+                    <div><strong>شفٹ:</strong> <span style="color:#1e293b;font-weight:bold;margin-right:5px;">${shift}</span></div>
                     <div><strong>آفیسر کا نام:</strong> <span style="color:#1e293b;font-weight:bold;margin-right:5px;">${officer}</span></div>
                     <div><strong>آپریٹر کا نام:</strong> <span style="color:#1e293b;font-weight:bold;margin-right:5px;">${operator}</span></div>
                 </div>
@@ -435,7 +439,7 @@ try {
                     <td>${log.operator || '-'}</td>
                     <td>${log.sealNo || '-'}</td>
                     <td>${hasInspection}</td>
-                    <td class="no-print" style="display:flex;gap:0.25rem;">
+                    <td class="no-print" style="display:flex;gap:0.2rem;">
                         <button class="btn btn-secondary" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="editSiloLog(${log.id})">✏️ Edit</button>
                         ${printBtn}
                         <button class="btn btn-danger" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="deleteSiloLog(${log.id})">🗑 Del</button>
@@ -555,6 +559,7 @@ try {
             headersMarkup = `
                 <tr style="background:#e2e8f0; color:#334155; font-weight:700; text-align:left;">
                     <th style="padding:0.5rem;">Date</th>
+                    <th style="padding:0.5rem;">Shift</th>
                     <th style="padding:0.5rem;">Material</th>
                     <th style="padding:0.5rem;">Officer Name</th>
                     <th style="padding:0.5rem;">Operator Name</th>
@@ -572,6 +577,7 @@ try {
                 rows += `
                     <tr style="border-bottom:1px solid #e2e8f0;">
                         <td style="font-weight:600;padding:0.5rem;">${log.date}</td>
+                        <td style="padding:0.5rem;">${log.shift || 'A'}</td>
                         <td style="padding:0.5rem;font-weight:600;">${log.material}</td>
                         <td style="padding:0.5rem;">${log.supervisor || '-'}</td> <!-- stores officer name -->
                         <td style="padding:0.5rem;">${log.operator || '-'}</td>  <!-- stores operator name -->
@@ -644,7 +650,8 @@ try {
         operationSelect.value = operationType;
 
         document.getElementById('sl-modal-seal-no').value = '';
-        document.getElementById('sl-modal-officer').value = '';
+        document.getElementById('sl-modal-officer').value = 'M. Zubair';
+        document.getElementById('sl-modal-operator').value = 'Zubair';
 
         // Reset radio buttons to default "no"
         for (let i = 1; i <= 4; i++) {
@@ -677,8 +684,8 @@ try {
             if (officerGroup) officerGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'block';
             
-            // Hide non-checklist fields for Filling
-            if (shiftGroup) shiftGroup.style.display = 'none';
+            // Shift is visible for Filling as requested!
+            if (shiftGroup) shiftGroup.style.display = 'block';
             if (moistureGroup) moistureGroup.style.display = 'none';
             if (netWtGroup) netWtGroup.style.display = 'none';
             if (tempGroup) tempGroup.style.display = 'none';
@@ -701,7 +708,6 @@ try {
         document.getElementById('sl-modal-moisture').value = '';
         document.getElementById('sl-modal-net-wt').value = '';
         document.getElementById('sl-modal-temp').value = '';
-        document.getElementById('sl-modal-operator').value = '';
         document.getElementById('sl-modal-remarks').value = '';
 
         document.getElementById('silo-log-modal').classList.add('show');
@@ -737,15 +743,15 @@ try {
             if (officerGroup) officerGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'block';
 
-            // Hide non-checklist fields for Filling
-            if (shiftGroup) shiftGroup.style.display = 'none';
+            // Shift is visible for Filling as requested!
+            if (shiftGroup) shiftGroup.style.display = 'block';
             if (moistureGroup) moistureGroup.style.display = 'none';
             if (netWtGroup) netWtGroup.style.display = 'none';
             if (tempGroup) tempGroup.style.display = 'none';
             if (operatorGroup) operatorGroup.style.display = 'block';
 
             document.getElementById('sl-modal-seal-no').value = log.sealNo || '';
-            document.getElementById('sl-modal-officer').value = log.supervisor || ''; // mapped supervisor field stores Officer Name
+            document.getElementById('sl-modal-officer').value = log.supervisor || 'M. Zubair'; // mapped supervisor field stores Officer Name
 
             const insp = log.inspection || {};
             for (let i = 1; i <= 4; i++) {
@@ -781,7 +787,7 @@ try {
         document.getElementById('sl-modal-moisture').value = log.moisture !== undefined ? log.moisture : '';
         document.getElementById('sl-modal-net-wt').value = log.netQty !== undefined ? log.netQty : '';
         document.getElementById('sl-modal-temp').value = log.temperature !== undefined ? log.temperature : '';
-        document.getElementById('sl-modal-operator').value = log.operator || '';
+        document.getElementById('sl-modal-operator').value = log.operator || 'Zubair';
         document.getElementById('sl-modal-remarks').value = log.remarks || '';
 
         document.getElementById('silo-history-modal').classList.remove('show');
@@ -897,7 +903,7 @@ try {
                 const moisture = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-moisture').value) || 0);
                 const netQty = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-net-wt').value) || 0);
                 const temperature = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-temp').value) || 0);
-                const operator = document.getElementById('sl-modal-operator').value.trim(); // operator name
+                const operator = document.getElementById('sl-modal-operator').value; // operator select value
                 
                 const remarks = document.getElementById('sl-modal-remarks').value.trim();
 
@@ -910,7 +916,7 @@ try {
 
                 if (operation === 'Filling') {
                     sealNo = document.getElementById('sl-modal-seal-no').value.trim();
-                    supervisor = document.getElementById('sl-modal-officer').value.trim(); // Officer Name mapped to supervisor column
+                    supervisor = document.getElementById('sl-modal-officer').value; // Officer Name select value mapped to supervisor column
                     
                     inspection = {
                         top1: document.getElementById('sl-chk-top1-yes').checked,
