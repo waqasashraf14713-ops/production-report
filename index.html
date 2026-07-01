@@ -1591,59 +1591,71 @@ order by
                 </div>
 
                 <!-- 1. Metadata Block (Header Info) -->
-                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:1rem;background:#ffffff;padding:1.25rem;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.02);">
-                    <div class="form-group" id="fg-date">
-                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Date (تاریخ)</label>
-                        <input type="text" id="sl-modal-date" placeholder="e.g. 01-Jul-2026" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;" />
+                <div style="background:#ffffff;padding:1.5rem;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.02);display:flex;flex-direction:column;gap:1.25rem;">
+                    
+                    <!-- Row 1: Date, Material, Shift, Seal Number (and hidden fields for Filling) -->
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:1.25rem;align-items:end;">
+                        <div class="form-group" id="fg-date">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Date (تاریخ)</label>
+                            <input type="text" id="sl-modal-date" placeholder="e.g. 01-Jul-2026" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;outline:none;" />
+                        </div>
+                        <div class="form-group" id="fg-material">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Material (مٹیریل)</label>
+                            <input type="text" id="sl-modal-material" placeholder="e.g. Maize" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;outline:none;" />
+                        </div>
+                        <div class="form-group" id="fg-shift">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Shift (شفٹ)</label>
+                            <select id="sl-modal-shift" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;outline:none;">
+                                <option value="A">Shift A</option>
+                                <option value="B">Shift B</option>
+                                <option value="C">Shift C</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="fg-seal-no">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Seal Number (سیل نمبر)</label>
+                            <input type="text" id="sl-modal-seal-no" placeholder="e.g. 257459 -> 62" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;font-weight:700;outline:none;" />
+                        </div>
                     </div>
-                    <div class="form-group" id="fg-material">
-                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Material (مٹیریل)</label>
-                        <input type="text" id="sl-modal-material" placeholder="e.g. Maize" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;" />
+
+                    <!-- Row 2: Officer Name, Operator Name (Wide inputs to prevent label wrapping) -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+                        <div class="form-group" id="fg-officer">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Officer Name (آفیسر کا نام)</label>
+                            <select id="sl-modal-officer" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;outline:none;">
+                                <option value="M. Zubair">M. Zubair</option>
+                                <option value="M. Tahir">M. Tahir</option>
+                                <option value="Amir">Amir</option>
+                                <option value="Ramzan">Ramzan</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="fg-operator">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Operator Name (آپریٹر کا نام)</label>
+                            <select id="sl-modal-operator" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;outline:none;">
+                                <option value="Zubair">Zubair</option>
+                                <option value="Ramzan">Ramzan</option>
+                                <option value="Tahir">Tahir</option>
+                                <option value="Amir">Amir</option>
+                                <option value="Sajid">Sajid</option>
+                                <option value="Irfan">Irfan</option>
+                                <option value="Zahid">Zahid</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-group" id="fg-officer">
-                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Officer Name (آفیسر کا نام)</label>
-                        <select id="sl-modal-officer" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;">
-                            <option value="M. Zubair">M. Zubair</option>
-                            <option value="M. Tahir">M. Tahir</option>
-                            <option value="Amir">Amir</option>
-                            <option value="Ramzan">Ramzan</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="fg-operator">
-                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Operator Name (آپریٹر کا نام)</label>
-                        <select id="sl-modal-operator" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;">
-                            <option value="Zubair">Zubair</option>
-                            <option value="Ramzan">Ramzan</option>
-                            <option value="Tahir">Tahir</option>
-                            <option value="Amir">Amir</option>
-                            <option value="Sajid">Sajid</option>
-                            <option value="Irfan">Irfan</option>
-                            <option value="Zahid">Zahid</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="fg-seal-no">
-                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Seal Number (سیل نمبر)</label>
-                        <input type="text" id="sl-modal-seal-no" placeholder="e.g. 257459 -> 62" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;font-weight:700;outline:none;" />
-                    </div>
-                    <div class="form-group" id="fg-shift">
-                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Shift (شفٹ)</label>
-                        <select id="sl-modal-shift" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;">
-                            <option value="A">Shift A</option>
-                            <option value="B">Shift B</option>
-                            <option value="C">Shift C</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="fg-moisture">
-                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Moisture % (نمی)</label>
-                        <input type="number" step="any" id="sl-modal-moisture" placeholder="e.g. 14.5" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;" />
-                    </div>
-                    <div class="form-group" id="fg-net-wt">
-                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Net Weight (نیٹ وزن - Tons)</label>
-                        <input type="number" step="any" id="sl-modal-net-wt" placeholder="e.g. 50" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;font-weight:700;outline:none;" />
-                    </div>
-                    <div class="form-group" id="fg-temp">
-                        <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Temp °C (درجہ حرارت)</label>
-                        <input type="number" step="any" id="sl-modal-temp" placeholder="e.g. 35" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;color:#000;outline:none;" />
+
+                    <!-- Hidden Fields (Moisture, Net Weight, Temp) -->
+                    <div id="sl-modal-hidden-fields" style="display:none;grid-template-columns:repeat(3, 1fr);gap:1.25rem;">
+                        <div class="form-group" id="fg-moisture">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Moisture % (نمی)</label>
+                            <input type="number" step="any" id="sl-modal-moisture" placeholder="e.g. 14.5" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;outline:none;" />
+                        </div>
+                        <div class="form-group" id="fg-net-wt">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Net Weight (نیٹ وزن - Tons)</label>
+                            <input type="number" step="any" id="sl-modal-net-wt" placeholder="e.g. 50" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;font-weight:700;outline:none;" />
+                        </div>
+                        <div class="form-group" id="fg-temp">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Temp °C (درجہ حرارت)</label>
+                            <input type="number" step="any" id="sl-modal-temp" placeholder="e.g. 35" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;outline:none;" />
+                        </div>
                     </div>
                 </div>
 

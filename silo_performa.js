@@ -72,7 +72,7 @@ try {
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">6</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود تمام ہینڈل اور ڈسچارج گیٹ کو ٹیسٹ کیا گیا ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود تمام ہینڈل اور ڈسچارج گیٹ ko ٹیسٹ کیا گیا ہے؟</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot2, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot2, false)}</td>
             </tr>
@@ -90,13 +90,13 @@ try {
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">9</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود سوئپر کنویئر فلیکسیبل ہے اور اپنی جگہ (درست پوزیشن) پر ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر فرش کے ساتھ پلیٹس والا جوڑ ٹھیک ہے؟</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot5, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot5, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">10</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر فرش کے ساتھ پلیٹس wala جوڑ ٹھیک ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود سوئپر کنویئر فلیکسیبل ہے اور اپنی جگہ پر ہے؟</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot6, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot6, false)}</td>
             </tr>
@@ -439,7 +439,7 @@ try {
                     <td>${log.operator || '-'}</td>
                     <td>${log.sealNo || '-'}</td>
                     <td>${hasInspection}</td>
-                    <td class="no-print" style="display:flex;gap:0.2rem;">
+                    <td class="no-print" style="display:flex;gap:0.25rem;">
                         <button class="btn btn-secondary" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="editSiloLog(${log.id})">✏️ Edit</button>
                         ${printBtn}
                         <button class="btn btn-danger" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="deleteSiloLog(${log.id})">🗑 Del</button>
@@ -671,37 +671,20 @@ try {
         const sealGroup = document.getElementById('fg-seal-no');
         const officerGroup = document.getElementById('fg-officer');
         const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
-
-        const shiftGroup = document.getElementById('fg-shift');
-        const moistureGroup = document.getElementById('fg-moisture');
-        const netWtGroup = document.getElementById('fg-net-wt');
-        const tempGroup = document.getElementById('fg-temp');
-        const operatorGroup = document.getElementById('fg-operator');
+        const hiddenFieldsWrapper = document.getElementById('sl-modal-hidden-fields');
 
         if (operationType === 'Filling') {
             if (modalCard) modalCard.style.maxWidth = '900px';
             if (sealGroup) sealGroup.style.display = 'block';
             if (officerGroup) officerGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'block';
-            
-            // Shift is visible for Filling as requested!
-            if (shiftGroup) shiftGroup.style.display = 'block';
-            if (moistureGroup) moistureGroup.style.display = 'none';
-            if (netWtGroup) netWtGroup.style.display = 'none';
-            if (tempGroup) tempGroup.style.display = 'none';
-            if (operatorGroup) operatorGroup.style.display = 'block';
+            if (hiddenFieldsWrapper) hiddenFieldsWrapper.style.display = 'none';
         } else {
             if (modalCard) modalCard.style.maxWidth = '550px';
             if (sealGroup) sealGroup.style.display = 'none';
             if (officerGroup) officerGroup.style.display = 'none';
             if (inspectionSection) inspectionSection.style.display = 'none';
-
-            // Show them for Discharging
-            if (shiftGroup) shiftGroup.style.display = 'block';
-            if (moistureGroup) moistureGroup.style.display = 'block';
-            if (netWtGroup) netWtGroup.style.display = 'block';
-            if (tempGroup) tempGroup.style.display = 'block';
-            if (operatorGroup) operatorGroup.style.display = 'block';
+            if (hiddenFieldsWrapper) hiddenFieldsWrapper.style.display = 'grid';
         }
 
         document.getElementById('sl-modal-material').value = 'Maize';
@@ -730,25 +713,14 @@ try {
         const sealGroup = document.getElementById('fg-seal-no');
         const officerGroup = document.getElementById('fg-officer');
         const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
-
-        const shiftGroup = document.getElementById('fg-shift');
-        const moistureGroup = document.getElementById('fg-moisture');
-        const netWtGroup = document.getElementById('fg-net-wt');
-        const tempGroup = document.getElementById('fg-temp');
-        const operatorGroup = document.getElementById('fg-operator');
+        const hiddenFieldsWrapper = document.getElementById('sl-modal-hidden-fields');
 
         if (log.operation === 'Filling') {
             if (modalCard) modalCard.style.maxWidth = '900px';
             if (sealGroup) sealGroup.style.display = 'block';
             if (officerGroup) officerGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'block';
-
-            // Shift is visible for Filling as requested!
-            if (shiftGroup) shiftGroup.style.display = 'block';
-            if (moistureGroup) moistureGroup.style.display = 'none';
-            if (netWtGroup) netWtGroup.style.display = 'none';
-            if (tempGroup) tempGroup.style.display = 'none';
-            if (operatorGroup) operatorGroup.style.display = 'block';
+            if (hiddenFieldsWrapper) hiddenFieldsWrapper.style.display = 'none';
 
             document.getElementById('sl-modal-seal-no').value = log.sealNo || '';
             document.getElementById('sl-modal-officer').value = log.supervisor || 'M. Zubair'; // mapped supervisor field stores Officer Name
@@ -774,13 +746,7 @@ try {
             if (sealGroup) sealGroup.style.display = 'none';
             if (officerGroup) officerGroup.style.display = 'none';
             if (inspectionSection) inspectionSection.style.display = 'none';
-
-            // Show them for Discharging
-            if (shiftGroup) shiftGroup.style.display = 'block';
-            if (moistureGroup) moistureGroup.style.display = 'block';
-            if (netWtGroup) netWtGroup.style.display = 'block';
-            if (tempGroup) tempGroup.style.display = 'block';
-            if (operatorGroup) operatorGroup.style.display = 'block';
+            if (hiddenFieldsWrapper) hiddenFieldsWrapper.style.display = 'grid';
         }
 
         document.getElementById('sl-modal-material').value = log.material || '';
