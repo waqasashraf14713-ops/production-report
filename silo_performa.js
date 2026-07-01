@@ -543,7 +543,7 @@ try {
             if (moistureGroup) moistureGroup.style.display = 'none';
             if (netWtGroup) netWtGroup.style.display = 'none';
             if (tempGroup) tempGroup.style.display = 'none';
-            if (operatorGroup) operatorGroup.style.display = 'none';
+            if (operatorGroup) operatorGroup.style.display = 'block';
         } else {
             if (modalCard) modalCard.style.maxWidth = '550px';
             if (sealGroup) sealGroup.style.display = 'none';
@@ -603,7 +603,7 @@ try {
             if (moistureGroup) moistureGroup.style.display = 'none';
             if (netWtGroup) netWtGroup.style.display = 'none';
             if (tempGroup) tempGroup.style.display = 'none';
-            if (operatorGroup) operatorGroup.style.display = 'none';
+            if (operatorGroup) operatorGroup.style.display = 'block';
 
             document.getElementById('sl-modal-seal-no').value = log.sealNo || '';
             document.getElementById('sl-modal-supervisor').value = log.supervisor || '';
@@ -728,7 +728,7 @@ try {
                 const moisture = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-moisture').value) || 0);
                 const netQty = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-net-wt').value) || 0);
                 const temperature = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-temp').value) || 0);
-                const operator = (operation === 'Filling') ? '' : document.getElementById('sl-modal-operator').value.trim();
+                const operator = document.getElementById('sl-modal-operator').value.trim();
                 
                 const remarks = document.getElementById('sl-modal-remarks').value.trim();
 
