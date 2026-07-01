@@ -2988,56 +2988,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // ─── Daily Checklist module ────────────────────────────────────────────────
+    const SHARED_CHECKLIST = [
+        'S1.1: کوئی غیر ضروری آئٹم ٹیبل، ریک، فرش، چھت / ٹول بورڈ پر نہیں ہے۔',
+        'S1.2: کوئی غیر ضروری دستاویزات موجود نہیں ہیں۔',
+        'S1.3: ریڈ ٹیگ اشیاء پر غور کیا جا رہا ہے اور ان اشیاء پر فیصلے کیے جا رہے ہیں۔',
+        'S2.1: ہر چیز اپنی جگہ پر ہے (اوزار، اشیاء، اور ہر متحرک چیز)۔',
+        'S2.2: موثر انوینٹری کنٹرول اقدامات ہو رہے ہیں: اسٹاک کی سطحوں کا انتظام، میعاد ختم ہونے کی تاریخ کی نگرانی، اور FIFO اصول کی پابندی۔',
+        'S2.3: لوگوں کی حفاظت، مٹیریل کو محفوظ رکھنے اور مشینری کو برقرار رکھنے کے لیے حفاظتی پروٹوکول اپنائے ہوئے ہیں (بجلی کے تاروں کی انسولیشن، مواد کا زیادہ بہاؤ، مشینوں کے حفاظتی حصار وغیرہ)۔',
+        'S3.1: فرنیچر، اوزار، فرش، کچرے کی ٹوکری، فرش، چھت اور دیواریں صاف ہیں۔',
+        'S3.2: پیسٹ کنٹرول کو روزانہ کی بنیاد پر مانیٹر کیا جا رہا ہے (چوہے وغیرہ)۔'
+    ];
+
     const DAILY_CHECKLIST_QUESTIONS = {
-        'Old Godown': [
-            'All incoming bags are inspected for leakage and weight.',
-            'Moisture levels of grain bags are checked and logged.',
-            'Stacking heights do not exceed the safe limit (15 bags).',
-            'Aisles and emergency exits are completely unobstructed.',
-            'Rodent traps and bait stations are inspected.',
-            'Daily dispatch and receipt ledger is updated.'
-        ],
-        'Mechanical': [
-            'All machines are lubricated and oil levels checked.',
-            'Guards and safety covers are securely in place.',
-            'Pre-start inspection completed for hammer mills and mixers.',
-            'No abnormal noise or vibration detected during idle run.',
-            'Workshop tools are accounted for and sorted.',
-            'Pneumatic lines are checked for leaks and pressure.'
-        ],
-        'Electrical': [
-            'Motor control centers (MCC) checked for overheating/burning smell.',
-            'Power factor panels are operating at target (>0.90).',
-            'Backup generator has sufficient fuel and battery voltage.',
-            'Emergency stop buttons on all major machines are tested/functional.',
-            'Electrical panels are locked and keys secured.',
-            'Cable trays and conduits inspected for damage or exposure.'
-        ],
-        'Control Room': [
-            'SCADA system communication with PLC is stable.',
-            'All bin/silo level sensors show active readings.',
-            'Feeder speed controls and batching scales are calibrated.',
-            'Interlock system status verified and fully active.',
-            'Batch production logs are printed/backed up.',
-            'Control room temperature is within limits (AC functioning).'
-        ],
-        'Premix': [
-            'Micro-ingredient scales are calibrated and zeroed.',
-            'Pre-weighed premix batches verified against formulation sheet.',
-            'Premix dispenser and dumping hopper suction fans are on.',
-            'No cross-contamination risk in the preparation area.',
-            'Inventory of high-value vitamins/minerals checked.',
-            'Hand addition log sheet is signed and completed.'
-        ],
-        'Other Department': [
-            'Office computers, lights, and AC are turned off after shift.',
-            'Sufficient supply of printing paper and office stationery.',
-            'Admin files and records are organized and stored securely.',
-            'Sewerage and water supply pumps are checked and working.',
-            'Visitor log and gate pass register are up to date.',
-            'General cleanliness of office areas and toilets.'
-        ]
+        'Old Godown': SHARED_CHECKLIST,
+        'Mechanical': SHARED_CHECKLIST,
+        'Electrical': SHARED_CHECKLIST,
+        'Control Room': SHARED_CHECKLIST,
+        'Premix': SHARED_CHECKLIST,
+        'Other Department': SHARED_CHECKLIST
     };
     window.DAILY_CHECKLIST_QUESTIONS = DAILY_CHECKLIST_QUESTIONS;
 
