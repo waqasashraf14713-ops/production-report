@@ -526,17 +526,36 @@ try {
         const supervisorGroup = document.getElementById('fg-supervisor');
         const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
 
+        const shiftGroup = document.getElementById('fg-shift');
+        const moistureGroup = document.getElementById('fg-moisture');
+        const netWtGroup = document.getElementById('fg-net-wt');
+        const tempGroup = document.getElementById('fg-temp');
+        const operatorGroup = document.getElementById('fg-operator');
+
         if (operationType === 'Filling') {
             if (modalCard) modalCard.style.maxWidth = '900px';
             if (sealGroup) sealGroup.style.display = 'block';
             if (supervisorGroup) supervisorGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'block';
+            
+            // Hide non-checklist fields for Filling
+            if (shiftGroup) shiftGroup.style.display = 'none';
+            if (moistureGroup) moistureGroup.style.display = 'none';
+            if (netWtGroup) netWtGroup.style.display = 'none';
+            if (tempGroup) tempGroup.style.display = 'none';
+            if (operatorGroup) operatorGroup.style.display = 'none';
         } else {
-            // Discharging: simple form layout
             if (modalCard) modalCard.style.maxWidth = '550px';
             if (sealGroup) sealGroup.style.display = 'none';
             if (supervisorGroup) supervisorGroup.style.display = 'none';
             if (inspectionSection) inspectionSection.style.display = 'none';
+
+            // Show them for Discharging
+            if (shiftGroup) shiftGroup.style.display = 'block';
+            if (moistureGroup) moistureGroup.style.display = 'block';
+            if (netWtGroup) netWtGroup.style.display = 'block';
+            if (tempGroup) tempGroup.style.display = 'block';
+            if (operatorGroup) operatorGroup.style.display = 'block';
         }
 
         document.getElementById('sl-modal-material').value = 'Maize';
@@ -567,11 +586,24 @@ try {
         const supervisorGroup = document.getElementById('fg-supervisor');
         const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
 
+        const shiftGroup = document.getElementById('fg-shift');
+        const moistureGroup = document.getElementById('fg-moisture');
+        const netWtGroup = document.getElementById('fg-net-wt');
+        const tempGroup = document.getElementById('fg-temp');
+        const operatorGroup = document.getElementById('fg-operator');
+
         if (log.operation === 'Filling') {
             if (modalCard) modalCard.style.maxWidth = '900px';
             if (sealGroup) sealGroup.style.display = 'block';
             if (supervisorGroup) supervisorGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'block';
+
+            // Hide non-checklist fields for Filling
+            if (shiftGroup) shiftGroup.style.display = 'none';
+            if (moistureGroup) moistureGroup.style.display = 'none';
+            if (netWtGroup) netWtGroup.style.display = 'none';
+            if (tempGroup) tempGroup.style.display = 'none';
+            if (operatorGroup) operatorGroup.style.display = 'none';
 
             document.getElementById('sl-modal-seal-no').value = log.sealNo || '';
             document.getElementById('sl-modal-supervisor').value = log.supervisor || '';
@@ -597,6 +629,13 @@ try {
             if (sealGroup) sealGroup.style.display = 'none';
             if (supervisorGroup) supervisorGroup.style.display = 'none';
             if (inspectionSection) inspectionSection.style.display = 'none';
+
+            // Show them for Discharging
+            if (shiftGroup) shiftGroup.style.display = 'block';
+            if (moistureGroup) moistureGroup.style.display = 'block';
+            if (netWtGroup) netWtGroup.style.display = 'block';
+            if (tempGroup) tempGroup.style.display = 'block';
+            if (operatorGroup) operatorGroup.style.display = 'block';
         }
 
         document.getElementById('sl-modal-material').value = log.material || '';
@@ -684,10 +723,13 @@ try {
                 const siloNumber = document.getElementById('sl-modal-silo').value;
                 const operation = document.getElementById('sl-modal-operation').value;
                 const material = document.getElementById('sl-modal-material').value.trim();
-                const moisture = parseFloat(document.getElementById('sl-modal-moisture').value) || 0;
-                const netQty = parseFloat(document.getElementById('sl-modal-net-wt').value) || 0;
-                const temperature = parseFloat(document.getElementById('sl-modal-temp').value) || 0;
-                const operator = document.getElementById('sl-modal-operator').value.trim();
+                
+                // Fields that may be hidden: set default if hidden
+                const moisture = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-moisture').value) || 0);
+                const netQty = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-net-wt').value) || 0);
+                const temperature = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-temp').value) || 0);
+                const operator = (operation === 'Filling') ? '' : document.getElementById('sl-modal-operator').value.trim();
+                
                 const remarks = document.getElementById('sl-modal-remarks').value.trim();
 
                 if (!date) return alert('Please enter Date.');
@@ -767,7 +809,6 @@ try {
                         alert(`✓ Silo ${log.operation} Performa saved to Supabase successfully!`);
                     } catch (err) {
                         console.error('Failed to save to Supabase:', err);
-                        const errorMsg = err.message || err.details || JSON.stringify(err);
                         if (window.showToast) window.showToast('✗ Supabase Save Error');
                     }
                 } else {
