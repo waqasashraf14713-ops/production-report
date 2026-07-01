@@ -270,8 +270,6 @@ try {
         activePeReportId = id;
         
         document.getElementById('pe-date').value = r.date || '';
-        document.getElementById('pe-shift').value = r.shift || 'Morning';
-        document.getElementById('pe-officer').value = r.officerName || '';
 
         const tbody = document.getElementById('pe-rows-tbody');
         tbody.innerHTML = '';
@@ -403,8 +401,6 @@ try {
                 activePeReportId = null;
                 const today = new Date();
                 document.getElementById('pe-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
-                document.getElementById('pe-shift').value = 'Morning';
-                document.getElementById('pe-officer').value = '';
                 
                 const tbody = document.getElementById('pe-rows-tbody');
                 tbody.innerHTML = '';
@@ -421,11 +417,10 @@ try {
         if (btnSave) {
             btnSave.addEventListener('click', async () => {
                 const date = document.getElementById('pe-date').value.trim();
-                const shift = document.getElementById('pe-shift').value;
-                const officerName = document.getElementById('pe-officer').value;
+                const shift = 'Morning';
+                const officerName = '';
 
                 if (!date) return alert('Please enter Date.');
-                if (!officerName) return alert('Please select Production Officer.');
 
                 const rows = [];
                 const tbody = document.getElementById('pe-rows-tbody');
