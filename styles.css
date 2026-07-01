@@ -18,6 +18,12 @@
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.urdu-text {
+  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Urdu Typesetting', serif !important;
+  direction: rtl !important;
+  text-align: right !important;
+}
+
 body {
   background-color: var(--bg-color);
   color: var(--text-primary);

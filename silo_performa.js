@@ -11,7 +11,6 @@ try {
     let activeLogId = null;
     let sbClient = null;
 
-    // Track active context for history view
     let currentHistorySilo = null;
     let currentHistoryOperation = null;
 
@@ -40,7 +39,80 @@ try {
         document.getElementById('sl-modal-net-wt').value = net.toFixed(2);
     };
 
-    // Render the grid of Silo 1 to 16
+    window.slToggleInspectionChecklist = () => {
+        const section = document.getElementById('sl-modal-inspection-section');
+        if (!section) return;
+        if (section.style.display === 'none') {
+            section.style.display = 'block';
+        } else {
+            section.style.display = 'none';
+        }
+    };
+
+    const renderTableMarkup = (logsList) => {
+        if (logsList.length === 0) {
+            return `
+                <div style="text-align:center;padding:3rem 1rem;color:var(--text-secondary);opacity:0.65;">
+                    <div style="font-size:3rem;margin-bottom:1rem;">📋</div>
+                    <div style="font-size:1.1rem;font-weight:600;">No records found.</div>
+                </div>`;
+        }
+
+        let rows = '';
+        [...logsList].reverse().forEach(log => {
+            const hasInspection = log.inspection ? '✓ Yes' : '-';
+            rows += `
+                <tr style="border-bottom:1px solid var(--card-border);">
+                    <td style="font-weight:600;">${log.date}</td>
+                    <td>${log.shift || 'A'}</td>
+                    <td style="font-weight:700;">${log.siloNumber}</td>
+                    <td style="font-weight:700;color:${log.operation === 'Filling'?'#10b981':'#ef4444'};">${log.operation}</td>
+                    <td>${log.material}</td>
+                    <td>${log.moisture ? log.moisture + '%' : '-'}</td>
+                    <td>${log.startWeight || 0}</td>
+                    <td>${log.endWeight || 0}</td>
+                    <td style="font-weight:700;color:#2563eb;">${log.netQty || 0}</td>
+                    <td>${log.temperature ? log.temperature + '°C' : '-'}</td>
+                    <td>${log.operator || '-'}</td>
+                    <td>${log.sealNo || '-'}</td>
+                    <td>${hasInspection}</td>
+                    <td class="no-print">
+                        <button class="btn btn-secondary" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="editSiloLog(${log.id})">✏️ Edit</button>
+                        <button class="btn btn-danger" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onclick="deleteSiloLog(${log.id})">🗑 Del</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        return `
+            <div class="table-responsive">
+                <table class="report-table" style="font-size:0.9rem;width:100%;">
+                    <thead>
+                        <tr style="background:#f1f5f9; color:#334155; font-weight:700;">
+                            <th>Date</th>
+                            <th>Shift</th>
+                            <th>Silo No</th>
+                            <th>Operation</th>
+                            <th>Material</th>
+                            <th>Moisture %</th>
+                            <th>Start Wt (T)</th>
+                            <th>End Wt (T)</th>
+                            <th>Net Qty (T)</th>
+                            <th>Temp (°C)</th>
+                            <th>Performed By</th>
+                            <th>Seal No</th>
+                            <th>Inspected</th>
+                            <th class="no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    };
+
     const renderSiloPerformaDashboard = () => {
         const grid = document.getElementById('silo-performas-grid');
         if (!grid) return;
@@ -49,7 +121,6 @@ try {
         for (let i = 1; i <= 16; i++) {
             const siloName = `Silo ${i}`;
             
-            // Get stats for this silo
             const fillingsCount = siloLogs.filter(l => l.siloNumber === siloName && l.operation === 'Filling').length;
             const dischargeCount = siloLogs.filter(l => l.siloNumber === siloName && l.operation === 'Discharging').length;
 
@@ -63,7 +134,6 @@ try {
                 flex-direction: column;
                 gap: 0.75rem;
                 box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-                transition: transform 0.2s, box-shadow 0.2s;
             `;
             card.className = 'silo-performa-card';
             card.innerHTML = `
@@ -86,7 +156,6 @@ try {
         }
     };
 
-    // Open Silo History table popup
     window.openSiloHistory = (siloNum, operationType) => {
         currentHistorySilo = siloNum;
         currentHistoryOperation = operationType;
@@ -123,6 +192,10 @@ try {
 
         let rows = '';
         [...filteredLogs].reverse().forEach(log => {
+            const hasInspection = log.inspection ? '✓ Yes' : '-';
+            const sealValue = log.sealNo || '-';
+            const supervisorValue = log.supervisor || '-';
+
             rows += `
                 <tr style="border-bottom:1px solid #e2e8f0;">
                     <td style="font-weight:600;padding:0.5rem;">${log.date}</td>
@@ -134,7 +207,9 @@ try {
                     <td style="padding:0.5rem;font-weight:700;color:#2563eb;">${log.netQty || 0}</td>
                     <td style="padding:0.5rem;">${log.temperature ? log.temperature + '°C' : '-'}</td>
                     <td style="padding:0.5rem;">${log.operator || '-'}</td>
-                    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0.5rem;" title="${log.remarks || ''}">${log.remarks || '-'}</td>
+                    <td style="padding:0.5rem;">${sealValue}</td>
+                    <td style="padding:0.5rem;">${supervisorValue}</td>
+                    <td style="padding:0.5rem;font-weight:700;color:#4f46e5;">${hasInspection}</td>
                     <td class="no-print" style="padding:0.5rem;">
                         <button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;" onclick="window.editSiloLog(${log.id})">✏️ Edit</button>
                         <button class="btn btn-danger" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#ef4444;" onclick="window.deleteSiloLog(${log.id})">🗑 Del</button>
@@ -156,7 +231,9 @@ try {
                         <th style="padding:0.5rem;">Net Qty (T)</th>
                         <th style="padding:0.5rem;">Temp</th>
                         <th style="padding:0.5rem;">Operator</th>
-                        <th style="padding:0.5rem;">Remarks</th>
+                        <th style="padding:0.5rem;">Seal No</th>
+                        <th style="padding:0.5rem;">Supervisor</th>
+                        <th style="padding:0.5rem;">Inspected</th>
                         <th class="no-print" style="padding:0.5rem;">Actions</th>
                     </tr>
                 </thead>
@@ -179,6 +256,29 @@ try {
         const operationSelect = document.getElementById('sl-modal-operation');
         operationSelect.value = operationType;
         operationSelect.disabled = true;
+
+        // Reset custom filling fields & inspection
+        document.getElementById('sl-modal-seal-no').value = '';
+        document.getElementById('sl-modal-supervisor').value = '';
+        
+        // Uncheck all checklist boxes
+        for (let i = 1; i <= 4; i++) document.getElementById(`sl-chk-top${i}`).checked = false;
+        for (let i = 1; i <= 12; i++) document.getElementById(`sl-chk-bot${i}`).checked = false;
+        for (let i = 1; i <= 2; i++) document.getElementById(`sl-chk-lab${i}`).checked = false;
+
+        const fillingFields = document.getElementById('sl-modal-filling-only-fields');
+        const inspectionBtn = document.getElementById('sl-modal-inspection-btn-container');
+        const inspectionSect = document.getElementById('sl-modal-inspection-section');
+
+        if (operationType === 'Filling') {
+            if (fillingFields) fillingFields.style.display = 'grid';
+            if (inspectionBtn) inspectionBtn.style.display = 'block';
+            if (inspectionSect) inspectionSect.style.display = 'none';
+        } else {
+            if (fillingFields) fillingFields.style.display = 'none';
+            if (inspectionBtn) inspectionBtn.style.display = 'none';
+            if (inspectionSect) inspectionSect.style.display = 'none';
+        }
 
         document.getElementById('sl-modal-material').value = 'Maize';
         document.getElementById('sl-modal-moisture').value = '';
@@ -206,6 +306,28 @@ try {
         operationSelect.value = log.operation || 'Filling';
         operationSelect.disabled = true;
 
+        const fillingFields = document.getElementById('sl-modal-filling-only-fields');
+        const inspectionBtn = document.getElementById('sl-modal-inspection-btn-container');
+        const inspectionSect = document.getElementById('sl-modal-inspection-section');
+
+        if (log.operation === 'Filling') {
+            if (fillingFields) fillingFields.style.display = 'grid';
+            if (inspectionBtn) inspectionBtn.style.display = 'block';
+            if (inspectionSect) inspectionSect.style.display = log.inspection ? 'block' : 'none';
+
+            document.getElementById('sl-modal-seal-no').value = log.sealNo || '';
+            document.getElementById('sl-modal-supervisor').value = log.supervisor || '';
+
+            const insp = log.inspection || {};
+            for (let i = 1; i <= 4; i++) document.getElementById(`sl-chk-top${i}`).checked = !!insp[`top${i}`];
+            for (let i = 1; i <= 12; i++) document.getElementById(`sl-chk-bot${i}`).checked = !!insp[`bot${i}`];
+            for (let i = 1; i <= 2; i++) document.getElementById(`sl-chk-lab${i}`).checked = !!insp[`lab${i}`];
+        } else {
+            if (fillingFields) fillingFields.style.display = 'none';
+            if (inspectionBtn) inspectionBtn.style.display = 'none';
+            if (inspectionSect) inspectionSect.style.display = 'none';
+        }
+
         document.getElementById('sl-modal-material').value = log.material || '';
         document.getElementById('sl-modal-moisture').value = log.moisture !== undefined ? log.moisture : '';
         document.getElementById('sl-modal-start-wt').value = log.startWeight !== undefined ? log.startWeight : '';
@@ -215,7 +337,6 @@ try {
         document.getElementById('sl-modal-operator').value = log.operator || '';
         document.getElementById('sl-modal-remarks').value = log.remarks || '';
 
-        // Hide history modal, open edit modal
         document.getElementById('silo-history-modal').classList.remove('show');
         document.getElementById('silo-log-modal').classList.add('show');
     };
@@ -279,7 +400,6 @@ try {
 
         const closeModal = () => {
             modal.classList.remove('show');
-            // If we closed edit/add, restore the history view if it was active
             if (currentHistorySilo && currentHistoryOperation) {
                 renderHistoryTable();
                 historyModal.classList.add('show');
@@ -306,10 +426,42 @@ try {
                 if (!date) return alert('Please enter Date.');
                 if (!material) return alert('Please enter Material Name.');
 
+                // Capture pre-filling inspection checks if operation is Filling
+                let sealNo = '';
+                let supervisor = '';
+                let inspection = null;
+
+                if (operation === 'Filling') {
+                    sealNo = document.getElementById('sl-modal-seal-no').value.trim();
+                    supervisor = document.getElementById('sl-modal-supervisor').value.trim();
+                    
+                    inspection = {
+                        top1: document.getElementById('sl-chk-top1').checked,
+                        top2: document.getElementById('sl-chk-top2').checked,
+                        top3: document.getElementById('sl-chk-top3').checked,
+                        top4: document.getElementById('sl-chk-top4').checked,
+                        bot1: document.getElementById('sl-chk-bot1').checked,
+                        bot2: document.getElementById('sl-chk-bot2').checked,
+                        bot3: document.getElementById('sl-chk-bot3').checked,
+                        bot4: document.getElementById('sl-chk-bot4').checked,
+                        bot5: document.getElementById('sl-chk-bot5').checked,
+                        bot6: document.getElementById('sl-chk-bot6').checked,
+                        bot7: document.getElementById('sl-chk-bot7').checked,
+                        bot8: document.getElementById('sl-chk-bot8').checked,
+                        bot9: document.getElementById('sl-chk-bot9').checked,
+                        bot10: document.getElementById('sl-chk-bot10').checked,
+                        bot11: document.getElementById('sl-chk-bot11').checked,
+                        bot12: document.getElementById('sl-chk-bot12').checked,
+                        lab1: document.getElementById('sl-chk-lab1').checked,
+                        lab2: document.getElementById('sl-chk-lab2').checked
+                    };
+                }
+
                 const log = {
                     id: activeLogId || Date.now(),
                     date, shift, siloNumber, operation, material, moisture,
-                    startWeight, endWeight, netQty, temperature, operator, remarks
+                    startWeight, endWeight, netQty, temperature, operator, remarks,
+                    sealNo, supervisor, inspection
                 };
 
                 if (activeLogId) {
@@ -339,7 +491,10 @@ try {
                             net_qty: log.netQty,
                             temperature: log.temperature,
                             performed_by: log.operator,
-                            remarks: log.remarks
+                            remarks: log.remarks,
+                            seal_no: log.sealNo,
+                            supervisor: log.supervisor,
+                            inspection: log.inspection
                         };
 
                         const { error } = await sbClient.from('silo_logs').upsert([dbRecord]);
@@ -383,7 +538,10 @@ try {
                             netQty: r.net_qty || 0,
                             temperature: r.temperature || 0,
                             operator: r.performed_by,
-                            remarks: r.remarks
+                            remarks: r.remarks,
+                            sealNo: r.seal_no,
+                            supervisor: r.supervisor,
+                            inspection: r.inspection
                         };
                     });
                     saveSiloLogs();
