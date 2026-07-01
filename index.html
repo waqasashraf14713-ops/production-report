@@ -1271,56 +1271,56 @@ order by
 
     <!-- Batching Audit Modal -->
     <div id="batching-audit-modal" class="modal-overlay">
-        <div class="modal-card" style="max-width:98vw;width:1500px;max-height:95vh;overflow-y:auto;border-radius:12px;">
-            <div class="modal-header" style="background:#4f46e5;color:#fff;border-bottom:none;padding:1rem 1.5rem;">
+        <div class="modal-card" style="max-width:98vw;width:98vw;height:98vh;max-height:98vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;">
+            <div class="modal-header" style="background:#4f46e5;color:#fff;border-bottom:none;padding:0.75rem 1.5rem;flex-shrink:0;">
                 <h2 id="ba-modal-title" style="color:#fff;margin:0;font-size:1.25rem;">💊 Batching Daily Audit</h2>
                 <button id="ba-modal-close" class="modal-close-btn" style="color:#fff;font-size:1.5rem;background:none;border:none;cursor:pointer;">&times;</button>
             </div>
-            <div class="modal-body" style="padding:1.5rem;">
+            <div class="modal-body" style="padding:0.75rem 1.5rem;flex-grow:1;display:flex;flex-direction:column;overflow:hidden;background:#f1f5f9;">
                 <!-- Header Fields -->
-                <div class="form-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;background:rgba(0,0,0,0.02);padding:1rem;border-radius:8px;border:1px solid var(--card-border);">
-                    <div class="form-group">
-                        <label for="ba-modal-date" style="font-weight:700;">Date</label>
-                        <input type="text" id="ba-modal-date" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);" />
+                <div class="form-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;margin-bottom:0.75rem;background:#ffffff;padding:0.75rem;border-radius:8px;border:1px solid #cbd5e1;flex-shrink:0;">
+                    <div class="form-group" style="margin:0;">
+                        <label for="ba-modal-date" style="font-weight:700;font-size:0.8rem;margin-bottom:0.25rem;display:block;">Date</label>
+                        <input type="text" id="ba-modal-date" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
                     </div>
-                    <div class="form-group">
-                        <label for="ba-modal-shift" style="font-weight:700;">Shift</label>
-                        <input type="text" id="ba-modal-shift" value="ABC" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);" />
+                    <div class="form-group" style="margin:0;">
+                        <label for="ba-modal-shift" style="font-weight:700;font-size:0.8rem;margin-bottom:0.25rem;display:block;">Shift</label>
+                        <input type="text" id="ba-modal-shift" value="ABC" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
                     </div>
-                    <div class="form-group">
-                        <label for="ba-modal-limit" style="font-weight:700;">Acceptable %age</label>
-                        <input type="number" step="any" id="ba-modal-limit" value="0.4" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);" />
+                    <div class="form-group" style="margin:0;">
+                        <label for="ba-modal-limit" style="font-weight:700;font-size:0.8rem;margin-bottom:0.25rem;display:block;">Acceptable %age</label>
+                        <input type="number" step="any" id="ba-modal-limit" value="0.4" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
                     </div>
-                    <div class="form-group">
-                        <label for="ba-modal-total-batches" style="font-weight:700;">Total Batches</label>
-                        <input type="number" step="any" id="ba-modal-total-batches" value="113" oninput="window.calcAllBaRows()" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;background:var(--card-bg);color:var(--text-primary);" />
+                    <div class="form-group" style="margin:0;">
+                        <label for="ba-modal-total-batches" style="font-weight:700;font-size:0.8rem;margin-bottom:0.25rem;display:block;">Total Batches</label>
+                        <input type="number" step="any" id="ba-modal-total-batches" value="113" oninput="window.calcAllBaRows()" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.3rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
                     </div>
                 </div>
 
                 <!-- Excel-style Table Grid -->
-                <div class="table-responsive" style="max-height:55vh;overflow-y:auto;border:1px solid var(--card-border);border-radius:8px;">
-                    <table class="report-table" id="ba-modal-table" style="font-size:0.82rem;width:100%;border-collapse:collapse;min-width:1800px;">
+                <div class="table-responsive" style="flex-grow:1;overflow-y:auto;border:1px solid #cbd5e1;border-radius:8px;background:#ffffff;box-shadow:inset 0 2px 4px rgba(0,0,0,0.06);">
+                    <table class="report-table" id="ba-modal-table" style="font-size:0.75rem;width:100%;border-collapse:collapse;min-width:1800px;background:#ffffff;">
                         <thead>
-                            <tr style="background:#f1f5f9;color:#334155;font-weight:700;position:sticky;top:0;z-index:3;box-shadow:0 1px 0 rgba(0,0,0,0.1);">
-                                <th style="position:sticky;left:0;background:#f1f5f9;z-index:4;box-shadow:2px 0 5px -2px rgba(0,0,0,0.1);text-align:left;min-width:160px;">Item Name</th>
-                                <th>Config</th>
-                                <th>Stand Wt</th>
-                                <th style="background:#eff6ff;">Open Loose</th>
-                                <th style="background:#eff6ff;">Open Bags</th>
-                                <th style="background:#eff6ff;">Open Tub</th>
-                                <th style="background:#ecfdf5;">Received</th>
-                                <th style="background:#e0f2fe;font-weight:bold;">Net Open</th>
-                                <th style="background:#fef2f2;">Close Loose</th>
-                                <th style="background:#fef2f2;">Close Bags</th>
-                                <th style="background:#fee2e2;font-weight:bold;">Net Close</th>
-                                <th style="background:#faf5ff;">Bags Used</th>
-                                <th style="background:#faf5ff;">Avg +/-</th>
-                                <th style="background:#faf5ff;">Bags +/-</th>
-                                <th style="background:#e0f2fe;font-weight:bold;">Actual Used</th>
-                                <th style="background:#fef3c7;font-weight:bold;">Issuance</th>
-                                <th style="background:#fef3c7;font-weight:bold;">Diff</th>
-                                <th style="background:#fef3c7;">Diff/Batch</th>
-                                <th style="background:#fef3c7;">% Excess</th>
+                            <tr style="background:#e2e8f0;color:#0f172a;font-weight:700;position:sticky;top:0;z-index:3;box-shadow:0 1px 2px rgba(0,0,0,0.1);">
+                                <th style="position:sticky;left:0;background:#e2e8f0;z-index:4;box-shadow:2px 0 5px -2px rgba(0,0,0,0.1);text-align:left;min-width:160px;padding:0.4rem;">Item Name</th>
+                                <th style="padding:0.4rem;">Config</th>
+                                <th style="padding:0.4rem;">Stand Wt</th>
+                                <th style="background:#eff6ff;padding:0.4rem;">Open Loose</th>
+                                <th style="background:#eff6ff;padding:0.4rem;">Open Bags</th>
+                                <th style="background:#eff6ff;padding:0.4rem;">Open Tub</th>
+                                <th style="background:#ecfdf5;padding:0.4rem;">Received</th>
+                                <th style="background:#e0f2fe;font-weight:bold;padding:0.4rem;">Net Open</th>
+                                <th style="background:#fef2f2;padding:0.4rem;">Close Loose</th>
+                                <th style="background:#fef2f2;padding:0.4rem;">Close Bags</th>
+                                <th style="background:#fee2e2;font-weight:bold;padding:0.4rem;">Net Close</th>
+                                <th style="background:#faf5ff;padding:0.4rem;">Bags Used</th>
+                                <th style="background:#faf5ff;padding:0.4rem;">Avg +/-</th>
+                                <th style="background:#faf5ff;padding:0.4rem;">Bags +/-</th>
+                                <th style="background:#e0f2fe;font-weight:bold;padding:0.4rem;">Actual Used</th>
+                                <th style="background:#fef3c7;font-weight:bold;padding:0.4rem;">Issuance</th>
+                                <th style="background:#fef3c7;font-weight:bold;padding:0.4rem;">Diff</th>
+                                <th style="background:#fef3c7;padding:0.4rem;">Diff/Batch</th>
+                                <th style="background:#fef3c7;padding:0.4rem;">% Excess</th>
                             </tr>
                         </thead>
                         <tbody id="ba-rows-tbody">
