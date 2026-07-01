@@ -741,16 +741,16 @@
 
                 <!-- Pellet Efficiency Trend widgets/charts -->
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; margin-top:2rem;">
-                    <!-- Left: Average Throughput -->
+                    <!-- Left: Production Trend -->
                     <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
-                        <h3 style="margin-bottom:1rem;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;margin-top:0;">📊 Average Throughput (T/Hr)</h3>
+                        <h3 style="margin-bottom:1rem;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;margin-top:0;">📊 Total Production (Bags) Trend</h3>
                         <div style="width:100%;height:250px;position:relative;">
                             <canvas id="pellet-throughput-chart"></canvas>
                         </div>
                     </div>
-                    <!-- Right: Specific Energy Trend -->
+                    <!-- Right: Efficiency Trend -->
                     <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;">
-                        <h3 style="margin-bottom:1rem;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;margin-top:0;">📈 Specific Energy (kWh/T) Trend</h3>
+                        <h3 style="margin-bottom:1rem;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;margin-top:0;">📈 Average Efficiency (%) Trend</h3>
                         <div style="width:100%;height:250px;position:relative;">
                             <canvas id="pellet-energy-chart"></canvas>
                         </div>
