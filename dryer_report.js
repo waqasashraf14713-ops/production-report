@@ -8,7 +8,7 @@ let dryerReportData = {
     materialDumping: [],
     materialDischarge: [],
     silosDischargeGates: [],
-    siloStatus: { silo09: {on:'', off:''}, silo10: {on:'', off:''}, silo11: {on:'', off:''}, silo12: {on:'', off:''} },
+    siloStatus: { silo08: {on:'', off:''}, silo09: {on:'', off:''}, silo10: {on:'', off:''}, silo11: {on:'', off:''}, silo12: {on:'', off:''}, silo13: {on:'', off:''}, silo14: {on:'', off:''}, silo15: {on:'', off:''}, silo16: {on:'', off:''} },
     faultsAndCauses: '',
     cleaning: {},
     underProcessWork: '',
@@ -75,10 +75,15 @@ function renderDryerGatesTable() {
     const tbody = document.getElementById('dryer-gates-tbody');
     tbody.innerHTML = '';
     const gates = [
+        { conv: '', silo: '8' },
         { conv: 'A.29', silo: '9' },
         { conv: 'A.28', silo: '10' },
         { conv: '', silo: '11' },
-        { conv: '', silo: '12' }
+        { conv: '', silo: '12' },
+        { conv: '', silo: '13' },
+        { conv: '', silo: '14' },
+        { conv: '', silo: '15' },
+        { conv: '', silo: '16' }
     ];
     gates.forEach((g, i) => {
         const tr = document.createElement('tr');
@@ -123,10 +128,15 @@ function gatherDryerReportData() {
     // Gates
     const gates = [];
     const gateRows = [
+        { conv: '', silo: '8' },
         { conv: 'A.29', silo: '9' },
         { conv: 'A.28', silo: '10' },
         { conv: '', silo: '11' },
-        { conv: '', silo: '12' }
+        { conv: '', silo: '12' },
+        { conv: '', silo: '13' },
+        { conv: '', silo: '14' },
+        { conv: '', silo: '15' },
+        { conv: '', silo: '16' }
     ];
     gateRows.forEach((g, i) => {
         gates.push({
@@ -139,10 +149,15 @@ function gatherDryerReportData() {
     
     // Silo Status
     const siloStatus = {
+        silo08: { onTime: getVal('silo08-on'), offTime: getVal('silo08-off') },
         silo09: { onTime: getVal('silo09-on'), offTime: getVal('silo09-off') },
         silo10: { onTime: getVal('silo10-on'), offTime: getVal('silo10-off') },
         silo11: { onTime: getVal('silo11-on'), offTime: getVal('silo11-off') },
-        silo12: { onTime: getVal('silo12-on'), offTime: getVal('silo12-off') }
+        silo12: { onTime: getVal('silo12-on'), offTime: getVal('silo12-off') },
+        silo13: { onTime: getVal('silo13-on'), offTime: getVal('silo13-off') },
+        silo14: { onTime: getVal('silo14-on'), offTime: getVal('silo14-off') },
+        silo15: { onTime: getVal('silo15-on'), offTime: getVal('silo15-off') },
+        silo16: { onTime: getVal('silo16-on'), offTime: getVal('silo16-off') }
     };
     
     const cleaning = {

@@ -610,10 +610,15 @@
                                     <thead><tr><th>Silo</th><th>On Time</th><th>Off Time</th></tr></thead>
                                     <tbody>
                                         ${r.silo_status ? `
-                                            <tr><td>Silo 09</td><td>${r.silo_status.silo09.onTime}</td><td>${r.silo_status.silo09.offTime}</td></tr>
-                                            <tr><td>Silo 10</td><td>${r.silo_status.silo10.onTime}</td><td>${r.silo_status.silo10.offTime}</td></tr>
-                                            <tr><td>Silo 11</td><td>${r.silo_status.silo11.onTime}</td><td>${r.silo_status.silo11.offTime}</td></tr>
-                                            <tr><td>Silo 12</td><td>${r.silo_status.silo12.onTime}</td><td>${r.silo_status.silo12.offTime}</td></tr>
+                                            <tr><td>Silo 08</td><td>${r.silo_status.silo08 ? r.silo_status.silo08.onTime : ''}</td><td>${r.silo_status.silo08 ? r.silo_status.silo08.offTime : ''}</td></tr>
+                                            <tr><td>Silo 09</td><td>${r.silo_status.silo09 ? r.silo_status.silo09.onTime : ''}</td><td>${r.silo_status.silo09 ? r.silo_status.silo09.offTime : ''}</td></tr>
+                                            <tr><td>Silo 10</td><td>${r.silo_status.silo10 ? r.silo_status.silo10.onTime : ''}</td><td>${r.silo_status.silo10 ? r.silo_status.silo10.offTime : ''}</td></tr>
+                                            <tr><td>Silo 11</td><td>${r.silo_status.silo11 ? r.silo_status.silo11.onTime : ''}</td><td>${r.silo_status.silo11 ? r.silo_status.silo11.offTime : ''}</td></tr>
+                                            <tr><td>Silo 12</td><td>${r.silo_status.silo12 ? r.silo_status.silo12.onTime : ''}</td><td>${r.silo_status.silo12 ? r.silo_status.silo12.offTime : ''}</td></tr>
+                                            <tr><td>Silo 13</td><td>${r.silo_status.silo13 ? r.silo_status.silo13.onTime : ''}</td><td>${r.silo_status.silo13 ? r.silo_status.silo13.offTime : ''}</td></tr>
+                                            <tr><td>Silo 14</td><td>${r.silo_status.silo14 ? r.silo_status.silo14.onTime : ''}</td><td>${r.silo_status.silo14 ? r.silo_status.silo14.offTime : ''}</td></tr>
+                                            <tr><td>Silo 15</td><td>${r.silo_status.silo15 ? r.silo_status.silo15.onTime : ''}</td><td>${r.silo_status.silo15 ? r.silo_status.silo15.offTime : ''}</td></tr>
+                                            <tr><td>Silo 16</td><td>${r.silo_status.silo16 ? r.silo_status.silo16.onTime : ''}</td><td>${r.silo_status.silo16 ? r.silo_status.silo16.offTime : ''}</td></tr>
                                         ` : ''}
                                     </tbody>
                                 </table>
