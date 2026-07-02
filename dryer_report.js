@@ -47,10 +47,24 @@ function addDryerDumpingRow() {
     const tbody = document.getElementById('dryer-dumping-tbody');
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td><input type="text" class="dump-mat" style="width:100%;"></td>
+        <td>
+            <select class="dump-mat" style="width:100%;">
+                <option value="">Select...</option>
+                <option value="Maize">Maize</option>
+                <option value="Seed">Seed</option>
+            </select>
+        </td>
         <td><input type="time" class="dump-on" style="width:100%;"></td>
         <td><input type="time" class="dump-off" style="width:100%;"></td>
-        <td><input type="text" class="dump-bin" style="width:100%;"></td>
+        <td>
+            <select class="dump-bin" style="width:100%;">
+                <option value="">Select...</option>
+                ${Array.from({length: 16}, (_, i) => `<option value="Silo ${i+1}">Silo ${i+1}</option>`).join('')}
+                <option value="Wet Bin 1">Wet Bin 1</option>
+                <option value="Wet Bin 2">Wet Bin 2</option>
+                <option value="Wet Bin 3">Wet Bin 3</option>
+            </select>
+        </td>
         <td><input type="text" class="dump-rem" style="width:100%;"></td>
         <td><button class="btn btn-danger" onclick="this.closest('tr').remove()" style="padding:0.25rem 0.5rem;">X</button></td>
     `;
@@ -61,8 +75,22 @@ function addDryerDischargeRow() {
     const tbody = document.getElementById('dryer-discharge-tbody');
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td><input type="text" class="disc-mat" style="width:100%;"></td>
-        <td><input type="text" class="disc-silo" style="width:100%;"></td>
+        <td>
+            <select class="disc-mat" style="width:100%;">
+                <option value="">Select...</option>
+                <option value="Maize">Maize</option>
+                <option value="Seed">Seed</option>
+            </select>
+        </td>
+        <td>
+            <select class="disc-silo" style="width:100%;">
+                <option value="">Select...</option>
+                ${Array.from({length: 16}, (_, i) => `<option value="Silo ${i+1}">Silo ${i+1}</option>`).join('')}
+                <option value="Wet Bin 1">Wet Bin 1</option>
+                <option value="Wet Bin 2">Wet Bin 2</option>
+                <option value="Wet Bin 3">Wet Bin 3</option>
+            </select>
+        </td>
         <td><input type="time" class="disc-on" style="width:100%;"></td>
         <td><input type="time" class="disc-off" style="width:100%;"></td>
         <td><input type="text" class="disc-rem" style="width:100%;"></td>
