@@ -260,8 +260,8 @@ async function saveDryerReport() {
     }
 
     try {
-        if (window.supabase) {
-            const { data: result, error } = await window.supabase.from('dryer_side_report').insert([data]);
+        if (window.isSbConnected && window.sbClient) {
+            const { data: result, error } = await window.sbClient.from('dryer_side_report').insert([data]);
             if (error) throw error;
         } else {
             // Fallback to local storage if supabase isn't connected
