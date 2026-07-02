@@ -59,10 +59,9 @@ function addDryerDumpingRow() {
         <td>
             <select class="dump-bin" style="width:100%;">
                 <option value="">Select...</option>
-                ${Array.from({length: 16}, (_, i) => `<option value="Silo ${i+1}">Silo ${i+1}</option>`).join('')}
-                <option value="Wet Bin 1">Wet Bin 1</option>
-                <option value="Wet Bin 2">Wet Bin 2</option>
-                <option value="Wet Bin 3">Wet Bin 3</option>
+                ${Array.from({length: 8}, (_, i) => `<option value="Silo ${i+9}">Silo ${i+9}</option>`).join('')}
+                <option value="Wet Bin">Wet Bin</option>
+                <option value="Cooling Bin">Cooling Bin</option>
             </select>
         </td>
         <td><input list="break-reasons" class="dump-break" style="width:100%;" placeholder="Select or type..."></td>
