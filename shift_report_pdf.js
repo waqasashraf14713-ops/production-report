@@ -619,6 +619,8 @@
                                             <tr><td>Silo 14</td><td>${r.silo_status.silo14 ? r.silo_status.silo14.onTime : ''}</td><td>${r.silo_status.silo14 ? r.silo_status.silo14.offTime : ''}</td></tr>
                                             <tr><td>Silo 15</td><td>${r.silo_status.silo15 ? r.silo_status.silo15.onTime : ''}</td><td>${r.silo_status.silo15 ? r.silo_status.silo15.offTime : ''}</td></tr>
                                             <tr><td>Silo 16</td><td>${r.silo_status.silo16 ? r.silo_status.silo16.onTime : ''}</td><td>${r.silo_status.silo16 ? r.silo_status.silo16.offTime : ''}</td></tr>
+                                            <tr><td>Wet Bin</td><td>${r.silo_status.wetBin ? r.silo_status.wetBin.onTime : ''}</td><td>${r.silo_status.wetBin ? r.silo_status.wetBin.offTime : ''}</td></tr>
+                                            <tr><td>Cooling Bin</td><td>${r.silo_status.coolingBin ? r.silo_status.coolingBin.onTime : ''}</td><td>${r.silo_status.coolingBin ? r.silo_status.coolingBin.offTime : ''}</td></tr>
                                         ` : ''}
                                     </tbody>
                                 </table>

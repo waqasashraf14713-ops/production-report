@@ -8,7 +8,7 @@ let dryerReportData = {
     materialDumping: [],
     materialDischarge: [],
     silosDischargeGates: [],
-    siloStatus: { silo08: {on:'', off:''}, silo09: {on:'', off:''}, silo10: {on:'', off:''}, silo11: {on:'', off:''}, silo12: {on:'', off:''}, silo13: {on:'', off:''}, silo14: {on:'', off:''}, silo15: {on:'', off:''}, silo16: {on:'', off:''} },
+    siloStatus: { silo08: {on:'', off:''}, silo09: {on:'', off:''}, silo10: {on:'', off:''}, silo11: {on:'', off:''}, silo12: {on:'', off:''}, silo13: {on:'', off:''}, silo14: {on:'', off:''}, silo15: {on:'', off:''}, silo16: {on:'', off:''}, wetBin: {on:'', off:''}, coolingBin: {on:'', off:''} },
     faultsAndCauses: '',
     cleaning: {},
     underProcessWork: '',
@@ -185,7 +185,9 @@ function gatherDryerReportData() {
         silo13: { onTime: getVal('silo13-on'), offTime: getVal('silo13-off') },
         silo14: { onTime: getVal('silo14-on'), offTime: getVal('silo14-off') },
         silo15: { onTime: getVal('silo15-on'), offTime: getVal('silo15-off') },
-        silo16: { onTime: getVal('silo16-on'), offTime: getVal('silo16-off') }
+        silo16: { onTime: getVal('silo16-on'), offTime: getVal('silo16-off') },
+        wetBin: { onTime: getVal('wetbin-on'), offTime: getVal('wetbin-off') },
+        coolingBin: { onTime: getVal('coolingbin-on'), offTime: getVal('coolingbin-off') }
     };
     
     const cleaning = {
