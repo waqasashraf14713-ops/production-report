@@ -65,10 +65,38 @@ function addDryerDumpingRow() {
             </select>
         </td>
         <td><input list="break-reasons" class="dump-break" style="width:100%;" placeholder="Select or type..."></td>
+        <td><input type="number" class="dump-weight" style="width:100%;" placeholder="kg" oninput="calcDryerEff(this.closest('tr'))"></td>
+        <td><input type="text" class="dump-eff" style="width:100%;" readonly placeholder="Auto" style="background:#f1f5f9;"></td>
         <td><input type="text" class="dump-rem" style="width:100%;"></td>
         <td><button class="btn btn-danger" onclick="this.closest('tr').remove()" style="padding:0.25rem 0.5rem;">X</button></td>
     `;
     tbody.appendChild(tr);
+    
+    // Add event listeners to time fields to trigger efficiency calculation
+    tr.querySelector('.dump-on').addEventListener('change', () => calcDryerEff(tr));
+    tr.querySelector('.dump-off').addEventListener('change', () => calcDryerEff(tr));
+}
+
+function calcDryerEff(tr) {
+    const onT = tr.querySelector('.dump-on').value;
+    const offT = tr.querySelector('.dump-off').value;
+    const wt = parseFloat(tr.querySelector('.dump-weight').value);
+    const effInput = tr.querySelector('.dump-eff');
+
+    if (onT && offT && !isNaN(wt) && wt > 0) {
+        const [onH, onM] = onT.split(':').map(Number);
+        const [offH, offM] = offT.split(':').map(Number);
+        let diffHours = (offH + offM/60) - (onH + onM/60);
+        if (diffHours < 0) diffHours += 24; // Handled midnight crossing
+        if (diffHours > 0) {
+            const eff = wt / diffHours;
+            effInput.value = eff.toFixed(2) + " kg/h";
+        } else {
+            effInput.value = "";
+        }
+    } else {
+        effInput.value = "";
+    }
 }
 
 function addDryerDischargeRow() {
@@ -139,6 +167,8 @@ function gatherDryerReportData() {
             offTime: tr.querySelector('.dump-off').value,
             siloWetBin: tr.querySelector('.dump-bin').value,
             breakReason: tr.querySelector('.dump-break').value,
+            weight: tr.querySelector('.dump-weight').value,
+            efficiency: tr.querySelector('.dump-eff').value,
             remarks: tr.querySelector('.dump-rem').value
         });
     });

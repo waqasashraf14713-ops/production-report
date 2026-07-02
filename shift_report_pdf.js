@@ -579,9 +579,9 @@
                     
                     <h4>Material Dumping</h4>
                     <table class="pdf-table" style="width:100%; font-size:0.8rem; margin-bottom:10px;">
-                        <thead><tr><th>Material</th><th>On Time</th><th>Off Time</th><th>Silo/Wet Bin</th><th>Break</th><th>Remarks</th></tr></thead>
+                        <thead><tr><th>Material</th><th>On Time</th><th>Off Time</th><th>Silo/Wet Bin</th><th>Break</th><th>Weight</th><th>Efficiency</th><th>Remarks</th></tr></thead>
                         <tbody>
-                            ${r.material_dumping && r.material_dumping.length > 0 ? r.material_dumping.map(d => `<tr><td>${d.material}</td><td>${d.onTime}</td><td>${d.offTime}</td><td>${d.siloWetBin}</td><td>${d.breakReason || ''}</td><td>${d.remarks}</td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:#64748b;">No records</td></tr>'}
+                            ${r.material_dumping && r.material_dumping.length > 0 ? r.material_dumping.map(d => `<tr><td>${d.material}</td><td>${d.onTime}</td><td>${d.offTime}</td><td>${d.siloWetBin}</td><td>${d.breakReason || ''}</td><td>${d.weight ? d.weight + ' kg' : ''}</td><td>${d.efficiency || ''}</td><td>${d.remarks}</td></tr>`).join('') : '<tr><td colspan="8" style="text-align:center;color:#64748b;">No records</td></tr>'}
                         </tbody>
                     </table>
 
