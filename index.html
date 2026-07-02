@@ -164,6 +164,11 @@
                     <div class="dash-quick-label">Pellet Efficiency</div>
                     <div class="dash-quick-desc">Pellet mill energy & PDI</div>
                 </div>
+                <div class="dash-quick-card" onclick="if(window.openDryerReportModal)window.openDryerReportModal()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#f97316,#fdba74);">🔥</div>
+                    <div class="dash-quick-label">Dryer Side Shift</div>
+                    <div class="dash-quick-desc">Fill dryer shift report</div>
+                </div>
                 <div class="dash-quick-card" onclick="document.getElementById('nav-silo-performa').click()">
                     <div class="dash-quick-icon" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);">📥</div>
                     <div class="dash-quick-label">Silo Performa (1-16)</div>
@@ -335,9 +340,9 @@
         <div id="view-five-s" class="view-section" style="display: none;">
 
             <!-- ── Tab Bar ── -->
-            <div class="qs-tab-bar" id="qs-tab-bar">
                 <button class="qs-tab active" id="tab-five-s" onclick="switchQSTab('five-s')">✨ 5S Audit Logs</button>
                 <button class="qs-tab" id="tab-daily-checklist" onclick="switchQSTab('daily-checklist')">📅 Daily Checklist</button>
+                <button class="qs-tab" id="tab-cleaning-schedule" onclick="switchQSTab('cleaning-schedule')">🧹 Cleaning Schedule</button>
             </div>
 
             <!-- ══════════════════════════════════════════ -->
@@ -501,6 +506,68 @@
                     </div>
                 </div>
             </div><!-- /qs-panel-daily-checklist -->
+
+            <!-- ══════════════════════════════════════════ -->
+            <!-- TAB 3 — Cleaning Schedule                -->
+            <!-- ══════════════════════════════════════════ -->
+            <div id="qs-panel-cleaning-schedule" style="display:none;">
+                <div class="table-header">
+                    <h2>ہفتہ وار اور مہینہ وار صفائی کی چیک لسٹ (Weekly & Monthly Cleaning)</h2>
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <button class="btn btn-secondary" id="btn-add-cleaning-log" onclick="window.openCleaningModal()">➕ Add Log</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom: 1.5rem;">
+                        <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+                            <label style="font-weight:600;color:var(--text-secondary);">سائیٹ ایریا:</label>
+                            <select id="cl-area-select" style="border-radius:6px; border:1px solid var(--card-border); padding:0.5rem; background:var(--card-bg); color:var(--text-primary); font-weight:600; outline:none; cursor:pointer;" onchange="window.renderCleaningSchedule()">
+                                <option value="سائلو کنٹرول روم">سائلو کنٹرول روم (Silo Control Room)</option>
+                                <option value="Mechanical">Mechanical</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Old Godown">Old Godown</option>
+                                <option value="Premix">Premix</option>
+                            </select>
+
+                            <label style="font-weight:600;color:var(--text-secondary);">Year:</label>
+                            <select id="cl-year-select" style="border-radius:6px; border:1px solid var(--card-border); padding:0.5rem; background:var(--card-bg); color:var(--text-primary); font-weight:600; outline:none; cursor:pointer;" onchange="window.renderCleaningSchedule()">
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                            </select>
+                        </div>
+                        <h3 style="margin:0; color: var(--text-primary); font-size:1.15rem; font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif;" class="urdu-text">
+                            شیڈول 6 مہینے کیلئے
+                        </h3>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="report-table urdu-text" id="cleaning-schedule-table" style="font-size: 0.95rem; text-align: center; border-collapse: collapse; width:100%; direction: rtl; background-color: #e4e5b6; color: #000; border: 2px solid #555;">
+                            <thead>
+                                <tr style="background:#d6d89a; color:#000; font-weight:700;">
+                                    <th rowspan="2" style="border:1px solid #555; width:15%;">شیڈول</th>
+                                    <th rowspan="2" style="border:1px solid #555; width:12%;">تاریخ</th>
+                                    <th colspan="3" style="border:1px solid #555;">ہفتہ وار</th>
+                                    <th style="border:1px solid #555;">مہینہ وار</th>
+                                    <th colspan="2" style="border:1px solid #555;">دستخط</th>
+                                    <th rowspan="2" style="border:1px solid #555; width:8%; font-family: sans-serif;">Action</th>
+                                </tr>
+                                <tr style="background:#d6d89a; color:#000; font-weight:700;">
+                                    <th style="border:1px solid #555;">شیشے</th>
+                                    <th style="border:1px solid #555;">دیواریں</th>
+                                    <th style="border:1px solid #555;">چھت</th>
+                                    <th style="border:1px solid #555;">الیکٹریکل پینل</th>
+                                    <th style="border:1px solid #555;">ایریا ذمہ دار</th>
+                                    <th style="border:1px solid #555;">سائیٹ انچارج</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div><!-- /qs-panel-cleaning-schedule -->
 
         </div><!-- /view-five-s -->
 
@@ -1119,6 +1186,94 @@ order by
         </div>
     </div>
 
+    <!-- Cleaning Schedule Modal -->
+    <div id="cleaning-log-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 600px; width: 90%; background-color: #e4e5b6; color: #000; border: 2px solid #555;">
+            <div class="modal-header" style="background:#d6d89a; border-bottom: 2px solid #555; color: #000;">
+                <h2 id="cl-modal-title" class="urdu-text" style="margin:0;font-size:1.4rem; color:#000;">صفائی کی چیک لسٹ (Cleaning Log)</h2>
+                <button onclick="document.getElementById('cleaning-log-modal').classList.remove('show')" class="modal-close-btn" style="color:#000;">&times;</button>
+            </div>
+            <div class="modal-body urdu-text" style="padding: 1.5rem; direction: rtl; text-align: right; color:#000;">
+                <input type="hidden" id="cl-modal-id">
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label style="color:#000; font-weight:bold;">مہینہ (Month)</label>
+                        <select id="cl-modal-month" style="width:100%; padding:0.5rem; border:1px solid #555; border-radius:4px; font-family:sans-serif; background:#fff; color:#000;">
+                            <option value="January">جنوری (January)</option>
+                            <option value="February">فروری (February)</option>
+                            <option value="March">مارچ (March)</option>
+                            <option value="April">اپریل (April)</option>
+                            <option value="May">مئی (May)</option>
+                            <option value="June">جون (June)</option>
+                            <option value="July">جولائی (July)</option>
+                            <option value="August">اگست (August)</option>
+                            <option value="September">ستمبر (September)</option>
+                            <option value="October">اکتوبر (October)</option>
+                            <option value="November">نومبر (November)</option>
+                            <option value="December">دسمبر (December)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="color:#000; font-weight:bold;">ہفتہ (Week)</label>
+                        <select id="cl-modal-week" style="width:100%; padding:0.5rem; border:1px solid #555; border-radius:4px; font-family:sans-serif; background:#fff; color:#000;">
+                            <option value="Week 1">پہلا ہفتہ (Week 1)</option>
+                            <option value="Week 2">دوسرا ہفتہ (Week 2)</option>
+                            <option value="Week 3">تیسرا ہفتہ (Week 3)</option>
+                            <option value="Week 4">چوتھا ہفتہ (Week 4)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="color:#000; font-weight:bold;">تاریخ (Date)</label>
+                    <input type="text" id="cl-modal-date" placeholder="e.g. 01/10/2025" style="width:100%; padding:0.5rem; border:1px solid #555; border-radius:4px; font-family:sans-serif; text-align:left; background:#fff; color:#000;" dir="ltr">
+                </div>
+
+                <h3 style="font-size:1.1rem; border-bottom:1px solid #555; padding-bottom:0.5rem; margin-bottom:1rem; color:#000; font-weight:bold;">ہفتہ وار صفائی (Weekly Tasks)</h3>
+                <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom: 1.5rem;">
+                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; color:#000;">
+                        <input type="checkbox" id="cl-chk-mirrors" style="width:18px;height:18px;">
+                        <span>شیشے صاف ہیں (Mirrors/Glass Cleaned)</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; color:#000;">
+                        <input type="checkbox" id="cl-chk-walls" style="width:18px;height:18px;">
+                        <span>دیواریں صاف ہیں (Walls Cleaned)</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; color:#000;">
+                        <input type="checkbox" id="cl-chk-roof" style="width:18px;height:18px;">
+                        <span>چھت صاف ہے (Ceiling Cleaned)</span>
+                    </label>
+                </div>
+
+                <h3 style="font-size:1.1rem; border-bottom:1px solid #555; padding-bottom:0.5rem; margin-bottom:1rem; color:#000; font-weight:bold;">مہینہ وار صفائی (Monthly Task)</h3>
+                <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom: 1.5rem;">
+                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; color:#000;">
+                        <input type="checkbox" id="cl-chk-panel" style="width:18px;height:18px;">
+                        <span>الیکٹریکل پینل صاف ہے (Electrical Panel Cleaned)</span>
+                    </label>
+                </div>
+
+                <h3 style="font-size:1.1rem; border-bottom:1px solid #555; padding-bottom:0.5rem; margin-bottom:1rem; color:#000; font-weight:bold;">دستخط (Signatures)</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label style="color:#000; font-weight:bold;">ایریا ذمہ دار (Area Incharge)</label>
+                        <input type="text" id="cl-modal-area-incharge" placeholder="نام" style="width:100%; padding:0.5rem; border:1px solid #555; border-radius:4px; font-family:sans-serif; background:#fff; color:#000;">
+                    </div>
+                    <div class="form-group">
+                        <label style="color:#000; font-weight:bold;">سائیٹ انچارج (Site Incharge)</label>
+                        <input type="text" id="cl-modal-site-incharge" placeholder="نام" style="width:100%; padding:0.5rem; border:1px solid #555; border-radius:4px; font-family:sans-serif; background:#fff; color:#000;">
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:2rem;" dir="ltr">
+                    <button class="btn btn-secondary" style="border:1px solid #555; color:#000; background:#f1f5f9;" onclick="document.getElementById('cleaning-log-modal').classList.remove('show')">Cancel</button>
+                    <button class="btn btn-primary" style="background:#22c55e; border-color:#16a34a; color:#fff;" onclick="window.saveCleaningLog()">💾 Save Log</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 5S Checklist Modal -->
     <div id="five-s-checklist-modal" class="modal-overlay">
         <div class="modal-card" style="max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
@@ -1267,8 +1422,6 @@ order by
 
                 <div class="modal-divider" style="margin:1.25rem 0;height:1px;background:var(--card-border);"></div>
 
-                <div class="modal-divider" style="margin:1.25rem 0;height:1px;background:var(--card-border);"></div>
-
                 <div class="form-group" style="margin-bottom:1rem;">
                     <label for="sr-modal-raw">Other Raw Material Used</label>
                     <textarea id="sr-modal-raw" rows="2" placeholder="e.g., Soya: 4 tons, Premix: 120 kg..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);font-family:inherit;resize:vertical;outline:none;"></textarea>
@@ -1284,6 +1437,10 @@ order by
                 <div class="form-group">
                     <label for="sr-modal-general">General Remarks</label>
                     <textarea id="sr-modal-general" rows="2" placeholder="Any other notes for the next shift..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);font-family:inherit;resize:vertical;outline:none;"></textarea>
+                </div>
+                <div class="form-group" style="margin-top:1rem;">
+                    <label for="sr-modal-dryer">Dryer Side Shift Report</label>
+                    <textarea id="sr-modal-dryer" rows="2" placeholder="Dryer side observations and remarks..." style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);font-family:inherit;resize:vertical;outline:none;"></textarea>
                 </div>
 
                 <div class="modal-actions" style="margin-top:1.75rem;display:flex;justify-content:flex-end;gap:1rem;">
@@ -1661,7 +1818,7 @@ order by
 
                 <!-- 2. Inspection checklist table (ONLY displayed for Filling) -->
                 <div id="sl-modal-inspection-section-direct" style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.02);margin-bottom:1.5rem;">
-                    <h3 class="urdu-text" style="color:#2563eb;font-size:1.4rem;border-bottom:2px solid #e2e8f0;padding-bottom:0.5rem;margin-bottom:1rem;font-weight:bold;">سائلو انسپکشن رپورٹ (Steel Silo) - فلنگ سے پہلے</h3>
+                    <h3 id="sl-modal-inspection-title" class="urdu-text" style="color:#2563eb;font-size:1.4rem;border-bottom:2px solid #e2e8f0;padding-bottom:0.5rem;margin-bottom:1rem;font-weight:bold;">سائلو انسپکشن رپورٹ (Steel Silo) - فلنگ سے پہلے</h3>
                     
                     <div class="table-responsive">
                         <table class="report-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;">
@@ -1782,10 +1939,10 @@ order by
                                     <td class="urdu-text" style="border:1px solid #cbd5e1;">سائلوز میں کوئی پرانا بیج یا اکسیڑا (Old Grain / Infestation) موجود نہیں ہے۔</td>
                                 </tr>
                                 <tr>
-                                    <td style="text-align:center;font-weight:bold;background:#fafafa;vertical-align:middle;border:1px solid #cbd5e1;">Fumigation</td>
+                                    <td style="text-align:center;font-weight:bold;background:#d9f99d;color:#166534;vertical-align:middle;border:1px solid #cbd5e1;">Fumigation</td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-lab2" id="sl-chk-lab2-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-lab2" id="sl-chk-lab2-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">کیا سائلو کو فیومیگیٹ (Fumigate) کرنے کی ضرورت ہے؟</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">کیا سائلو کو فیومیگیٹ (Fumigate) کرنے کی ضرورت ہے؟ (PhosPhine Gas Color)</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1826,9 +1983,9 @@ order by
 
     <!-- Silo Report View Modal -->
     <div id="silo-report-view-modal" class="modal-overlay" style="z-index:9999;">
-        <div class="modal-card" style="max-width:900px;width:95%;border-radius:12px;max-height:92vh;display:flex;flex-direction:column;background:#ffffff;border:1px solid rgba(99,102,241,0.3);box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
+        <div class="modal-card" style="max-width:100%;width:100%;height:100vh;max-height:100vh;border-radius:0;margin:0;display:flex;flex-direction:column;background:#ffffff;border:none;box-shadow:none;">
             <div class="modal-header" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border-bottom:none;padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-                <h2 style="color:#fff;margin:0;font-size:1.25rem;font-family:'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif;">سائلو انسپکشن رپورٹ (Steel Silo)</h2>
+                <h2 id="silo-report-view-title" style="color:#fff;margin:0;font-size:1.25rem;font-family:'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif;">سائلو انسپکشن رپورٹ (Steel Silo)</h2>
                 <button id="silo-report-view-close" class="modal-close-btn" style="color:#fff;font-size:1.5rem;background:none;border:none;cursor:pointer;">&times;</button>
             </div>
             <div class="modal-body" style="padding:2rem;background:#ffffff;overflow-y:auto;flex-grow:1;font-family:'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Urdu Typesetting', serif;direction:rtl;text-align:right;">
@@ -2114,6 +2271,104 @@ order by
         </div>
     </div>
 
+    <!-- Dryer Report Modal -->
+    <div id="dryer-report-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:1200px;width:98%;background:#ffffff;">
+            <div class="modal-header" style="background:var(--primary-color);color:#fff;">
+                <h2 id="dryer-report-title" style="color:#fff;">Dryer Side Shift Report</h2>
+                <button id="dryer-report-close" class="modal-close-btn" style="color:#fff;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem; max-height: 80vh; overflow-y: auto;">
+                
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;background:#f8fafc;padding:1rem;border-radius:8px;border:1px solid #cbd5e1;">
+                    <div class="form-group" style="margin:0;">
+                        <label for="dryer-date">Date</label>
+                        <input type="text" id="dryer-date" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;" />
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label for="dryer-shift">Shift</label>
+                        <input type="text" id="dryer-shift" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;" />
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label for="dryer-operator">Operator Name</label>
+                        <input type="text" id="dryer-operator" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.4rem;background:#fff;" />
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom:0.5rem;color:var(--text-primary);border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;">1. Material Dumping</h3>
+                <table class="report-table" style="width:100%;margin-bottom:1.5rem;">
+                    <thead><tr><th>Material</th><th>On Time</th><th>Off Time</th><th>Silo/Wet Bin</th><th>Remarks</th><th>Actions</th></tr></thead>
+                    <tbody id="dryer-dumping-tbody"></tbody>
+                    <tfoot><tr><td colspan="6" style="text-align:right;"><button class="btn btn-secondary" style="padding:0.25rem 0.75rem;" onclick="addDryerDumpingRow()">+ Add Row</button></td></tr></tfoot>
+                </table>
+
+                <h3 style="margin-bottom:0.5rem;color:var(--text-primary);border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;">2. Material Discharge</h3>
+                <table class="report-table" style="width:100%;margin-bottom:1.5rem;">
+                    <thead><tr><th>Material</th><th>Silo No.</th><th>On Time</th><th>Off Time</th><th>Remarks</th><th>Actions</th></tr></thead>
+                    <tbody id="dryer-discharge-tbody"></tbody>
+                    <tfoot><tr><td colspan="6" style="text-align:right;"><button class="btn btn-secondary" style="padding:0.25rem 0.75rem;" onclick="addDryerDischargeRow()">+ Add Row</button></td></tr></tfoot>
+                </table>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:1.5rem;">
+                    <div>
+                        <h3 style="margin-bottom:0.5rem;color:var(--text-primary);border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;">3. Silos Discharge Gates</h3>
+                        <table class="report-table" style="width:100%;">
+                            <thead><tr><th>Conveyor #</th><th>Silo #</th><th>Gate #</th><th>Open</th></tr></thead>
+                            <tbody id="dryer-gates-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <h3 style="margin-bottom:0.5rem;color:var(--text-primary);border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;">4. Silo Status</h3>
+                        <table class="report-table" style="width:100%;">
+                            <thead><tr><th>Silo</th><th>On Time</th><th>Off Time</th></tr></thead>
+                            <tbody>
+                                <tr><td>Silo 09</td><td><input type="time" id="silo09-on" style="width:100%;"></td><td><input type="time" id="silo09-off" style="width:100%;"></td></tr>
+                                <tr><td>Silo 10</td><td><input type="time" id="silo10-on" style="width:100%;"></td><td><input type="time" id="silo10-off" style="width:100%;"></td></tr>
+                                <tr><td>Silo 11</td><td><input type="time" id="silo11-on" style="width:100%;"></td><td><input type="time" id="silo11-off" style="width:100%;"></td></tr>
+                                <tr><td>Silo 12</td><td><input type="time" id="silo12-on" style="width:100%;"></td><td><input type="time" id="silo12-off" style="width:100%;"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:1.5rem;">
+                    <h3 style="margin-bottom:0.5rem;color:var(--text-primary);">Faults and Causes</h3>
+                    <textarea id="dryer-faults" rows="3" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;resize:vertical;"></textarea>
+                </div>
+
+                <h3 style="margin-bottom:0.5rem;color:var(--text-primary);border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;">Cleaning Checklist</h3>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;background:#f8fafc;padding:1rem;border-radius:8px;border:1px solid #cbd5e1;">
+                    <label><input type="checkbox" id="chk-drum"> Drum Cleaner</label>
+                    <label><input type="checkbox" id="chk-chamber"> Chamber Section</label>
+                    <label><input type="checkbox" id="chk-sieves1"> Sieves Box-1</label>
+                    <label><input type="checkbox" id="chk-sieves2"> Sieves Box-2</label>
+                    <label><input type="checkbox" id="chk-exhaust"> Exhaust Fan Pipe</label>
+                    <label><input type="checkbox" id="chk-dust"> Dust Collector</label>
+                    <label><input type="checkbox" id="chk-tower"> Dryer Tower</label>
+                    <label><input type="checkbox" id="chk-fiber"> Dryer Fiber Pipe</label>
+                    <label><input type="checkbox" id="chk-mech"> Mechanical Worker</label>
+                    <label><input type="checkbox" id="chk-elec"> Mech/Electrical Worker</label>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:1.5rem;">
+                    <div>
+                        <h3 style="margin-bottom:0.5rem;color:var(--text-primary);">Under Process Work / Maintenance</h3>
+                        <textarea id="dryer-maintenance" rows="3" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;resize:vertical;"></textarea>
+                    </div>
+                    <div>
+                        <h3 style="margin-bottom:0.5rem;color:var(--text-primary);">General Remarks</h3>
+                        <textarea id="dryer-general" rows="3" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;resize:vertical;"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="margin-top:1.5rem;display:flex;justify-content:flex-end;gap:1rem;border-top:1px solid var(--card-border);padding-top:1rem;">
+                    <button class="btn btn-secondary" id="btn-cancel-dryer" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-dryer" style="width:auto;padding:0.5rem 2rem;">💾 Save Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Silo Dump Modal -->
     <div id="silo-dump-modal" class="modal-overlay">
         <div class="modal-card" style="max-width:1200px;width:98%;background:#ffffff;">
@@ -2292,6 +2547,9 @@ order by
                         <label style="font-weight:600; margin-bottom:0.4rem; display:block; color:var(--text-primary);">Status</label>
                         <select id="sd-m-status" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
                             <option value="Empty">Empty</option>
+                            <option value="Filling">Filling</option>
+                            <option value="Discharging">Discharging</option>
+                            <option value="Filling & Discharging">Filling & Discharging</option>
                             <option value="Active">Active</option>
                             <option value="Running">Running</option>
                             <option value="Stopped">Stopped</option>
@@ -3230,3 +3488,5 @@ order by
     </div>
 </body>
 </html>
+
+

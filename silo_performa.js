@@ -150,13 +150,40 @@ try {
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">2</td>
-                <td style="text-align:center;font-weight:bold;border:1px solid #000;background:#f8fafc;">Fumigation</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">کیا سائلو کو فیومیگیٹ (Fumigate) کرنے کی ضرورت ہے؟</td>
+                <td style="text-align:center;font-weight:bold;border:1px solid #000;background:#d9f99d;color:#166534;">Fumigation</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">کیا سائلو کو فیومیگیٹ (Fumigate) کرنے کی ضرورت ہے؟ (PhosPhine Gas Color)</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.lab2, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.lab2, false)}</td>
             </tr>
         `;
     };
+
+    function getSiloTitleUrdu(siloNoStr) {
+        const match = String(siloNoStr).match(/\d+/);
+        if (match) {
+            const num = parseInt(match[0], 10);
+            if (num >= 1 && num <= 8) return "سائلو انسپکشن رپورٹ - کنکریٹ سائلوز (Concrete Silo)";
+        }
+        return "سائلو انسپکشن رپورٹ - سٹیل سائلوز (Steel Silo)";
+    }
+    
+    function getSiloShortTitleUrdu(siloNoStr) {
+        const match = String(siloNoStr).match(/\d+/);
+        if (match) {
+            const num = parseInt(match[0], 10);
+            if (num >= 1 && num <= 8) return "سائلو انسپکشن رپورٹ (Concrete Silo)";
+        }
+        return "سائلو انسپکشن رپورٹ (Steel Silo)";
+    }
+
+    function getSiloModalInspectionTitle(siloNoStr) {
+        const match = String(siloNoStr).match(/\d+/);
+        if (match) {
+            const num = parseInt(match[0], 10);
+            if (num >= 1 && num <= 8) return "سائلو انسپکشن رپورٹ (Concrete Silo) - فلنگ سے پہلے";
+        }
+        return "سائلو انسپکشن رپورٹ (Steel Silo) - فلنگ سے پہلے";
+    }
 
     // Print Silo Inspection Report as beautiful paper
     window.printSiloInspection = (id) => {
@@ -253,7 +280,7 @@ try {
                     <tr>
                         <td style="width:30%; font-weight:bold;">سیل نمبر: <span style="font-family:Arial,sans-serif;font-size:1.15rem;border-bottom:1px solid #000;padding:0 5px;">${sealNo}</span></td>
                         <td class="title-block" style="width:40%;">
-                            <div style="font-size:1.6rem;font-weight:bold;">سائلو انسپکشن رپورٹ - سٹیل سائلوز (Steel Silo)</div>
+                            <div style="font-size:1.6rem;font-weight:bold;">${getSiloTitleUrdu(siloNo)}</div>
                             <div style="font-size:1.25rem;margin-top:5px;color:#475569;">(فلنگ سے پہلے انسپکشن پرفارما)</div>
                         </td>
                         <td style="width:30%; text-align:left; font-weight:bold;">تاریخ: <span style="border-bottom:1px solid #000;padding:0 5px;">${date}</span></td>
@@ -322,11 +349,15 @@ try {
         const log = siloLogs.find(x => x.id === id);
         if (!log) return alert('Record not found.');
         currentlyViewingLogId = id;
+        
+        const siloNo = log.siloNumber ? log.siloNumber.replace('Silo ', '') : '';
+        const viewTitle = document.getElementById('silo-report-view-title');
+        if (viewTitle) viewTitle.textContent = getSiloShortTitleUrdu(siloNo);
 
         const insp = log.inspection || {};
         const sealNo = log.sealNo || '';
         const date = log.date || '';
-        const siloNo = log.siloNumber ? log.siloNumber.replace('Silo ', '') : '';
+        const date = log.date || '';
         const material = log.material || '';
         const officer = log.supervisor || ''; // officer name (mapped to supervisor field)
         const operator = log.operator || '';  // operator name
@@ -348,7 +379,7 @@ try {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; border-bottom:3px double #cbd5e1; padding-bottom:1.25rem;">
                     <div style="font-size:1.25rem;font-weight:bold;">سیل نمبر: <span style="color:#2563eb;font-family:sans-serif;border-bottom:1px solid #94a3b8;padding:0 8px;">${sealNo}</span></div>
                     <div style="text-align:center;">
-                        <h2 style="font-size:1.85rem; color:#1e3a8a; margin:0; font-weight:bold;">سائلو انسپکشن رپورٹ - سٹیل سائلوز (Steel Silo)</h2>
+                        <h2 style="font-size:1.85rem; color:#1e3a8a; margin:0; font-weight:bold;">${getSiloTitleUrdu(siloNo)}</h2>
                         <span style="font-size:1.15rem;color:#475569;font-weight:600;">(فلنگ سے پہلے انسپکشن پرفارما)</span>
                     </div>
                     <div style="font-size:1.25rem;font-weight:bold;">تاریخ: <span style="border-bottom:1px solid #94a3b8;padding:0 8px;">${date}</span></div>
@@ -716,13 +747,27 @@ try {
         const hiddenFieldsWrapper = document.getElementById('sl-modal-hidden-fields');
 
         if (operationType === 'Filling') {
-            if (modalCard) modalCard.style.maxWidth = '900px';
+            if (modalCard) {
+                modalCard.style.maxWidth = '100%';
+                modalCard.style.width = '100%';
+                modalCard.style.height = '100vh';
+                modalCard.style.maxHeight = '100vh';
+                modalCard.style.borderRadius = '0';
+                modalCard.style.margin = '0';
+            }
             if (sealGroup) sealGroup.style.display = 'block';
             if (officerGroup) officerGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'block';
             if (hiddenFieldsWrapper) hiddenFieldsWrapper.style.display = 'none';
         } else {
-            if (modalCard) modalCard.style.maxWidth = '550px';
+            if (modalCard) {
+                modalCard.style.maxWidth = '550px';
+                modalCard.style.width = '95%';
+                modalCard.style.height = 'auto';
+                modalCard.style.maxHeight = '92vh';
+                modalCard.style.borderRadius = '12px';
+                modalCard.style.margin = 'auto';
+            }
             if (sealGroup) sealGroup.style.display = 'none';
             if (officerGroup) officerGroup.style.display = 'none';
             if (inspectionSection) inspectionSection.style.display = 'none';
@@ -734,6 +779,9 @@ try {
         document.getElementById('sl-modal-net-wt').value = '';
         document.getElementById('sl-modal-temp').value = '';
         document.getElementById('sl-modal-remarks').value = '';
+
+        const inspTitle = document.getElementById('sl-modal-inspection-title');
+        if (inspTitle) inspTitle.textContent = getSiloModalInspectionTitle(siloNum);
 
         document.getElementById('silo-log-modal').classList.add('show');
     };
@@ -758,7 +806,14 @@ try {
         const hiddenFieldsWrapper = document.getElementById('sl-modal-hidden-fields');
 
         if (log.operation === 'Filling') {
-            if (modalCard) modalCard.style.maxWidth = '900px';
+            if (modalCard) {
+                modalCard.style.maxWidth = '100%';
+                modalCard.style.width = '100%';
+                modalCard.style.height = '100vh';
+                modalCard.style.maxHeight = '100vh';
+                modalCard.style.borderRadius = '0';
+                modalCard.style.margin = '0';
+            }
             if (sealGroup) sealGroup.style.display = 'block';
             if (officerGroup) officerGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'block';
@@ -784,7 +839,14 @@ try {
                 document.getElementById(`sl-chk-lab${i}-no`).checked = !checked;
             }
         } else {
-            if (modalCard) modalCard.style.maxWidth = '550px';
+            if (modalCard) {
+                modalCard.style.maxWidth = '550px';
+                modalCard.style.width = '95%';
+                modalCard.style.height = 'auto';
+                modalCard.style.maxHeight = '92vh';
+                modalCard.style.borderRadius = '12px';
+                modalCard.style.margin = 'auto';
+            }
             if (sealGroup) sealGroup.style.display = 'none';
             if (officerGroup) officerGroup.style.display = 'none';
             if (inspectionSection) inspectionSection.style.display = 'none';
@@ -799,6 +861,10 @@ try {
         document.getElementById('sl-modal-remarks').value = log.remarks || '';
 
         document.getElementById('silo-history-modal').classList.remove('show');
+        
+        const inspTitle = document.getElementById('sl-modal-inspection-title');
+        if (inspTitle) inspTitle.textContent = getSiloModalInspectionTitle(log.siloNumber);
+
         document.getElementById('silo-log-modal').classList.add('show');
     };
 

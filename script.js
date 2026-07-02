@@ -2284,9 +2284,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const mc  = getMoistureColor(silo.currentMoisture);
                 const mPct = Math.min((silo.currentMoisture / 20) * 100, 100);
+                const isFillingActive = silo.status === 'Filling' || silo.status === 'Filling & Discharging';
+                const isDischargingActive = silo.status === 'Discharging' || silo.status === 'Filling & Discharging';
 
                 const card = document.createElement('div');
-                card.className = 'silo-card';
+                card.className = 'silo-card' + (isFillingActive ? ' filling-active' : '') + (isDischargingActive ? ' discharging-active' : '');
 
                 card.innerHTML = `
                     <div class="glass-silo-container" id="silo-glass-${silo.id}">
@@ -2297,13 +2299,52 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="silo-particle" style="left:75%;animation-delay:0.4s;"></span>
                             <span class="silo-particle" style="left:85%;animation-delay:2s;"></span>
                         </div>
+                        <!-- Filling Animation Elements -->
+                        <div class="silo-filling-pipe"></div>
+                        <div class="silo-grain-stream-wrapper" style="position: absolute; top: 35px; left: 0; width: 100%; height: calc(15px + 1.5px * ${100 - silo.fillLevel}); overflow: hidden; z-index: 15; pointer-events: none;">
+                            <div class="silo-grain-stream" style="top: 0; height: 100%;"></div>
+                            ${isFillingActive ? `
+                            <span class="silo-falling-grain" style="left:46%;width:4px;height:4px;animation:grainFall1 1.2s ease-in infinite 0s;"></span>
+                            <span class="silo-falling-grain" style="left:52%;width:3px;height:3px;animation:grainFall2 1.0s ease-in infinite 0.2s;"></span>
+                            <span class="silo-falling-grain" style="left:48%;width:3.5px;height:3.5px;animation:grainFall3 1.4s ease-in infinite 0.5s;"></span>
+                            <span class="silo-falling-grain" style="left:54%;width:3px;height:3px;animation:grainFall4 1.1s ease-in infinite 0.7s;"></span>
+                            <span class="silo-falling-grain" style="left:50%;width:4px;height:4px;animation:grainFall5 1.3s ease-in infinite 0.3s;"></span>
+                            <span class="silo-falling-grain" style="left:44%;width:3px;height:3px;animation:grainFall6 1.5s ease-in infinite 0.9s;"></span>
+                            <span class="silo-falling-grain" style="left:56%;width:2.5px;height:2.5px;animation:grainFall1 1.6s ease-in infinite 1.1s;"></span>
+                            <span class="silo-falling-grain" style="left:42%;width:3.5px;height:3.5px;animation:grainFall3 1.2s ease-in infinite 1.3s;"></span>
+                            ` : ''}
+                        </div>
+                        <div class="silo-grain-splash" style="bottom:${silo.fillLevel}%;">
+                            <span class="splash-particle" style="left:50%;top:50%;animation:splashLeft 0.8s ease-out infinite 0s;"></span>
+                            <span class="splash-particle" style="left:50%;top:50%;animation:splashRight 0.8s ease-out infinite 0.15s;"></span>
+                            <span class="splash-particle" style="left:50%;top:50%;animation:splashUp 0.7s ease-out infinite 0.3s;"></span>
+                            <span class="splash-particle" style="left:45%;top:50%;animation:splashLeftSmall 0.9s ease-out infinite 0.5s;"></span>
+                            <span class="splash-particle" style="left:55%;top:50%;animation:splashRightSmall 0.85s ease-out infinite 0.4s;"></span>
+                        </div>
+                        <div class="silo-filling-dust" style="bottom:${Math.min(silo.fillLevel + 5, 95)}%;"></div>
                         <div class="glass-silo-body">
-                            <div class="glass-silo-maize" style="height: ${silo.fillLevel}%"></div>
+                            <div class="glass-silo-maize" style="height: ${silo.fillLevel}%; ${silo.fillLevel == 0 ? 'display: none;' : ''}"></div>
                             <div class="glass-silo-reflection"></div>
+                            ${silo.status === 'Under Fumigation' ? `
+                            <div class="silo-fumigation-container">
+                                <div class="fumigation-haze"></div>
+                                <div class="fumigation-pill pos-1"></div>
+                                <div class="fumigation-smog pos-1"></div>
+                                <div class="fumigation-pill pos-2"></div>
+                                <div class="fumigation-smog pos-2"></div>
+                                <div class="fumigation-pill pos-3"></div>
+                                <div class="fumigation-smog pos-3"></div>
+                                <div class="fumigation-pill pos-4"></div>
+                                <div class="fumigation-smog pos-4"></div>
+                            </div>
+                            ` : ''}
                         </div>
                         <div class="glass-silo-legs-container">
                             <div class="glass-silo-leg left"></div>
                             <div class="glass-silo-leg right"></div>
+                            <!-- Discharging Animation Elements -->
+                            <div class="silo-discharge-pipe"></div>
+                            <div class="silo-discharge-stream"></div>
                             <div class="glass-silo-fan">
                                 <div class="fan-blades ${silo.fanStatus === 'On' ? 'spin' : 'fan-off'}">
                                     <div class="fan-blade h"></div>
@@ -2322,7 +2363,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span>0</span>
                             </div>
                             <div style="width:8px; height:120px; background:rgba(255,255,255,0.15); border-radius:4px; border:1px solid rgba(255,255,255,0.2); position:relative; overflow:hidden;">
-                                <div style="height:${silo.fillLevel}%; width:100%; position:absolute; bottom:0; left:0; background:linear-gradient(to top, #06b6d4, #22d3ee); box-shadow:0 0 8px rgba(34,211,238,0.6);"></div>
+                                <div style="height:${silo.fillLevel}%; width:100%; position:absolute; bottom:0; left:0; background:linear-gradient(to top, #06b6d4, #22d3ee); box-shadow:${silo.fillLevel == 0 ? 'none' : '0 0 8px rgba(34,211,238,0.6)'};"></div>
                             </div>
                         </div>
                         <div style="position:absolute;top:10px;right:10px;z-index:10;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);padding:5px 12px;border-radius:20px;font-weight:700;font-size:0.75rem;color:#38bdf8;border:1px solid rgba(56,189,248,0.3);box-shadow:0 2px 10px rgba(0,0,0,0.3),0 0 15px rgba(56,189,248,0.1);letter-spacing:0.5px;">
@@ -2346,7 +2387,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="metric">
                             <div class="metric-label">
                                 <span>Material Type</span>
-                                <span class="metric-value">${silo.materialType}</span>
+                                <span class="metric-value">${silo.fillLevel == 0 ? '-' : silo.materialType}</span>
                             </div>
                         </div>
 
@@ -2430,6 +2471,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span>Run Time (Today)</span>
                                 <span class="metric-value" id="runtime-${silo.id}">${silo.runTime} Hours</span>
                             </div>
+                        </div>
+
+                        <!-- Active Status Badges in Detail -->
+                        <div class="silo-active-badges" style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+                            <div class="silo-filling-badge" style="width: 100%; text-align: center; margin-top: 0.5rem;">🌽 FILLING IN PROGRESS</div>
+                            <div class="silo-discharging-badge" style="width: 100%; text-align: center; margin-top: 0.5rem;">📦 DISCHARGING</div>
                         </div>
                     </div>
                 `;
@@ -3030,25 +3077,163 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update tab button styles
         const tabFiveS = document.getElementById('tab-five-s');
         const tabDC    = document.getElementById('tab-daily-checklist');
+        const tabCS    = document.getElementById('tab-cleaning-schedule');
+
         const panelFiveS = document.getElementById('qs-panel-five-s');
         const panelDC    = document.getElementById('qs-panel-daily-checklist');
+        const panelCS    = document.getElementById('qs-panel-cleaning-schedule');
+
+        if (tabFiveS) tabFiveS.classList.remove('active');
+        if (tabDC)    tabDC.classList.remove('active');
+        if (tabCS)    tabCS.classList.remove('active');
+
+        if (panelFiveS) panelFiveS.style.display = 'none';
+        if (panelDC)    panelDC.style.display    = 'none';
+        if (panelCS)    panelCS.style.display    = 'none';
 
         if (tabName === 'five-s') {
             if (tabFiveS) tabFiveS.classList.add('active');
-            if (tabDC)    tabDC.classList.remove('active');
             if (panelFiveS) panelFiveS.style.display = 'block';
-            if (panelDC)    panelDC.style.display    = 'none';
-        } else {
+        } else if (tabName === 'daily-checklist') {
             if (tabDC)    tabDC.classList.add('active');
-            if (tabFiveS) tabFiveS.classList.remove('active');
             if (panelDC)    panelDC.style.display    = 'block';
-            if (panelFiveS) panelFiveS.style.display = 'none';
             // Lazily init the checklist dashboard when the tab is first opened
             initDailyChecklistDashboard();
+        } else if (tabName === 'cleaning-schedule') {
+            if (tabCS)    tabCS.classList.add('active');
+            if (panelCS)    panelCS.style.display    = 'block';
+            if (window.renderCleaningSchedule) window.renderCleaningSchedule();
         }
     };
     // Expose globally for HTML onclick attributes
     window.switchQSTab = switchQSTab;
+
+    // ─── Cleaning Schedule Logic ────────────────────────────────────────────────
+    window.cleaningSchedules = window.cleaningSchedules || [];
+
+    window.openCleaningModal = (id = null) => {
+        document.getElementById('cl-modal-id').value = id || '';
+        if (id) {
+            const log = window.cleaningSchedules.find(x => x.id == id);
+            if (log) {
+                document.getElementById('cl-modal-month').value = log.month;
+                document.getElementById('cl-modal-week').value = log.week;
+                document.getElementById('cl-modal-date').value = log.date || '';
+                document.getElementById('cl-chk-mirrors').checked = !!log.mirrors;
+                document.getElementById('cl-chk-walls').checked = !!log.walls;
+                document.getElementById('cl-chk-roof').checked = !!log.roof;
+                document.getElementById('cl-chk-panel').checked = !!log.electricalPanel;
+                document.getElementById('cl-modal-area-incharge').value = log.areaIncharge || '';
+                document.getElementById('cl-modal-site-incharge').value = log.siteIncharge || '';
+            }
+        } else {
+            document.getElementById('cl-modal-date').value = '';
+            document.getElementById('cl-chk-mirrors').checked = false;
+            document.getElementById('cl-chk-walls').checked = false;
+            document.getElementById('cl-chk-roof').checked = false;
+            document.getElementById('cl-chk-panel').checked = false;
+            document.getElementById('cl-modal-area-incharge').value = '';
+            document.getElementById('cl-modal-site-incharge').value = '';
+        }
+        document.getElementById('cleaning-log-modal').classList.add('show');
+    };
+
+    window.saveCleaningLog = () => {
+        const id = document.getElementById('cl-modal-id').value;
+        const area = document.getElementById('cl-area-select').value;
+        const year = document.getElementById('cl-year-select').value;
+        
+        const log = {
+            id: id || Date.now(),
+            area: area,
+            year: year,
+            month: document.getElementById('cl-modal-month').value,
+            week: document.getElementById('cl-modal-week').value,
+            date: document.getElementById('cl-modal-date').value.trim(),
+            mirrors: document.getElementById('cl-chk-mirrors').checked,
+            walls: document.getElementById('cl-chk-walls').checked,
+            roof: document.getElementById('cl-chk-roof').checked,
+            electricalPanel: document.getElementById('cl-chk-panel').checked,
+            areaIncharge: document.getElementById('cl-modal-area-incharge').value.trim(),
+            siteIncharge: document.getElementById('cl-modal-site-incharge').value.trim(),
+            updatedAt: new Date().toISOString()
+        };
+
+        if (id) {
+            const idx = window.cleaningSchedules.findIndex(x => x.id == id);
+            if (idx > -1) window.cleaningSchedules[idx] = log;
+        } else {
+            window.cleaningSchedules.push(log);
+        }
+
+        document.getElementById('cleaning-log-modal').classList.remove('show');
+        window.renderCleaningSchedule();
+        if (typeof saveOfflineStorage === 'function') saveOfflineStorage();
+        if (typeof showToast === 'function') showToast('Cleaning Log saved!');
+    };
+
+    window.deleteCleaningLog = (id) => {
+        if (!confirm('Are you sure you want to delete this cleaning log?')) return;
+        window.cleaningSchedules = window.cleaningSchedules.filter(x => x.id != id);
+        window.renderCleaningSchedule();
+        if (typeof saveOfflineStorage === 'function') saveOfflineStorage();
+        if (typeof showToast === 'function') showToast('Cleaning Log deleted!');
+    };
+
+    window.renderCleaningSchedule = () => {
+        const area = document.getElementById('cl-area-select').value;
+        const year = document.getElementById('cl-year-select').value;
+        const tbody = document.querySelector('#cleaning-schedule-table tbody');
+        if (!tbody) return;
+
+        // Group by month, then order by week 1-4
+        const logs = window.cleaningSchedules.filter(x => x.area === area && x.year === year);
+        
+        const urduMonths = {
+            'January': 'جنوری', 'February': 'فروری', 'March': 'مارچ',
+            'April': 'اپریل', 'May': 'مئی', 'June': 'جون',
+            'July': 'جولائی', 'August': 'اگست', 'September': 'ستمبر',
+            'October': 'اکتوبر', 'November': 'نومبر', 'December': 'دسمبر'
+        };
+        const urduWeeks = {
+            'Week 1': 'پہلا ہفتہ', 'Week 2': 'دوسرا ہفتہ', 
+            'Week 3': 'تیسرا ہفتہ', 'Week 4': 'چوتھا ہفتہ'
+        };
+        
+        // Sort by month (roughly) and week
+        const monthOrder = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        logs.sort((a,b) => {
+            if (a.month !== b.month) return monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month);
+            return a.week.localeCompare(b.week);
+        });
+
+        tbody.innerHTML = '';
+        if (logs.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" style="padding:2rem;text-align:center;color:#64748b;">No cleaning logs found for the selected area and year.</td></tr>`;
+            return;
+        }
+
+        const renderTick = (val) => val ? '<span style="color:#16a34a;font-weight:bold;font-size:1.2rem;">✔</span>' : '<span style="color:#cbd5e1;">-</span>';
+
+        logs.forEach(log => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="border:1px solid #555; padding:0.5rem; background:#d6d89a; font-weight:600;">${urduMonths[log.month] || log.month} ${urduWeeks[log.week] || log.week}</td>
+                <td style="border:1px solid #555; padding:0.5rem;" dir="ltr">${log.date}</td>
+                <td style="border:1px solid #555; padding:0.5rem;">${renderTick(log.mirrors)}</td>
+                <td style="border:1px solid #555; padding:0.5rem;">${renderTick(log.walls)}</td>
+                <td style="border:1px solid #555; padding:0.5rem;">${renderTick(log.roof)}</td>
+                <td style="border:1px solid #555; padding:0.5rem;">${renderTick(log.electricalPanel)}</td>
+                <td style="border:1px solid #555; padding:0.5rem; color:#1d4ed8;">${log.areaIncharge || '-'}</td>
+                <td style="border:1px solid #555; padding:0.5rem; color:#1d4ed8;">${log.siteIncharge || '-'}</td>
+                <td style="border:1px solid #555; padding:0.5rem; font-family:sans-serif;">
+                    <button class="btn btn-secondary" onclick="window.openCleaningModal(${log.id})" style="padding:0.2rem 0.4rem;font-size:0.75rem;">Edit</button>
+                    <button class="btn btn-secondary" onclick="window.deleteCleaningLog(${log.id})" style="padding:0.2rem 0.4rem;font-size:0.75rem;color:#dc2626;border-color:#fca5a5;">Del</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
 
     const initDailyChecklistDashboard = () => {
         const dateInput = document.getElementById('dc-date-select');
@@ -3649,11 +3834,11 @@ document.addEventListener('DOMContentLoaded', () => {
         set('sr-modal-batches', r.batches);
         set('sr-modal-bags', r.productionBags);
         
-        set('sr-modal-bags', r.productionBags);
         set('sr-modal-raw', r.rawMaterialUsed);
         set('sr-modal-machine', r.machineIssues);
         set('sr-modal-quality', r.qualityRemarks);
         set('sr-modal-general', r.generalRemarks);
+        
         const title = document.getElementById('sr-modal-title');
         if (title) title.textContent = `Edit Shift Report — ${r.date} Shift ${r.shift}`;
         const modal = document.getElementById('shift-report-modal');

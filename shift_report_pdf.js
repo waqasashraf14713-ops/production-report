@@ -28,6 +28,7 @@
         let siloDumpData = [];
         let siloMoistData = [];
         let dailyChecklistData = [];
+        let dryerReportData = [];
 
         try {
             shiftReportsData = getSafeLocalStorageData('fmpr_shiftReports').filter(r => r.date === selectedDate);
@@ -38,6 +39,7 @@
             siloDumpData = getSafeLocalStorageData('fm_silo_dump').filter(r => r.date === selectedDate);
             siloMoistData = getSafeLocalStorageData('fm_silo_moisture').filter(r => r.date === selectedDate);
             dailyChecklistData = getSafeLocalStorageData('fmpr_dailyChecklists').filter(r => r.date === selectedDate);
+            dryerReportData = getSafeLocalStorageData('dryer_side_reports').filter(r => r.date === selectedDate);
         } catch (err) {
             console.error('Error filtering PDF datasets:', err);
         }
@@ -55,6 +57,7 @@
         sortByShift(siloDumpData);
         sortByShift(siloMoistData);
         sortByShift(dailyChecklistData);
+        sortByShift(dryerReportData);
 
         let html = `
             <div class="pdf-report-header">
@@ -565,6 +568,66 @@
             html += `<p style="font-style:italic;color:#666;">No daily checklist data for this date.</p>`;
         }
         html += `</div>`;
+
+        // Dryer Side Reports
+        if (dryerReportData && dryerReportData.length > 0) {
+            html += `<div class="pdf-section"><h3>Dryer Side Shift Reports</h3>`;
+            dryerReportData.forEach(r => {
+                html += `
+                <div style="border:1px solid #000; padding:10px; margin-bottom:15px; page-break-inside: avoid;">
+                    <p><strong>Shift:</strong> ${r.shift} | <strong>Operator:</strong> ${r.operator_name || r.operatorName}</p>
+                    
+                    <h4>Material Dumping</h4>
+                    <table class="pdf-table" style="width:100%; font-size:0.8rem; margin-bottom:10px;">
+                        <thead><tr><th>Material</th><th>On Time</th><th>Off Time</th><th>Silo/Bin</th><th>Remarks</th></tr></thead>
+                        <tbody>
+                            ${r.material_dumping && r.material_dumping.length > 0 ? r.material_dumping.map(d => `<tr><td>${d.material}</td><td>${d.onTime}</td><td>${d.offTime}</td><td>${d.siloWetBin}</td><td>${d.remarks}</td></tr>`).join('') : '<tr><td colspan="5">No dumping recorded</td></tr>'}
+                        </tbody>
+                    </table>
+
+                    <h4>Material Discharge</h4>
+                    <table class="pdf-table" style="width:100%; font-size:0.8rem; margin-bottom:10px;">
+                        <thead><tr><th>Material</th><th>Silo No.</th><th>On Time</th><th>Off Time</th><th>Remarks</th></tr></thead>
+                        <tbody>
+                            ${r.material_discharge && r.material_discharge.length > 0 ? r.material_discharge.map(d => `<tr><td>${d.material}</td><td>${d.siloNo}</td><td>${d.onTime}</td><td>${d.offTime}</td><td>${d.remarks}</td></tr>`).join('') : '<tr><td colspan="5">No discharge recorded</td></tr>'}
+                        </tbody>
+                    </table>
+
+                    <table style="width:100%; font-size:0.8rem; margin-bottom:10px;">
+                        <tr>
+                            <td style="vertical-align:top; width:50%; padding-right:10px;">
+                                <h4>Silos Discharge Gates</h4>
+                                <table class="pdf-table" style="width:100%;">
+                                    <thead><tr><th>Conv #</th><th>Silo #</th><th>Gate #</th><th>Open</th></tr></thead>
+                                    <tbody>
+                                        ${r.silos_discharge_gates ? r.silos_discharge_gates.map(g => `<tr><td>${g.conveyor}</td><td>${g.silo}</td><td>${g.gate}</td><td>${g.isOpen ? 'Yes' : 'No'}</td></tr>`).join('') : ''}
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td style="vertical-align:top; width:50%;">
+                                <h4>Silo Status</h4>
+                                <table class="pdf-table" style="width:100%;">
+                                    <thead><tr><th>Silo</th><th>On Time</th><th>Off Time</th></tr></thead>
+                                    <tbody>
+                                        ${r.silo_status ? `
+                                            <tr><td>Silo 09</td><td>${r.silo_status.silo09.onTime}</td><td>${r.silo_status.silo09.offTime}</td></tr>
+                                            <tr><td>Silo 10</td><td>${r.silo_status.silo10.onTime}</td><td>${r.silo_status.silo10.offTime}</td></tr>
+                                            <tr><td>Silo 11</td><td>${r.silo_status.silo11.onTime}</td><td>${r.silo_status.silo11.offTime}</td></tr>
+                                            <tr><td>Silo 12</td><td>${r.silo_status.silo12.onTime}</td><td>${r.silo_status.silo12.offTime}</td></tr>
+                                        ` : ''}
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <p style="font-size:0.8rem; margin:5px 0;"><strong>Faults & Causes:</strong> ${r.faults_and_causes || '-'}</p>
+                    <p style="font-size:0.8rem; margin:5px 0;"><strong>General:</strong> ${r.general || '-'}</p>
+                </div>
+                `;
+            });
+            html += `</div>`;
+        }
 
         // Approval Block
         if (isApproved) {

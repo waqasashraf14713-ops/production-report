@@ -59,3 +59,20 @@ CREATE TABLE pellet_efficiency (
     rows JSONB,              -- Array of objects representing each pellet mill's efficiency details
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Table for Dryer Side Shift Report
+CREATE TABLE dryer_side_report (
+    id BIGINT PRIMARY KEY,
+    date DATE NOT NULL,
+    shift VARCHAR(50),
+    operator_name VARCHAR(150),
+    material_dumping JSONB,        -- Array of { material, onTime, offTime, siloWetBin, remarks }
+    material_discharge JSONB,      -- Array of { material, siloNo, onTime, offTime, remarks }
+    silos_discharge_gates JSONB,   -- Array of { conveyor, silo, gate, isOpen, remarks }
+    silo_status JSONB,             -- Object { silo09: {onTime, offTime}, silo10: {onTime, offTime}, silo11: {onTime, offTime}, silo12: {onTime, offTime} }
+    faults_and_causes TEXT,
+    cleaning JSONB,                -- Object with boolean flags for drum_cleaner, chamber_section, sieves_box_1, etc.
+    under_process_work TEXT,
+    general TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
