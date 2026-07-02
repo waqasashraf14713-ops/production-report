@@ -2280,6 +2280,12 @@ order by
             </div>
             <div class="modal-body" style="padding:1.5rem; max-height: 80vh; overflow-y: auto;">
                 
+                <datalist id="break-reasons">
+                    <option value="Lunch Break"></option>
+                    <option value="Conveyor"></option>
+                    <option value="Elevator"></option>
+                </datalist>
+
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;background:#f8fafc;padding:1rem;border-radius:8px;border:1px solid #cbd5e1;">
                     <div class="form-group" style="margin:0;">
                         <label for="dryer-date">Date</label>
@@ -2307,14 +2313,14 @@ order by
 
                 <h3 style="margin-bottom:0.5rem;color:var(--text-primary);border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;">1. Material Dumping</h3>
                 <table class="report-table" style="width:100%;margin-bottom:1.5rem;">
-                    <thead><tr><th>Material</th><th>On Time</th><th>Off Time</th><th>Silo/Wet Bin</th><th>Remarks</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Material</th><th>On Time</th><th>Off Time</th><th>Silo/Wet Bin</th><th>Break</th><th>Remarks</th><th>Actions</th></tr></thead>
                     <tbody id="dryer-dumping-tbody"></tbody>
                     <tfoot><tr><td colspan="6" style="text-align:right;"><button class="btn btn-secondary" style="padding:0.25rem 0.75rem;" onclick="addDryerDumpingRow()">+ Add Row</button></td></tr></tfoot>
                 </table>
 
                 <h3 style="margin-bottom:0.5rem;color:var(--text-primary);border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;">2. Material Discharge</h3>
                 <table class="report-table" style="width:100%;margin-bottom:1.5rem;">
-                    <thead><tr><th>Material</th><th>Silo No.</th><th>On Time</th><th>Off Time</th><th>Remarks</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Material</th><th>Silo No.</th><th>On Time</th><th>Off Time</th><th>Break</th><th>Remarks</th><th>Actions</th></tr></thead>
                     <tbody id="dryer-discharge-tbody"></tbody>
                     <tfoot><tr><td colspan="6" style="text-align:right;"><button class="btn btn-secondary" style="padding:0.25rem 0.75rem;" onclick="addDryerDischargeRow()">+ Add Row</button></td></tr></tfoot>
                 </table>

@@ -65,6 +65,7 @@ function addDryerDumpingRow() {
                 <option value="Wet Bin 3">Wet Bin 3</option>
             </select>
         </td>
+        <td><input list="break-reasons" class="dump-break" style="width:100%;" placeholder="Select or type..."></td>
         <td><input type="text" class="dump-rem" style="width:100%;"></td>
         <td><button class="btn btn-danger" onclick="this.closest('tr').remove()" style="padding:0.25rem 0.5rem;">X</button></td>
     `;
@@ -93,6 +94,7 @@ function addDryerDischargeRow() {
         </td>
         <td><input type="time" class="disc-on" style="width:100%;"></td>
         <td><input type="time" class="disc-off" style="width:100%;"></td>
+        <td><input list="break-reasons" class="disc-break" style="width:100%;" placeholder="Select or type..."></td>
         <td><input type="text" class="disc-rem" style="width:100%;"></td>
         <td><button class="btn btn-danger" onclick="this.closest('tr').remove()" style="padding:0.25rem 0.5rem;">X</button></td>
     `;
@@ -137,6 +139,7 @@ function gatherDryerReportData() {
             onTime: tr.querySelector('.dump-on').value,
             offTime: tr.querySelector('.dump-off').value,
             siloWetBin: tr.querySelector('.dump-bin').value,
+            breakReason: tr.querySelector('.dump-break').value,
             remarks: tr.querySelector('.dump-rem').value
         });
     });
@@ -149,6 +152,7 @@ function gatherDryerReportData() {
             siloNo: tr.querySelector('.disc-silo').value,
             onTime: tr.querySelector('.disc-on').value,
             offTime: tr.querySelector('.disc-off').value,
+            breakReason: tr.querySelector('.disc-break').value,
             remarks: tr.querySelector('.disc-rem').value
         });
     });
