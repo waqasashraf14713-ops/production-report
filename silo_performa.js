@@ -517,42 +517,47 @@ try {
         if (!grid) return;
         grid.innerHTML = '';
 
-        const logs = Array.isArray(siloLogs) ? siloLogs : [];
-        for (let i = 1; i <= 16; i++) {
-            const siloName = `Silo ${i}`;
-            
-            const fillingsCount = logs.filter(l => l && l.siloNumber === siloName && l.operation === 'Filling').length;
-            const dischargeCount = logs.filter(l => l && l.siloNumber === siloName && l.operation === 'Discharging').length;
+        try {
+            const logs = Array.isArray(siloLogs) ? siloLogs : [];
+            for (let i = 1; i <= 16; i++) {
+                const siloName = `Silo ${i}`;
+                
+                const fillingsCount = logs.filter(l => l && l.siloNumber === siloName && l.operation === 'Filling').length;
+                const dischargeCount = logs.filter(l => l && l.siloNumber === siloName && l.operation === 'Discharging').length;
 
-            const card = document.createElement('div');
-            card.style = `
-                background: #ffffff;
-                border: 1px solid var(--card-border);
-                border-radius: 10px;
-                padding: 1.25rem;
-                display: flex;
-                flex-direction: column;
-                gap: 0.75rem;
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-            `;
-            card.className = 'silo-performa-card';
-            card.innerHTML = `
-                <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding-bottom:0.5rem;margin-bottom:0.25rem;">
-                    <span style="font-weight:800;font-size:1.1rem;color:#1e293b;">🏭 Silo ${i}</span>
-                    <span style="font-size:0.7rem;background:#f1f5f9;color:#475569;padding:0.15rem 0.4rem;border-radius:3px;font-weight:600;">Status: Active</span>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:0.5rem;">
-                    <button class="btn btn-secondary" onclick="window.openSiloHistory('Silo ${i}', 'Filling')" style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.75rem;font-size:0.8rem;background:#ecfdf5;border-color:#a7f3d0;color:#065f46;font-weight:700;">
-                        <span>📥 Filling Performa</span>
-                        <span style="background:#10b981;color:#fff;font-size:0.7rem;padding:0.1rem 0.35rem;border-radius:10px;">${fillingsCount}</span>
-                    </button>
-                    <button class="btn btn-secondary" onclick="window.openSiloHistory('Silo ${i}', 'Discharging')" style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.75rem;font-size:0.8rem;background:#fef2f2;border-color:#fecaca;color:#991b1b;font-weight:700;">
-                        <span>📤 Discharge Performa</span>
-                        <span style="background:#ef4444;color:#fff;font-size:0.7rem;padding:0.1rem 0.35rem;border-radius:10px;">${dischargeCount}</span>
-                    </button>
-                </div>
-            `;
-            grid.appendChild(card);
+                const card = document.createElement('div');
+                card.style.cssText = `
+                    background: #ffffff;
+                    border: 1px solid var(--card-border);
+                    border-radius: 10px;
+                    padding: 1.25rem;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.75rem;
+                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+                `;
+                card.className = 'silo-performa-card';
+                card.innerHTML = `
+                    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding-bottom:0.5rem;margin-bottom:0.25rem;">
+                        <span style="font-weight:800;font-size:1.1rem;color:#1e293b;">🏭 Silo ${i}</span>
+                        <span style="font-size:0.7rem;background:#f1f5f9;color:#475569;padding:0.15rem 0.4rem;border-radius:3px;font-weight:600;">Status: Active</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                        <button class="btn btn-secondary" onclick="window.openSiloHistory('Silo ${i}', 'Filling')" style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.75rem;font-size:0.8rem;background:#ecfdf5;border-color:#a7f3d0;color:#065f46;font-weight:700;">
+                            <span>📥 Filling Performa</span>
+                            <span style="background:#10b981;color:#fff;font-size:0.7rem;padding:0.1rem 0.35rem;border-radius:10px;">${fillingsCount}</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="window.openSiloHistory('Silo ${i}', 'Discharging')" style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.75rem;font-size:0.8rem;background:#fef2f2;border-color:#fecaca;color:#991b1b;font-weight:700;">
+                            <span>📤 Discharge Performa</span>
+                            <span style="background:#ef4444;color:#fff;font-size:0.7rem;padding:0.1rem 0.35rem;border-radius:10px;">${dischargeCount}</span>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            }
+        } catch (err) {
+            grid.innerHTML = '<div style="color:red;padding:2rem;grid-column:1/-1;">Error rendering dashboard: ' + err.message + '</div>';
+            console.error(err);
         }
     };
 
