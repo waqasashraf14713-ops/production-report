@@ -39,25 +39,25 @@ try {
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">1</td>
                 <td rowspan="4" style="text-align:center;font-weight:bold;vertical-align:middle;border:1px solid #000;background:#f8fafc;">Silo Top</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو ٹاپ کی ائیر ٹائٹنس کو صاف کیا گیا ہے اور کھلا (Open) تو نہیں۔</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو ٹاپ کی ایکسٹرا ڈسٹ کو صاف کیا گیا ہے اور کھلی (Open) ہے۔</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top1, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top1, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">2</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">اوپر دیکھو کہ ائیر ٹائٹنس کی کوئی بولٹ کھلی تو نہیں ہے۔</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">لیڈر (سیڑھی) کے قریب کسی قسم کی کوئی لوز جالی تو نہیں ہے۔</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top2, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top2, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">3</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">تمام بلور کو چلا کر دیکھیں کہ ہوا کا دباؤ درست ہے اور کوئی مٹی وغیرہ تو نہیں ہے۔</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">تمام ٹاپ کورز کے اندر کی سائیڈ، ڈسچارج اور ایلیویٹر کے شُوٹ والی جگہوں کو صاف کیا گیا ہے، تاکہ پرانا میٹریل اس میں موجود نہیں ہے۔</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top3, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top3, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">4</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">فلنگ (Filling) سے پہلے والو کو آپریٹ کر کے دیکھ لیں۔</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">فلنگ (Filling) سے پہلے ٹاپ کے سنٹر والے گیٹ کو آپریٹ کر کے چیک کیا ہے۔</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top4, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.top4, false)}</td>
             </tr>
@@ -66,73 +66,73 @@ try {
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">5</td>
                 <td rowspan="12" style="text-align:center;font-weight:bold;vertical-align:middle;border:1px solid #000;background:#f8fafc;">Silo Bottom</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر ائیر ڈکٹس (Aeration Ducts) کو صاف کیا گیا ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو میں کوئی پرانا میٹریل ایکسٹرا موجود نہیں ہے</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot1, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot1, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">6</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود تمام ہینڈل اور ڈسچارج گیٹ ko ٹیسٹ کیا گیا ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو فین کی (Aeration Ducts) ڈکٹس اور ڈسچارج کیسٹس کو صاف کیا گیا ہے۔</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot2, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot2, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">7</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچز (Ventilation Trenches) کو صاف کیا گیا ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود تمام (Ventilation Trunches) کو صاف کیا گیا ہے۔</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot3, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot3, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">8</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچ شیٹس (Ventilation Trench Sheets) کو اچھی طرح صاف اور فٹ کیا گیا ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود تمام دراز شیٹس (Ventilation Trunch Sheets) بالکل صاف اور فٹ کیا گیا ہے۔</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot4, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot4, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">9</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر فرش کے ساتھ پلیٹس والا جوڑ ٹھیک ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود سوئپر کور ٹھیک ہے اور اپنی جگہ (درمیان والا) پر فٹ ہے۔</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot5, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot5, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">10</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر موجود سوئپر کنویئر فلیکسیبل ہے اور اپنی جگہ پر ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے اندر فرش کے ساتھ شیٹیں والا گولا ٹھیک ہے۔</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot6, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot6, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">11</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے باہر شیٹس والا جوڑ ٹھیک ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے باہر شیٹیں والا گولا ٹھیک ہے۔</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot7, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot7, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">12</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے تمام ڈسچارج گیٹس کو مکمل بند کیا گیا ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے تمام ڈسچارجنگ کیسٹس کو مکمل بند کیا گیا ہے۔</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot8, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot8, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">13</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے تمام ڈسچارج گیٹس لاک (SEAL) ہیں؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کے تمام ڈسچارج گیٹس لاک (SEAL) ہیں</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot9, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot9, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">14</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کی مشین (Entrance) کا دروازہ اچھی طرح سے بند ہے؟</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو کی مین (Entrance) ونڈو کو اچھی طرح سے بند کیا گیا ہے</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot10, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot10, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">15</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سردیوں میں گرین کا درجہ حرارت 16 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سردیوں میں گرین کا موئسچر 16% سے زیادہ سائلو میں نہیں ڈالنا ہے</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot11, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot11, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">16</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">گرمیوں میں گرین کا درجہ حرارت 14 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">گرمیوں میں گرین کا موئسچر 14% سے زیادہ سائلو میں نہیں ڈالنا ہے</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot12, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.bot12, false)}</td>
             </tr>
@@ -143,15 +143,14 @@ try {
         return `
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">1</td>
-                <td style="text-align:center;font-weight:bold;border:1px solid #000;background:#f8fafc;">Lab Check</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلوز میں کوئی پرانا بیج یا اکسیڑا (Old Grain / Infestation) موجود نہیں ہے۔</td>
+                <td rowspan="2" style="text-align:center;font-weight:bold;border:1px solid #000;background:#f8fafc;">Lab</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">سائلو میں کوئی پرانا میٹریل ایکسٹرا موجود نہیں ہے</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.lab1, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.lab1, false)}</td>
             </tr>
             <tr>
                 <td style="text-align:center;font-weight:bold;border:1px solid #000;">2</td>
-                <td style="text-align:center;font-weight:bold;border:1px solid #000;background:#d9f99d;color:#166534;">Fumigation</td>
-                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">کیا سائلو کو فیومیگیٹ (Fumigate) کرنے کی ضرورت ہے؟ (PhosPhine Gas Color)</td>
+                <td style="border:1px solid #000;padding:8px 12px;text-align:right;">کیا سائلو فیومیگیٹ کرنے کی ضرورت ہے</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.lab2, true)}</td>
                 <td style="text-align:center;border:1px solid #000;font-weight:bold;width:80px;">${renderTickFn(insp.lab2, false)}</td>
             </tr>
@@ -198,6 +197,8 @@ try {
         const officer = log.supervisor || ''; // officer name (mapped to supervisor)
         const operator = log.operator || '';  // operator name
         const shift = log.shift || 'A';
+        const remarksProd = log.remarksProd || '';
+        const remarksLab = log.remarksLab || '';
         const remarks = log.remarks || '';
 
         const renderTick = (val, expectTrue = true) => {
@@ -313,10 +314,10 @@ try {
                 </table>
 
                 <div style="font-size:1.2rem;margin-bottom:25px;font-weight:bold;margin-top:15px;">
-                    ریمارکس پروڈکشن آفیسر: <span style="font-weight:normal;border-bottom:1px dashed #000;display:inline-block;width:75%;padding-right:10px;">${remarks || 'کوئی ریمارکس درج نہیں ہیں۔'}</span>
+                    ریمارکس پروڈکشن آفیسر: <span style="font-weight:normal;border-bottom:1px dashed #000;display:inline-block;width:75%;padding-right:10px;">${remarksProd || 'کوئی ریمارکس درج نہیں ہیں۔'}</span>
                 </div>
 
-                <div style="font-size:1.3rem;font-weight:bold;margin-top:20px;margin-bottom:10px;border-bottom:2px solid #000;padding-bottom:5px;">لیبارٹری ریمارکس (Lab Remarks)</div>
+                <div style="font-size:1.3rem;font-weight:bold;margin-top:20px;margin-bottom:10px;border-bottom:2px solid #000;padding-bottom:5px;">لیبارٹری ریمارکس (Lab Checks)</div>
                 <table class="main-table">
                     <thead>
                         <tr style="background:#f2f2f2;">
@@ -331,6 +332,10 @@ try {
                         ${generateLabRowsHTML(insp, renderTick)}
                     </tbody>
                 </table>
+                
+                <div style="font-size:1.2rem;margin-bottom:25px;font-weight:bold;margin-top:15px;">
+                    ریمارکس لیبارٹری: <span style="font-weight:normal;border-bottom:1px dashed #000;display:inline-block;width:75%;padding-right:10px;">${remarksLab || 'کوئی ریمارکس درج نہیں ہیں۔'}</span>
+                </div>
 
                 <div class="footer-block" style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 1.2rem; font-weight:bold;">
                     <div style="width: 30%; text-align: center; border-top: 1px dashed #000; padding-top: 8px; margin-top: 40px;">دستخط پلانٹ آپریٹر</div>
@@ -507,15 +512,17 @@ try {
     };
 
     const renderSiloPerformaDashboard = () => {
+        window.renderSiloPerformaDashboard = renderSiloPerformaDashboard;
         const grid = document.getElementById('silo-performas-grid');
         if (!grid) return;
         grid.innerHTML = '';
 
+        const logs = Array.isArray(siloLogs) ? siloLogs : [];
         for (let i = 1; i <= 16; i++) {
             const siloName = `Silo ${i}`;
             
-            const fillingsCount = siloLogs.filter(l => l.siloNumber === siloName && l.operation === 'Filling').length;
-            const dischargeCount = siloLogs.filter(l => l.siloNumber === siloName && l.operation === 'Discharging').length;
+            const fillingsCount = logs.filter(l => l.siloNumber === siloName && l.operation === 'Filling').length;
+            const dischargeCount = logs.filter(l => l.siloNumber === siloName && l.operation === 'Discharging').length;
 
             const card = document.createElement('div');
             card.style = `
@@ -590,6 +597,8 @@ try {
                     net_qty: log.netQty,
                     temperature: log.temperature,
                     performed_by: log.operator,
+                    
+                    
                     remarks: log.remarks,
                     seal_no: log.sealNo,
                     supervisor: log.supervisor,
@@ -778,6 +787,8 @@ try {
         document.getElementById('sl-modal-moisture').value = '';
         document.getElementById('sl-modal-net-wt').value = '';
         document.getElementById('sl-modal-temp').value = '';
+        document.getElementById('sl-modal-remarks-prod').value = '';
+        document.getElementById('sl-modal-remarks-lab').value = '';
         document.getElementById('sl-modal-remarks').value = '';
 
         const inspTitle = document.getElementById('sl-modal-inspection-title');
@@ -858,6 +869,8 @@ try {
         document.getElementById('sl-modal-net-wt').value = log.netQty !== undefined ? log.netQty : '';
         document.getElementById('sl-modal-temp').value = log.temperature !== undefined ? log.temperature : '';
         document.getElementById('sl-modal-operator').value = log.operator || 'Zubair';
+        document.getElementById('sl-modal-remarks-prod').value = log.remarksProd || '';
+        document.getElementById('sl-modal-remarks-lab').value = log.remarksLab || '';
         document.getElementById('sl-modal-remarks').value = log.remarks || '';
 
         document.getElementById('silo-history-modal').classList.remove('show');
@@ -979,6 +992,8 @@ try {
                 const temperature = (operation === 'Filling') ? 0 : (parseFloat(document.getElementById('sl-modal-temp').value) || 0);
                 const operator = document.getElementById('sl-modal-operator').value; // operator select value
                 
+                const remarksProd = document.getElementById('sl-modal-remarks-prod').value.trim();
+                const remarksLab = document.getElementById('sl-modal-remarks-lab').value.trim();
                 const remarks = document.getElementById('sl-modal-remarks').value.trim();
 
                 if (!date) return alert('Please enter Date.');
@@ -1027,7 +1042,7 @@ try {
                 const log = {
                     id: activeLogId || Date.now(),
                     date, shift, siloNumber, operation, material, moisture,
-                    netQty, temperature, operator, remarks,
+                    netQty, temperature, operator, remarksProd, remarksLab, remarks,
                     sealNo, supervisor, inspection
                 };
 
@@ -1056,6 +1071,8 @@ try {
                             net_qty: log.netQty,
                             temperature: log.temperature,
                             performed_by: log.operator,
+                            
+                            
                             remarks: log.remarks,
                             seal_no: log.sealNo,
                             supervisor: log.supervisor,
@@ -1082,29 +1099,92 @@ try {
         initSupabase();
         if (sbClient) {
             try {
+                // Fetch remote data
                 const { data, error } = await sbClient.from('silo_logs').select('*').order('date', { ascending: false });
+                
                 if (!error && data) {
-                    siloLogs = data.map(r => {
-                        const parts = r.date.split('-');
-                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                        const localeDate = parts.length === 3 ? `${parseInt(parts[2])}-${months[parseInt(parts[1]) - 1]}-${parts[0]}` : r.date;
-                        return {
-                            id: r.id,
-                            date: localeDate,
-                            shift: r.shift,
-                            siloNumber: r.silo_number,
-                            operation: r.operation_type,
-                            material: r.material_name,
-                            moisture: r.moisture || 0,
-                            netQty: r.net_qty || 0,
-                            temperature: r.temperature || 0,
-                            operator: r.performed_by,
-                            remarks: r.remarks,
-                            sealNo: r.seal_no,
-                            supervisor: r.supervisor,
-                            inspection: r.inspection
-                        };
-                    });
+                    const remoteIds = new Set(data.map(r => r.id));
+                    
+                    // Identify local logs that are NOT in Supabase yet
+                    const unsyncedLogs = siloLogs.filter(log => !remoteIds.has(log.id));
+                    
+                    // If we have unsynced local logs, push them to Supabase
+                    if (unsyncedLogs.length > 0) {
+                        console.log(`Pushing ${unsyncedLogs.length} unsynced local logs to Supabase...`);
+                        const recordsToInsert = unsyncedLogs.map(log => ({
+                            id: log.id,
+                            date: log.date.includes('-') && log.date.split('-').length === 3 ? `${log.date.split('-')[2]}-${log.date.split('-')[1] === 'Jan'?'01':log.date.split('-')[1] === 'Feb'?'02':log.date.split('-')[1] === 'Mar'?'03':log.date.split('-')[1] === 'Apr'?'04':log.date.split('-')[1] === 'May'?'05':log.date.split('-')[1] === 'Jun'?'06':log.date.split('-')[1] === 'Jul'?'07':log.date.split('-')[1] === 'Aug'?'08':log.date.split('-')[1] === 'Sep'?'09':log.date.split('-')[1] === 'Oct'?'10':log.date.split('-')[1] === 'Nov'?'11':'12'}-${log.date.split('-')[0].padStart(2,'0')}` : new Date().toISOString().split('T')[0],
+                            shift: log.shift,
+                            silo_number: log.siloNumber,
+                            operation_type: log.operation,
+                            material_name: log.material,
+                            moisture: log.moisture,
+                            net_qty: log.netQty,
+                            temperature: log.temperature,
+                            performed_by: log.operator,
+                            
+                            
+                            remarks: log.remarks,
+                            seal_no: log.sealNo,
+                            supervisor: log.supervisor,
+                            inspection: log.inspection
+                        }));
+                        
+                        await sbClient.from('silo_logs').upsert(recordsToInsert);
+                        
+                        // Refetch after pushing
+                        const { data: newData, error: newError } = await sbClient.from('silo_logs').select('*').order('date', { ascending: false });
+                        if (!newError && newData) {
+                            siloLogs = newData.map(r => {
+                                const parts = r.date.split('-');
+                                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                const localeDate = parts.length === 3 ? `${parseInt(parts[2])}-${months[parseInt(parts[1]) - 1]}-${parts[0]}` : r.date;
+                                return {
+                                    id: r.id,
+                                    date: localeDate,
+                                    shift: r.shift,
+                                    siloNumber: r.silo_number,
+                                    operation: r.operation_type,
+                                    material: r.material_name,
+                                    moisture: r.moisture || 0,
+                                    netQty: r.net_qty || 0,
+                                    temperature: r.temperature || 0,
+                                    operator: r.performed_by,
+                                    
+                                    
+                                    remarks: r.remarks,
+                                    sealNo: r.seal_no,
+                                    supervisor: r.supervisor,
+                                    inspection: r.inspection
+                                };
+                            });
+                        }
+                    } else {
+                        // Simply map remote data to local
+                        siloLogs = data.map(r => {
+                            const parts = r.date.split('-');
+                            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                            const localeDate = parts.length === 3 ? `${parseInt(parts[2])}-${months[parseInt(parts[1]) - 1]}-${parts[0]}` : r.date;
+                            return {
+                                id: r.id,
+                                date: localeDate,
+                                shift: r.shift,
+                                siloNumber: r.silo_number,
+                                operation: r.operation_type,
+                                material: r.material_name,
+                                moisture: r.moisture || 0,
+                                netQty: r.net_qty || 0,
+                                temperature: r.temperature || 0,
+                                operator: r.performed_by,
+                                
+                                
+                                remarks: r.remarks,
+                                sealNo: r.seal_no,
+                                supervisor: r.supervisor,
+                                inspection: r.inspection
+                            };
+                        });
+                    }
                     saveSiloLogs();
                 }
             } catch (err) {

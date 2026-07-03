@@ -25,12 +25,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewBatchingScale = document.getElementById('view-batching-scale');
     const navPelletEfficiency = document.getElementById('nav-pellet-efficiency');
     const viewPelletEfficiency = document.getElementById('view-pellet-efficiency');
+    const navDryerRecords = document.getElementById('nav-dryer-records');
+    const viewDryerRecords = document.getElementById('view-dryer-records');
+    const navSiloPerforma = document.getElementById('nav-silo-performa');
+    const viewSiloPerforma = document.getElementById('view-silo-performa');
 
     const switchView = (activeNav, activeView) => {
-        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navFiveS, navShiftReport, navBatchingAudit, navBatchingScale, navPelletEfficiency].forEach(nav => {
+        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navFiveS, navShiftReport, navBatchingAudit, navBatchingScale, navPelletEfficiency, navDryerRecords, navSiloPerforma].forEach(nav => {
             if (nav) nav.classList.remove('active');
         });
-        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewFiveS, viewShiftReport, viewBatchingAudit, viewBatchingScale, viewPelletEfficiency].forEach(view => {
+        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewFiveS, viewShiftReport, viewBatchingAudit, viewBatchingScale, viewPelletEfficiency, viewDryerRecords, viewSiloPerforma].forEach(view => {
             if (view) view.style.display = 'none';
         });
 
@@ -58,6 +62,22 @@ document.addEventListener('DOMContentLoaded', () => {
         navPelletEfficiency.addEventListener('click', (e) => {
             e.preventDefault();
             switchView(navPelletEfficiency, viewPelletEfficiency);
+        });
+    }
+
+    if (navDryerRecords) {
+        navDryerRecords.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(navDryerRecords, viewDryerRecords);
+            if (window.fetchDryerReports) window.fetchDryerReports();
+        });
+    }
+
+    if (navSiloPerforma) {
+        navSiloPerforma.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(navSiloPerforma, viewSiloPerforma);
+            if (window.renderSiloPerformaDashboard) window.renderSiloPerformaDashboard();
         });
     }
 

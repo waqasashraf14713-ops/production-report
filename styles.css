@@ -2443,6 +2443,17 @@ header h1 {
     color: black;
   }
   
+  body.printing-dryer-pdf > *:not(#dryer-report-print-container) {
+    display: none !important;
+  }
+  body.printing-dryer-pdf #dryer-report-print-container {
+    display: block !important;
+  }
+  body.printing-dryer-pdf {
+    background: white;
+    color: black;
+  }
+  
   .pdf-report-header {
     text-align: center;
     border-bottom: 2px solid #000;

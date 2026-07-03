@@ -255,7 +255,9 @@ function gatherDryerReportData() {
         faults_and_causes: getVal('dryer-faults'),
         cleaning: cleaning,
         under_process_work: getVal('dryer-maintenance'),
-        general: getVal('dryer-general')
+        general: getVal('dryer-general'),
+        supervisor_approval: getVal('dryer-supervisor'),
+        summary: getVal('dryer-summary')
     };
 }
 
@@ -268,8 +270,17 @@ async function saveDryerReport() {
 
     try {
         if (window.isSbConnected && window.sbClient) {
-            const { data: result, error } = await window.sbClient.from('dryer_side_report').insert([data]);
-            if (error) throw error;
+            let dbData = { ...data };
+            delete dbData.id; // Let Supabase auto-generate the ID
+            const { data: result, error } = await window.sbClient.from('dryer_side_reports').insert([dbData]).select();
+            
+            // If the table is actually named 'dryer_side_report' (singular), fallback to it
+            if (error && (error.code === '42P01' || error.message.includes('relation "public.dryer_side_reports" does not exist'))) {
+                const retry = await window.sbClient.from('dryer_side_report').insert([dbData]).select();
+                if (retry.error) throw retry.error;
+            } else if (error) {
+                throw error;
+            }
         } else {
             // Fallback to local storage if supabase isn't connected
             let localReports = JSON.parse(localStorage.getItem('dryer_side_reports') || '[]');
@@ -310,4 +321,246 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Attach open method to window
     window.openDryerReportModal = openDryerReportModal;
+});
+
+window.allDryerReports = [];
+
+async function fetchDryerReports() {
+    let reports = [];
+    if (window.isSbConnected && window.sbClient) {
+        try {
+            let res = await window.sbClient.from('dryer_side_reports').select('*').order('date', { ascending: false });
+            if (res.error && (res.error.code === '42P01' || res.error.message.includes('relation "public.dryer_side_reports" does not exist'))) {
+                res = await window.sbClient.from('dryer_side_report').select('*').order('date', { ascending: false });
+            }
+            if (res.error) throw res.error;
+            reports = res.data || [];
+        } catch (err) {
+            console.error('Error fetching dryer reports from Supabase:', err);
+            // Fallback to local
+            reports = JSON.parse(localStorage.getItem('dryer_side_reports') || '[]');
+        }
+    } else {
+        reports = JSON.parse(localStorage.getItem('dryer_side_reports') || '[]');
+    }
+    window.allDryerReports = reports;
+    renderDryerReportsTable(reports);
+}
+
+function renderDryerReportsTable(reports) {
+    const tbody = document.querySelector('#dryer-records-table tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (reports.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No records found</td></tr>';
+        return;
+    }
+    reports.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${r.date || '-'}</td>
+            <td>${r.shift || '-'}</td>
+            <td>${r.operator_name || '-'}</td>
+            <td>${r.faults_and_causes || '-'}</td>
+            <td class="no-print">
+                <button class="btn btn-secondary" onclick="viewDryerRecord(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;">View</button>
+                <button class="btn btn-primary" onclick="printDryerRecordPdf(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;background:#8b5cf6;border-color:#8b5cf6;">📄 Print PDF</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function generateDryerReportHtml(record) {
+    const styleHtml = `
+        <style>
+            .pdf-report-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+            .pdf-report-header h2 { margin: 0 0 10px 0; font-size: 24px; color: #1e293b; }
+            .pdf-section { margin-bottom: 20px; }
+            .pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13px; }
+            .pdf-table th, .pdf-table td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; }
+            .pdf-table th { background-color: #e2e8f0; color: #334155; font-weight: bold; }
+        </style>
+    `;
+
+    let gatesHtml = '';
+    if (record.silos_discharge_gates && record.silos_discharge_gates.length > 0) {
+        gatesHtml = `
+            <table class="pdf-table">
+                <thead><tr><th>Conveyor #</th><th>Silo #</th><th>Gate #</th><th>Open</th></tr></thead>
+                <tbody>
+                    ${record.silos_discharge_gates.map(g => `<tr><td>${g.conveyor}</td><td>${g.silo}</td><td>${g.gate}</td><td>${g.open ? 'Yes' : 'No'}</td></tr>`).join('')}
+                </tbody>
+            </table>
+        `;
+    } else {
+        gatesHtml = '<p style="text-align:center;">No records</p>';
+    }
+
+    let siloStatusHtml = `
+        <table class="pdf-table">
+            <thead><tr><th>Silo</th><th>On Time</th><th>Off Time</th></tr></thead>
+            <tbody>
+    `;
+    const silos = ['08','09','10','11','12','13','14','15','16','wetbin','coolingbin'];
+    silos.forEach(s => {
+        let label = s.startsWith('0') || s.startsWith('1') ? 'Silo ' + s : (s === 'wetbin' ? 'Wet Bin' : 'Cooling Bin');
+        let on = record.silo_status && record.silo_status[s + '_on'] ? record.silo_status[s + '_on'] : '-';
+        let off = record.silo_status && record.silo_status[s + '_off'] ? record.silo_status[s + '_off'] : '-';
+        if (on !== '-' || off !== '-') {
+            siloStatusHtml += `<tr><td>${label}</td><td>${on}</td><td>${off}</td></tr>`;
+        }
+    });
+    siloStatusHtml += `</tbody></table>`;
+
+    const getChkBadge = (val, label) => val ? `<span style="display:inline-block;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:12px;margin:2px;font-size:12px;">✅ ${label}</span>` : `<span style="display:inline-block;background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:12px;margin:2px;font-size:12px;">❌ ${label}</span>`;
+
+    return styleHtml + `
+        <div class="pdf-report-header">
+            <h2>Dryer Side Shift Report</h2>
+            <p><strong>Date:</strong> ${record.date || '-'} | <strong>Shift:</strong> ${record.shift || '-'} | <strong>Operator:</strong> ${record.operator_name || '-'}</p>
+        </div>
+        
+        <div class="pdf-section">
+            <h3 style="background-color:#f1f5f9; padding:8px; border:1px solid #000; font-size:14px; margin-bottom:10px;">1. Material Dumping</h3>
+            <p style="margin-bottom:8px;"><strong>Total Dumping Weight:</strong> ${record.dump_total_weight || '-'} kg | <strong>Efficiency:</strong> ${record.dump_total_eff || '-'}</p>
+            <table class="pdf-table">
+                <thead><tr><th>Material</th><th>On Time</th><th>Off Time</th><th>Silo/Wet Bin</th><th>Break Reason</th><th>Remarks</th></tr></thead>
+                <tbody>
+                    ${record.material_dumping && record.material_dumping.length > 0 ? record.material_dumping.map(d => `<tr><td>${d.material}</td><td>${d.onTime}</td><td>${d.offTime}</td><td>${d.siloWetBin}</td><td>${d.breakReason || ''}</td><td>${d.remarks}</td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;">No records</td></tr>'}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pdf-section">
+            <h3 style="background-color:#f1f5f9; padding:8px; border:1px solid #000; font-size:14px; margin-bottom:10px;">2. Material Discharge</h3>
+            <table class="pdf-table">
+                <thead><tr><th>Material</th><th>Silo No.</th><th>On Time</th><th>Off Time</th><th>Break Reason</th><th>Remarks</th></tr></thead>
+                <tbody>
+                    ${record.material_discharge && record.material_discharge.length > 0 ? record.material_discharge.map(d => `<tr><td>${d.material}</td><td>${d.siloNo}</td><td>${d.onTime}</td><td>${d.offTime}</td><td>${d.breakReason || ''}</td><td>${d.remarks}</td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;">No records</td></tr>'}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pdf-section" style="display:flex;gap:20px;page-break-inside: avoid;">
+            <div style="flex:1;">
+                <h3 style="background-color:#f1f5f9; padding:8px; border:1px solid #000; font-size:14px; margin-bottom:10px;">3. Silos Discharge Gates</h3>
+                ${gatesHtml}
+            </div>
+            <div style="flex:1;">
+                <h3 style="background-color:#f1f5f9; padding:8px; border:1px solid #000; font-size:14px; margin-bottom:10px;">4. Silo Status (Active Times)</h3>
+                ${siloStatusHtml}
+            </div>
+        </div>
+
+        <div class="pdf-section" style="page-break-inside: avoid;">
+            <h3 style="background-color:#f1f5f9; padding:8px; border:1px solid #000; font-size:14px; margin-bottom:10px;">5. Cleaning Checklist</h3>
+            <div style="margin-bottom:10px;">
+                ${getChkBadge(record.cleaning_checklist?.drum_cleaner, 'Drum Cleaner')}
+                ${getChkBadge(record.cleaning_checklist?.chamber_section, 'Chamber Section')}
+                ${getChkBadge(record.cleaning_checklist?.sieves_box1, 'Sieves Box-1')}
+                ${getChkBadge(record.cleaning_checklist?.sieves_box2, 'Sieves Box-2')}
+                ${getChkBadge(record.cleaning_checklist?.exhaust_fan, 'Exhaust Fan Pipe')}
+                ${getChkBadge(record.cleaning_checklist?.dust_collector, 'Dust Collector')}
+                ${getChkBadge(record.cleaning_checklist?.dryer_tower, 'Dryer Tower')}
+                ${getChkBadge(record.cleaning_checklist?.dryer_fiber_pipe, 'Dryer Fiber Pipe')}
+                ${getChkBadge(record.cleaning_checklist?.mechanical_worker, 'Mechanical Worker')}
+                ${getChkBadge(record.cleaning_checklist?.elec_worker, 'Mech/Electrical Worker')}
+            </div>
+        </div>
+
+        <div class="pdf-section" style="page-break-inside: avoid;">
+            <h3 style="background-color:#f1f5f9; padding:8px; border:1px solid #000; font-size:14px; margin-bottom:10px;">6. General Comments & Faults</h3>
+            <p style="margin-bottom:8px;"><strong>Faults & Causes:</strong> ${record.faults_and_causes || '-'}</p>
+            <p style="margin-bottom:8px;"><strong>Under Process Work:</strong> ${record.under_process_work || '-'}</p>
+            <p style="margin-bottom:8px;"><strong>General Remarks:</strong> ${record.general || '-'}</p>
+        </div>
+
+        <div class="pdf-section" style="page-break-inside: avoid; margin-top:20px; border-top:2px solid #000; padding-top:10px;">
+            <h3 style="font-size:16px; margin-bottom:10px;">Summary & Approval</h3>
+            <p style="margin-bottom:8px;"><strong>Summary:</strong> ${record.summary || '-'}</p>
+            <p style="margin-bottom:8px;"><strong>Plant Supervisor Approval:</strong> ${record.supervisor_approval || '<span style="color:#64748b;font-style:italic;">Pending</span>'}</p>
+        </div>
+    `;
+}
+
+window.viewDryerRecord = function(idx) {
+    const record = window.allDryerReports[idx];
+    if (!record) return;
+    const modal = document.getElementById('dryer-record-view-modal');
+    const content = document.getElementById('dryer-record-view-content');
+    if (modal && content) {
+        content.innerHTML = generateDryerReportHtml(record);
+        modal.classList.add('show');
+    }
+};
+
+window.printDryerRecordPdf = function(idx) {
+    const record = window.allDryerReports[idx];
+    if (!record) return;
+    const container = document.getElementById('dryer-report-print-container');
+    if (!container) return;
+
+    container.innerHTML = generateDryerReportHtml(record);
+    document.body.classList.add('printing-dryer-pdf');
+    setTimeout(() => {
+        window.print();
+        document.body.classList.remove('printing-dryer-pdf');
+    }, 500);
+};
+
+window.fetchDryerReports = fetchDryerReports;
+
+// Dynamic Break Reasons functionality
+function updateBreakReasonsList(newReason) {
+    if (!newReason || newReason.trim() === '') return;
+    const datalist = document.getElementById('break-reasons');
+    if (!datalist) return;
+    
+    let exists = false;
+    for (let opt of datalist.options) {
+        if (opt.value.toLowerCase() === newReason.trim().toLowerCase()) {
+            exists = true;
+            break;
+        }
+    }
+    
+    if (!exists) {
+        const option = document.createElement('option');
+        option.value = newReason.trim();
+        datalist.appendChild(option);
+        
+        let customBreaks = JSON.parse(localStorage.getItem('custom_break_reasons') || '[]');
+        if (!customBreaks.includes(newReason.trim())) {
+            customBreaks.push(newReason.trim());
+            localStorage.setItem('custom_break_reasons', JSON.stringify(customBreaks));
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const datalist = document.getElementById('break-reasons');
+    if (datalist) {
+        let customBreaks = JSON.parse(localStorage.getItem('custom_break_reasons') || '[]');
+        customBreaks.forEach(reason => {
+            let exists = false;
+            for (let opt of datalist.options) {
+                if (opt.value.toLowerCase() === reason.toLowerCase()) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                const option = document.createElement('option');
+                option.value = reason;
+                datalist.appendChild(option);
+            }
+        });
+    }
+    
+    document.body.addEventListener('change', (e) => {
+        if (e.target && e.target.getAttribute('list') === 'break-reasons') {
+            updateBreakReasonsList(e.target.value);
+        }
+    });
 });

@@ -102,6 +102,10 @@
                     <span class="nav-icon">⚡</span>
                     <span>Pellet Efficiency</span>
                 </a>
+                <a href="#dryer-records" class="nav-item" id="nav-dryer-records">
+                    <span class="nav-icon">🔥</span>
+                    <span>Dryer Records</span>
+                </a>
             </nav>
         </aside>
         
@@ -164,7 +168,7 @@
                     <div class="dash-quick-label">Pellet Efficiency</div>
                     <div class="dash-quick-desc">Pellet mill energy & PDI</div>
                 </div>
-                <div class="dash-quick-card" onclick="if(window.openDryerReportModal)window.openDryerReportModal()">
+                <div class="dash-quick-card" onclick="document.getElementById('nav-dryer-records').click()">
                     <div class="dash-quick-icon" style="background:linear-gradient(135deg,#f97316,#fdba74);">🔥</div>
                     <div class="dash-quick-label">Dryer Side Shift</div>
                     <div class="dash-quick-desc">Fill dryer shift report</div>
@@ -340,6 +344,7 @@
         <div id="view-five-s" class="view-section" style="display: none;">
 
             <!-- ── Tab Bar ── -->
+            <div class="qs-tabs" style="display: flex; gap: 1rem; border-bottom: 2px solid var(--card-border); margin-bottom: 1.5rem; padding-bottom: 0.5rem; overflow-x: auto;">
                 <button class="qs-tab active" id="tab-five-s" onclick="switchQSTab('five-s')">✨ 5S Audit Logs</button>
                 <button class="qs-tab" id="tab-daily-checklist" onclick="switchQSTab('daily-checklist')">📅 Daily Checklist</button>
                 <button class="qs-tab" id="tab-cleaning-schedule" onclick="switchQSTab('cleaning-schedule')">🧹 Cleaning Schedule</button>
@@ -869,6 +874,35 @@
             </section>
         </div>
 
+        <div id="view-dryer-records" class="view-section" style="display: none;">
+            <section class="table-container">
+                <div style="display: flex; background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);flex-direction:column;">
+                    <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;display:flex;justify-content:space-between;align-items:center;width:100%;">
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;margin:0;">🔥 Dryer Side Reports</h2>
+                        <div class="header-actions" style="display:flex;gap:1rem;align-items:center;">
+                            <button class="btn btn-secondary" onclick="if(window.openDryerReportModal)window.openDryerReportModal()">➕ Add Dryer Report</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table" id="dryer-records-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Shift</th>
+                                    <th>Operator Name</th>
+                                    <th>Faults & Causes</th>
+                                    <th class="no-print">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS will populate -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+
         <div class="actions">
             <button class="btn btn-primary" onclick="window.print()">Export / Print Report</button>
             <button class="btn btn-danger" id="btn-reset">Reset to Defaults</button>
@@ -878,6 +912,18 @@
     </div>
 
     <div id="save-toast"></div>
+
+    <!-- Dryer Record View Modal -->
+    <div id="dryer-record-view-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2>View Dryer Side Report</h2>
+                <button onclick="document.getElementById('dryer-record-view-modal').classList.remove('show')" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="dryer-record-view-content" style="font-size: 14px; padding-bottom: 2rem; background: #fff; border-radius: 8px; padding: 1rem; color: #000;">
+            </div>
+        </div>
+    </div>
 
     <!-- Supabase Configuration Modal -->
     <div id="supabase-modal" class="modal-overlay">
@@ -1836,22 +1882,22 @@ order by
                                     <td rowspan="4" style="text-align:center;font-weight:bold;background:#fafafa;vertical-align:middle;border:1px solid #cbd5e1;">Silo Top</td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top1" id="sl-chk-top1-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top1" id="sl-chk-top1-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">1. سائلو ٹاپ کی ائیر ٹائٹنس کو صاف کیا گیا ہے اور کھلا (Open) تو نہیں۔</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">1. سائلو ٹاپ کی ایکسٹرا ڈسٹ کو صاف کیا گیا ہے اور کھلی (Open) ہے۔</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top2" id="sl-chk-top2-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top2" id="sl-chk-top2-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">2. اوپر دیکھو کہ ائیر ٹائٹنس کی کوئی بولٹ کھلی تو نہیں ہے۔</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">2. لیڈر (سیڑھی) کے قریب کسی قسم کی کوئی لوز جالی تو نہیں ہے۔</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top3" id="sl-chk-top3-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top3" id="sl-chk-top3-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">3. تمام بلور کو چلا کر دیکھیں کہ ہوا کا دباؤ درست ہے اور کوئی مٹی وغیرہ تو نہیں ہے۔</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">3. تمام ٹاپ کورز کے اندر کی سائیڈ، ڈسچارج اور ایلیویٹر کے شُوٹ والی جگہوں کو صاف کیا گیا ہے، تاکہ پرانا میٹریل اس میں موجود نہیں ہے۔</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top4" id="sl-chk-top4-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-top4" id="sl-chk-top4-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">4. فلنگ (Filling) سے پہلے والو کو آپریٹ کر کے دیکھ لیں۔</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">4. فلنگ (Filling) سے پہلے ٹاپ کے سنٹر والے گیٹ کو آپریٹ کر کے چیک کیا ہے۔</td>
                                 </tr>
 
                                 <!-- Silo Bottom -->
@@ -1859,65 +1905,70 @@ order by
                                     <td rowspan="12" style="text-align:center;font-weight:bold;background:#fafafa;vertical-align:middle;border:1px solid #cbd5e1;">Silo Bottom</td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot1" id="sl-chk-bot1-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot1" id="sl-chk-bot1-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">1. سائلو کے اندر ائیر ڈکٹس (Aeration Ducts) کو صاف کیا گیا ہے؟</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">1. سائلو میں کوئی پرانا میٹریل ایکسٹرا موجود نہیں ہے</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot2" id="sl-chk-bot2-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot2" id="sl-chk-bot2-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">2. سائلو کے اندر موجود تمام ہینڈل اور ڈسچارج گیٹ کو ٹیسٹ کیا گیا ہے؟</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">2. سائلو فین کی (Aeration Ducts) ڈکٹس اور ڈسچارج کیسٹس کو صاف کیا گیا ہے۔</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot3" id="sl-chk-bot3-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot3" id="sl-chk-bot3-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">3. سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچز (Ventilation Trenches) کو صاف کیا گیا ہے؟</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">3. سائلو کے اندر موجود تمام (Ventilation Trunches) کو صاف کیا گیا ہے۔</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot4" id="sl-chk-bot4-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot4" id="sl-chk-bot4-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">4. سائلو کے اندر موجود تمام وینٹیلیشن ٹرینچ شیٹس (Ventilation Trench Sheets) کو اچھی طرح صاف اور فٹ کیا گیا ہے؟</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">4. سائلو کے اندر موجود تمام دراز شیٹس (Ventilation Trunch Sheets) بالکل صاف اور فٹ کیا گیا ہے۔</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot5" id="sl-chk-bot5-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot5" id="sl-chk-bot5-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">5. سائلو کے اندر موجود سوئپر کنویئر فلیکسیبل ہے اور اپنی جگہ (درست پوزیشن) پر ہے؟</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">5. سائلو کے اندر موجود سوئپر کور ٹھیک ہے اور اپنی جگہ (درمیان والا) پر فٹ ہے۔</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot6" id="sl-chk-bot6-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot6" id="sl-chk-bot6-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">6. سائلو کے اندر فرش کے ساتھ پلیٹس والا جوڑ ٹھیک ہے؟</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">6. سائلو کے اندر فرش کے ساتھ شیٹیں والا گولا ٹھیک ہے۔</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot7" id="sl-chk-bot7-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot7" id="sl-chk-bot7-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">7. سائلو کے باہر شیٹس والا جوڑ ٹھیک ہے؟</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">7. سائلو کے باہر شیٹیں والا گولا ٹھیک ہے۔</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot8" id="sl-chk-bot8-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot8" id="sl-chk-bot8-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">8. سائلو کے تمام ڈسچارج گیٹس کو مکمل بند کیا گیا ہے؟</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">8. سائلو کے تمام ڈسچارجنگ کیسٹس کو مکمل بند کیا گیا ہے۔</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot9" id="sl-chk-bot9-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot9" id="sl-chk-bot9-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">9. سائلو کے تمام ڈسچارج گیٹس لاک (SEAL) ہیں؟</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">9. سائلو کے تمام ڈسچارج گیٹس لاک (SEAL) ہیں</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot10" id="sl-chk-bot10-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot10" id="sl-chk-bot10-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">10. سائلو کی مشین (Entrance) کا دروازہ اچھی طرح سے بند ہے؟</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">10. سائلو کی مین (Entrance) ونڈو کو اچھی طرح سے بند کیا گیا ہے</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot11" id="sl-chk-bot11-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot11" id="sl-chk-bot11-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">11. سردیوں میں گرین کا درجہ حرارت 16 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">11. سردیوں میں گرین کا موئسچر 16% سے زیادہ سائلو میں نہیں ڈالنا ہے</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot12" id="sl-chk-bot12-no" value="no" checked></td>
                                     <td style="text-align:center;border:1px solid #cbd5e1;"><input type="radio" name="rdo-bot12" id="sl-chk-bot12-yes" value="yes"></td>
-                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">12. گرمیوں میں گرین کا درجہ حرارت 14 ڈگری سے زیادہ سائلو میں نہیں ہونا چاہیے۔</td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;">12. گرمیوں میں گرین کا موئسچر 14% سے زیادہ سائلو میں نہیں ڈالنا ہے</td>
                                 </tr>
                             </tbody>
                         </table>
+                        
+                        <div style="margin-top:1rem;">
+                            <label style="font-weight:600;display:block;margin-bottom:0.5rem;color:var(--text-primary);">Remarks Production Officer:</label>
+                            <input type="text" id="sl-modal-remarks-prod" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;outline:none;" />
+                        </div>
                     </div>
 
                     <h3 class="urdu-text" style="color:#e11d48;font-size:1.25rem;border-bottom:2px solid #e2e8f0;padding-bottom:0.5rem;margin-top:1.5rem;margin-bottom:1rem;font-weight:bold;">لیبارٹری ریمارکس (Lab Checks)</h3>
@@ -2395,9 +2446,22 @@ order by
                     </div>
                 </div>
 
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:1.5rem;">
+                    <div>
+                        <h3 style="margin-bottom:0.5rem;color:var(--text-primary);">Shift Plant Supervisor Approval</h3>
+                        <input type="text" id="dryer-supervisor" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;" placeholder="Enter Supervisor Name for Approval" />
+                    </div>
+                    <div>
+                        <h3 style="margin-bottom:0.5rem;color:var(--text-primary);">Summary</h3>
+                        <textarea id="dryer-summary" rows="3" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;resize:vertical;" placeholder="Enter report summary..."></textarea>
+                    </div>
+                </div>
+
                 <div class="modal-actions" style="margin-top:1.5rem;display:flex;justify-content:flex-end;gap:1rem;border-top:1px solid var(--card-border);padding-top:1rem;">
                     <button class="btn btn-secondary" id="btn-cancel-dryer" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
                     <button class="btn btn-primary" id="btn-save-dryer" style="width:auto;padding:0.5rem 2rem;">💾 Save Report</button>
+                </div>
+
                 </div>
             </div>
         </div>
@@ -2846,7 +2910,7 @@ order by
     <div id="pellet-efficiency-modal" class="modal-overlay">
         <div class="modal-card" style="max-width:980px;width:95%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
             <div class="modal-header" style="background:#f8fafc;padding:1.25rem 1.5rem;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
-                <h2 id="pellet-efficiency-title" style="margin:0;font-size:1.25rem;color:#0f172a;display:flex;align-items:center;gap:0.5rem;">⚡ Pellet Efficiency Report</h2>
+                <h2 id="pellet-efficiency-title" style="margin:0;font-size:1.25rem;color:#0f172a;display:flex;align-items:center;gap:0.5rem;">? Pellet Efficiency Report</h2>
                 <button id="pellet-efficiency-close" class="modal-close-btn" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button>
             </div>
             <div class="modal-body" style="padding:1.5rem; max-height:75vh; overflow-y:auto;">
