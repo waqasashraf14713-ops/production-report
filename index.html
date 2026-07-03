@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        window.onerror = function(msg, src, ln, col, err) { alert('ERROR in ' + src + ' Line ' + ln + ': ' + msg); };
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feed Mill Production Report</title>
@@ -2963,8 +2966,8 @@ order by
     <script src="silo_moisture.js?v=4"></script>
     <script src="pellet_efficiency.js?v=5"></script>
     <script src="batching_audit.js?v=1"></script>
-    <script src="silo_performa.js?v=1"></script>
-    <script src="dryer_report.js?v=1"></script>
+    <script src="silo_performa.js?v=5"></script>
+    <script src="dryer_report.js?v=5"></script>
     <script src="script.js?v=4"></script>
     <script src="shift_report_pdf.js?v=4"></script>
     <script src="less_excess_pdf.js?v=4"></script>
