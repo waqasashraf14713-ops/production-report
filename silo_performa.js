@@ -521,8 +521,8 @@ try {
         for (let i = 1; i <= 16; i++) {
             const siloName = `Silo ${i}`;
             
-            const fillingsCount = logs.filter(l => l.siloNumber === siloName && l.operation === 'Filling').length;
-            const dischargeCount = logs.filter(l => l.siloNumber === siloName && l.operation === 'Discharging').length;
+            const fillingsCount = logs.filter(l => l && l.siloNumber === siloName && l.operation === 'Filling').length;
+            const dischargeCount = logs.filter(l => l && l.siloNumber === siloName && l.operation === 'Discharging').length;
 
             const card = document.createElement('div');
             card.style = `
@@ -1197,10 +1197,12 @@ try {
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', async () => {
             initSiloEvents();
+            renderSiloPerformaDashboard();
             await syncWithSupabase();
         });
     } else {
         initSiloEvents();
+        renderSiloPerformaDashboard();
         syncWithSupabase();
     }
 
