@@ -1008,6 +1008,7 @@ try {
                     } catch (err) {
                         console.error('Failed to save to Supabase:', err);
                         if (window.showToast) window.showToast('✗ Supabase Save Error');
+                        alert('Error saving to Supabase: ' + (err.message || JSON.stringify(err)));
                     }
                 } else {
                     if (window.showToast) window.showToast('✓ Saved locally');
