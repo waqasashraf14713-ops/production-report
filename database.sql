@@ -76,3 +76,22 @@ CREATE TABLE dryer_side_report (
     general TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Table for Silo Filling & Discharge Performa Logs
+CREATE TABLE silo_logs (
+    id BIGINT PRIMARY KEY,
+    date DATE NOT NULL,
+    shift VARCHAR(50),
+    silo_number VARCHAR(50),
+    operation_type VARCHAR(50),
+    material_name VARCHAR(150),
+    moisture DECIMAL(5, 2) DEFAULT 0,
+    net_qty DECIMAL(18, 2) DEFAULT 0,
+    temperature DECIMAL(5, 2) DEFAULT 0,
+    performed_by VARCHAR(150),
+    remarks TEXT,
+    seal_no VARCHAR(50),
+    supervisor VARCHAR(150),
+    inspection JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
