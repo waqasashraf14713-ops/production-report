@@ -15,8 +15,8 @@ try {
     let currentHistoryOperation = null;
 
     const initSupabase = () => {
-        const sbUrl = localStorage.getItem('fmpr_supabaseUrl');
-        const sbKey = localStorage.getItem('fmpr_supabaseKey');
+        const sbUrl = localStorage.getItem('fmpr_supabaseUrl') || (window.env && window.env.SUPABASE_URL) || '';
+        const sbKey = localStorage.getItem('fmpr_supabaseKey') || (window.env && window.env.SUPABASE_KEY) || '';
         const sbDisabled = localStorage.getItem('fmpr_supabaseDisabled') === 'true';
         if (sbUrl && sbKey && !sbDisabled && typeof supabase !== 'undefined') {
             try {
