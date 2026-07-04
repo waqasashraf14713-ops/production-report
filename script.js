@@ -158,7 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
         navBatchingAudit.addEventListener('click', (e) => {
             e.preventDefault();
             switchView(navBatchingAudit, viewBatchingAudit);
-            initBatchingAuditView();
         });
     }
 
