@@ -203,15 +203,15 @@ try {
             : '<span style="font-family:Arial,sans-serif;font-size:0.9rem;color:#cbd5e1;">-</span>';
 
         const row = (sr, desc, yesVal, noVal) => `
-            <tr>
+            <tr class="urdu-text">
                 <td style="text-align:center;border:1px solid #000;padding:5px 3px;font-family:Arial,sans-serif;font-size:0.85rem;">${tick(noVal !== undefined ? !yesVal : false)}</td>
                 <td style="text-align:center;border:1px solid #000;padding:5px 3px;font-family:Arial,sans-serif;font-size:0.85rem;">${tick(yesVal)}</td>
-                <td style="border:1px solid #000;padding:6px 10px;text-align:right;font-size:1.05rem;line-height:1.8;">${desc}</td>
+                <td class="urdu-text" style="border:1px solid #000;padding:6px 10px;text-align:right;font-size:1.2rem;line-height:1.8;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">${desc}</td>
                 <td style="text-align:center;border:1px solid #000;padding:5px 3px;font-family:Arial,sans-serif;font-size:0.8rem;font-weight:bold;">${sr}</td>
             </tr>`;
 
         return `
-        <div style="font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu','Urdu Typesetting',serif;direction:rtl;text-align:right;padding:28px 32px;background:#fff;color:#000;max-width:820px;margin:0 auto;">
+        <div class="urdu-text" style="font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu','Urdu Typesetting',serif;direction:rtl;text-align:right;padding:28px 32px;background:#fff;color:#000;max-width:820px;margin:0 auto;line-height:1.8;">
 
             <!-- TOP HEADER: Seal# left, Date right -->
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
@@ -691,28 +691,21 @@ try {
         const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
         const hiddenFieldsWrapper = document.getElementById('sl-modal-hidden-fields');
 
+        if (modalCard) {
+            modalCard.style.maxWidth = '100%';
+            modalCard.style.width = '100%';
+            modalCard.style.height = '100vh';
+            modalCard.style.maxHeight = '100vh';
+            modalCard.style.borderRadius = '0';
+            modalCard.style.margin = '0';
+        }
+
         if (operationType === 'Filling') {
-            if (modalCard) {
-                modalCard.style.maxWidth = '100%';
-                modalCard.style.width = '100%';
-                modalCard.style.height = '100vh';
-                modalCard.style.maxHeight = '100vh';
-                modalCard.style.borderRadius = '0';
-                modalCard.style.margin = '0';
-            }
             if (sealGroup) sealGroup.style.display = 'block';
             if (officerGroup) officerGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'block';
             if (hiddenFieldsWrapper) hiddenFieldsWrapper.style.display = 'none';
         } else {
-            if (modalCard) {
-                modalCard.style.maxWidth = '550px';
-                modalCard.style.width = '95%';
-                modalCard.style.height = 'auto';
-                modalCard.style.maxHeight = '92vh';
-                modalCard.style.borderRadius = '12px';
-                modalCard.style.margin = 'auto';
-            }
             if (sealGroup) sealGroup.style.display = 'none';
             if (officerGroup) officerGroup.style.display = 'none';
             if (inspectionSection) inspectionSection.style.display = 'none';
@@ -752,15 +745,16 @@ try {
         const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
         const hiddenFieldsWrapper = document.getElementById('sl-modal-hidden-fields');
 
+        if (modalCard) {
+            modalCard.style.maxWidth = '100%';
+            modalCard.style.width = '100%';
+            modalCard.style.height = '100vh';
+            modalCard.style.maxHeight = '100vh';
+            modalCard.style.borderRadius = '0';
+            modalCard.style.margin = '0';
+        }
+
         if (log.operation === 'Filling') {
-            if (modalCard) {
-                modalCard.style.maxWidth = '100%';
-                modalCard.style.width = '100%';
-                modalCard.style.height = '100vh';
-                modalCard.style.maxHeight = '100vh';
-                modalCard.style.borderRadius = '0';
-                modalCard.style.margin = '0';
-            }
             if (sealGroup) sealGroup.style.display = 'block';
             if (officerGroup) officerGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'block';
@@ -786,14 +780,6 @@ try {
                 document.getElementById(`sl-chk-lab${i}-no`).checked = !checked;
             }
         } else {
-            if (modalCard) {
-                modalCard.style.maxWidth = '550px';
-                modalCard.style.width = '95%';
-                modalCard.style.height = 'auto';
-                modalCard.style.maxHeight = '92vh';
-                modalCard.style.borderRadius = '12px';
-                modalCard.style.margin = 'auto';
-            }
             if (sealGroup) sealGroup.style.display = 'none';
             if (officerGroup) officerGroup.style.display = 'none';
             if (inspectionSection) inspectionSection.style.display = 'none';
