@@ -184,166 +184,163 @@ try {
         return "سائلو انسپکشن رپورٹ (Steel Silo) - فلنگ سے پہلے";
     }
 
+    // ─── Helper: generate beautiful print HTML ──────────────────────────────
+    const buildSiloReportHTML = (log) => {
+        const insp = log.inspection || {};
+        const sealNo    = log.sealNo      || '';
+        const date      = log.date        || '';
+        const siloNo    = log.siloNumber  ? log.siloNumber.replace('Silo ', '') : '';
+        const material  = log.material    || '';
+        const officer   = log.supervisor  || '';
+        const operator  = log.operator    || '';
+        const shift     = log.shift       || 'A';
+        const remarksProd = log.remarksProd || log.remarks || '';
+        const remarksLab  = log.remarksLab  || '';
+        const siloType  = (parseInt(siloNo) >= 1 && parseInt(siloNo) <= 8) ? 'کنکریٹ سائلوز (Concrete Silo)' : 'سٹیل سائلوز (Steel Silo)';
+
+        const tick = (val) => val
+            ? '<span style="font-family:Arial,sans-serif;font-size:1.1rem;color:#16a34a;font-weight:bold;">✔</span>'
+            : '<span style="font-family:Arial,sans-serif;font-size:0.9rem;color:#cbd5e1;">-</span>';
+
+        const row = (sr, desc, yesVal, noVal) => `
+            <tr>
+                <td style="text-align:center;border:1px solid #000;padding:5px 3px;font-family:Arial,sans-serif;font-size:0.85rem;">${tick(noVal !== undefined ? !yesVal : false)}</td>
+                <td style="text-align:center;border:1px solid #000;padding:5px 3px;font-family:Arial,sans-serif;font-size:0.85rem;">${tick(yesVal)}</td>
+                <td style="border:1px solid #000;padding:6px 10px;text-align:right;font-size:1.05rem;line-height:1.8;">${desc}</td>
+                <td style="text-align:center;border:1px solid #000;padding:5px 3px;font-family:Arial,sans-serif;font-size:0.8rem;font-weight:bold;">${sr}</td>
+            </tr>`;
+
+        return `
+        <div style="font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu','Urdu Typesetting',serif;direction:rtl;text-align:right;padding:28px 32px;background:#fff;color:#000;max-width:820px;margin:0 auto;">
+
+            <!-- TOP HEADER: Seal# left, Date right -->
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                <div style="font-family:Arial,sans-serif;font-size:0.9rem;direction:ltr;text-align:left;">
+                    <div style="font-weight:bold;">Seal #</div>
+                    <div style="font-size:1.1rem;font-weight:bold;">${sealNo || '___________'}</div>
+                </div>
+                <div style="text-align:center;flex:1;">
+                    <div style="font-size:1.65rem;font-weight:bold;border:2px solid #000;padding:8px 16px;display:inline-block;border-radius:4px;">
+                        سائلو انسپکشن رپورٹ - ${siloType}
+                    </div>
+                    <div style="font-size:1.25rem;margin-top:4px;">(فلنگ سے پہلے)</div>
+                </div>
+                <div style="font-family:Arial,sans-serif;font-size:0.9rem;direction:ltr;text-align:right;">
+                    <div style="font-weight:bold;">تاریخ: <span style="border-bottom:1px solid #000;padding:0 8px;">${date}</span></div>
+                </div>
+            </div>
+
+            <!-- META INFO TABLE -->
+            <table style="width:100%;border-collapse:collapse;margin-top:10px;margin-bottom:12px;">
+                <tr style="background:#f8fafc;">
+                    <td style="border:1px solid #000;padding:8px 10px;font-size:1.1rem;text-align:right;"><strong>سائلو نمبر:</strong> <span style="font-family:Arial,sans-serif;font-size:1rem;font-weight:bold;margin-right:6px;">${siloNo}</span></td>
+                    <td style="border:1px solid #000;padding:8px 10px;font-size:1.1rem;text-align:right;"><strong>شفٹ:</strong> <span style="font-family:Arial,sans-serif;margin-right:6px;">${shift}</span></td>
+                    <td style="border:1px solid #000;padding:8px 10px;font-size:1.1rem;text-align:right;"><strong>میٹریل:</strong> <span style="margin-right:6px;">${material}</span></td>
+                    <td style="border:1px solid #000;padding:8px 10px;font-size:1.1rem;text-align:right;"><strong>آفیسر کا نام:</strong> <span style="margin-right:6px;">${officer}</span></td>
+                    <td style="border:1px solid #000;padding:8px 10px;font-size:1.1rem;text-align:right;"><strong>آپریٹر کا نام:</strong> <span style="margin-right:6px;">${operator}</span></td>
+                </tr>
+            </table>
+
+            <!-- COLUMN HEADER -->
+            <table style="width:100%;border-collapse:collapse;margin-bottom:0;">
+                <thead>
+                    <tr style="background:#e2e8f0;font-weight:bold;">
+                        <th style="border:1px solid #000;padding:7px 4px;text-align:center;width:7%;font-family:Arial,sans-serif;font-size:0.8rem;">نہیں</th>
+                        <th style="border:1px solid #000;padding:7px 4px;text-align:center;width:7%;font-family:Arial,sans-serif;font-size:0.8rem;">ہاں</th>
+                        <th style="border:1px solid #000;padding:7px 10px;text-align:center;font-size:1.1rem;">مضمون (وجہ چیک لسٹ کی اہمیت اور ہدایت)</th>
+                        <th style="border:1px solid #000;padding:7px 4px;text-align:center;width:7%;font-size:1.05rem;">نمبر</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- ── SILO TOP (4 rows) ── -->
+                    ${row(1, 'سائلو ٹاپ کی ایکسٹرا ڈسٹ کو صاف کیا گیا ہے اور کھلی (Open) ہے۔', insp.top1, !insp.top1)}
+                    ${row(2, 'لیڈر (سیڑھی) کے قریب کسی قسم کی کوئی لوز جالی تو نہیں ہے۔', insp.top2, !insp.top2)}
+                    ${row(3, 'تمام ٹاپ کورز کے اندر کی سائیڈ، ڈسچارج اور ایلیویٹر کے شُوٹ والی جگہوں کو صاف کیا گیا ہے، تاکہ پرانا میٹریل اس میں موجود نہ ہو۔', insp.top3, !insp.top3)}
+                    ${row(4, 'فلنگ (Filling) سے پہلے ٹاپ کے سنٹر والے گیٹ کو آپریٹ کر کے چیک کیا ہے۔', insp.top4, !insp.top4)}
+                    <!-- section label row for Silo Top -->
+                    <tr><td colspan="4" style="background:#dbeafe;border:1px solid #000;padding:4px 10px;text-align:center;font-size:1.05rem;font-weight:bold;color:#1e40af;">▲ سائلو ٹاپ (Silo Top) — اوپر والے 4 نکات</td></tr>
+
+                    <!-- ── SILO BOTTOM (12 rows) ── -->
+                    ${row(5,  'سائلو میں کوئی پرانا میٹریل ایکسٹرا موجود نہیں ہے۔', insp.bot1, !insp.bot1)}
+                    ${row(6,  'سائلو فین کی (Aeration Ducts) ڈکٹس اور ڈسچارج کیسٹس کو صاف کیا گیا ہے۔', insp.bot2, !insp.bot2)}
+                    ${row(7,  'سائلو کے اندر موجود تمام (Ventilation Trunches) کو صاف کیا گیا ہے۔', insp.bot3, !insp.bot3)}
+                    ${row(8,  'سائلو کے اندر موجود تمام دراز شیٹس (Ventilation Trunch Sheets) بالکل صاف اور فٹ کی گئی ہیں۔', insp.bot4, !insp.bot4)}
+                    ${row(9,  'سائلو کے اندر سوئپر کور ٹھیک ہے اور اپنی جگہ (درمیان والا) پر فٹ ہے۔', insp.bot5, !insp.bot5)}
+                    ${row(10, 'سائلو کے اندر فرش کے ساتھ شیٹیں والا گولا ٹھیک ہے۔', insp.bot6, !insp.bot6)}
+                    ${row(11, 'سائلو کے باہر شیٹیں والا گولا ٹھیک ہے۔', insp.bot7, !insp.bot7)}
+                    ${row(12, 'سائلو کے تمام ڈسچارجنگ کیسٹس کو مکمل بند کیا گیا ہے۔', insp.bot8, !insp.bot8)}
+                    ${row(13, 'سائلو کے تمام ڈسچارج گیٹس لاک (SEAL) ہیں۔', insp.bot9, !insp.bot9)}
+                    ${row(14, 'سائلو کی مین (Entrance) ونڈو کو اچھی طرح سے بند کیا گیا ہے۔', insp.bot10, !insp.bot10)}
+                    ${row(15, 'سردیوں میں گرین کا موئسچر 16% سے زیادہ سائلو میں نہیں ڈالنا ہے۔', insp.bot11, !insp.bot11)}
+                    ${row(16, 'گرمیوں میں گرین کا موئسچر 14% سے زیادہ سائلو میں نہیں ڈالنا ہے۔', insp.bot12, !insp.bot12)}
+                    <!-- section label row for Silo Bottom -->
+                    <tr><td colspan="4" style="background:#dcfce7;border:1px solid #000;padding:4px 10px;text-align:center;font-size:1.05rem;font-weight:bold;color:#14532d;">▼ سائلو باٹم (Silo Bottom) — نیچے والے 12 نکات</td></tr>
+                </tbody>
+            </table>
+
+            <!-- PRODUCTION OFFICER REMARKS -->
+            <div style="border:1px solid #000;padding:8px 12px;margin-top:8px;font-size:1.1rem;">
+                <strong>ریمارکس پروڈکشن آفیسر:</strong>
+                <span style="display:inline-block;min-width:70%;border-bottom:1px dashed #000;margin-right:8px;padding-right:6px;font-weight:normal;">${remarksProd || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</span>
+            </div>
+
+            <!-- LAB SECTION -->
+            <div style="margin-top:10px;">
+                <div style="background:#fef2f2;border:1px solid #fecaca;padding:5px 10px;font-size:1.15rem;font-weight:bold;color:#991b1b;text-align:center;">لیبارٹری ریمارکس (Lab Checks)</div>
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#fef2f2;font-weight:bold;">
+                            <th style="border:1px solid #000;padding:6px 4px;text-align:center;width:7%;font-family:Arial,sans-serif;font-size:0.8rem;">نہیں</th>
+                            <th style="border:1px solid #000;padding:6px 4px;text-align:center;width:7%;font-family:Arial,sans-serif;font-size:0.8rem;">ہاں</th>
+                            <th style="border:1px solid #000;padding:6px 10px;text-align:center;font-size:1.05rem;">ٹیسٹ کی تفصیل</th>
+                            <th style="border:1px solid #000;padding:6px 4px;text-align:center;width:7%;font-size:0.95rem;">نمبر</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${row(1, 'سائلو میں کوئی پرانا میٹریل ایکسٹرا موجود نہیں ہے۔', insp.lab1, !insp.lab1)}
+                        ${row(2, 'کیا سائلو فیومیگیٹ کرنے کی ضرورت ہے؟', insp.lab2, !insp.lab2)}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- LAB REMARKS -->
+            <div style="border:1px solid #000;padding:8px 12px;margin-top:6px;font-size:1.1rem;">
+                <strong>ریمارکس لیبارٹری:</strong>
+                <span style="display:inline-block;min-width:72%;border-bottom:1px dashed #000;margin-right:8px;padding-right:6px;font-weight:normal;">${remarksLab || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</span>
+            </div>
+
+            <!-- SIGNATURE BLOCKS -->
+            <div style="display:flex;justify-content:space-between;margin-top:40px;padding-top:10px;font-size:1.15rem;font-weight:bold;text-align:center;">
+                <div style="width:30%;border-top:1.5px dashed #000;padding-top:8px;">دستخط پروڈکشن مینیجر</div>
+                <div style="width:30%;border-top:1.5px dashed #000;padding-top:8px;">دستخط پروڈکشن آفیسر</div>
+                <div style="width:30%;border-top:1.5px dashed #000;padding-top:8px;">دستخط پلانٹ آپریٹر</div>
+            </div>
+        </div>`;
+    };
+
     // Print Silo Inspection Report as beautiful paper
     window.printSiloInspection = (id) => {
         const log = siloLogs.find(x => x.id === id);
         if (!log) return alert('Record not found.');
 
-        const insp = log.inspection || {};
-        const sealNo = log.sealNo || '';
-        const date = log.date || '';
-        const siloNo = log.siloNumber ? log.siloNumber.replace('Silo ', '') : '';
-        const material = log.material || '';
-        const officer = log.supervisor || ''; // officer name (mapped to supervisor)
-        const operator = log.operator || '';  // operator name
-        const shift = log.shift || 'A';
-        const remarksProd = log.remarksProd || '';
-        const remarksLab = log.remarksLab || '';
-        const remarks = log.remarks || '';
-
-        const renderTick = (val, expectTrue = true) => {
-            if (expectTrue) {
-                return val ? '<span style="font-family:Arial,sans-serif;font-size:1.25rem;color:#16a34a;">✔</span>' : '';
-            } else {
-                return !val ? '<span style="font-family:Arial,sans-serif;font-size:1.25rem;color:#dc2626;">✔</span>' : '';
-            }
-        };
-
-        const printWindow = window.open('', '_blank', 'width=900,height=950');
+        const log2 = siloLogs.find(x => x.id === id);
+        if (!log2) return alert('Record not found.');
+        const siloNo2 = log2.siloNumber ? log2.siloNumber.replace('Silo ', '') : '';
+        const printWindow = window.open('', '_blank', 'width=920,height=1000');
         printWindow.document.write(`
-            <html>
-            <head>
-                <title>Silo Inspection Report - Silo ${siloNo}</title>
+            <html><head>
+                <meta charset="UTF-8">
+                <title>Silo ${siloNo2} Inspection Report</title>
                 <link href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css" rel="stylesheet">
                 <style>
-                    body {
-                        font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Urdu Typesetting', serif;
-                        direction: rtl;
-                        text-align: right;
-                        padding: 30px;
-                        background: #fff;
-                        color: #000;
-                        margin: 0;
-                    }
-                    .header-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-bottom: 20px;
-                    }
-                    .header-table td {
-                        border: none;
-                        padding: 5px;
-                        font-size: 1.2rem;
-                    }
-                    .title-block {
-                        text-align: center;
-                        font-weight: bold;
-                        border: 2px solid #000 !important;
-                        padding: 12px !important;
-                        border-radius: 4px;
-                    }
-                    .meta-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-bottom: 20px;
-                    }
-                    .meta-table td {
-                        border: 1px solid #000;
-                        padding: 10px;
-                        font-size: 1.25rem;
-                        text-align: right;
-                    }
-                    .main-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-bottom: 20px;
-                    }
-                    .main-table th, .main-table td {
-                        border: 1px solid #000;
-                        padding: 8px 10px;
-                        font-size: 1.2rem;
-                        vertical-align: middle;
-                    }
-                    .main-table th {
-                        background: #f1f5f9;
-                        text-align: center;
-                        font-weight: bold;
-                    }
-                    @media print {
-                        body {
-                            padding: 0;
-                        }
-                    }
+                    * { box-sizing: border-box; }
+                    body { font-family: 'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif; direction:rtl; text-align:right; padding:24px 28px; background:#fff; color:#000; margin:0; font-size:1rem; }
+                    @media print { body { padding:16px 20px; } .no-print { display:none; } }
                 </style>
             </head>
             <body onload="window.print();">
-                <table class="header-table">
-                    <tr>
-                        <td style="width:30%; font-weight:bold;">سیل نمبر: <span style="font-family:Arial,sans-serif;font-size:1.15rem;border-bottom:1px solid #000;padding:0 5px;">${sealNo}</span></td>
-                        <td class="title-block" style="width:40%;">
-                            <div style="font-size:1.6rem;font-weight:bold;">${getSiloTitleUrdu(siloNo)}</div>
-                            <div style="font-size:1.25rem;margin-top:5px;color:#475569;">(فلنگ سے پہلے انسپکشن پرفارما)</div>
-                        </td>
-                        <td style="width:30%; text-align:left; font-weight:bold;">تاریخ: <span style="border-bottom:1px solid #000;padding:0 5px;">${date}</span></td>
-                    </tr>
-                </table>
-
-                <table class="meta-table">
-                    <tr>
-                        <td style="width:20%;"><strong>سائلو نمبر:</strong> <span style="font-family:Arial,sans-serif;">${siloNo}</span></td>
-                        <td style="width:20%;"><strong>مٹیریل:</strong> ${material}</td>
-                        <td style="width:20%;"><strong>شفٹ:</strong> ${shift}</td>
-                        <td style="width:20%;"><strong>آفیسر کا نام:</strong> ${officer}</td>
-                        <td style="width:20%;"><strong>آپریٹر کا نام:</strong> ${operator}</td>
-                    </tr>
-                </table>
-
-                <table class="main-table">
-                    <thead>
-                        <tr style="background:#f2f2f2;">
-                            <th style="width:8%; text-align:center;">Sr. No</th>
-                            <th style="width:12%; text-align:center;">حصہ</th>
-                            <th style="width:64%; text-align:right; padding-right:12px;">نکات اور اہم چیک لسٹ (پروڈکشن ڈیپارٹمنٹ)</th>
-                            <th style="width:8%; text-align:center;">ہاں</th>
-                            <th style="width:8%; text-align:center;">نہیں</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${generateInspectionRowsHTML(insp, renderTick)}
-                    </tbody>
-                </table>
-
-                <div style="font-size:1.2rem;margin-bottom:25px;font-weight:bold;margin-top:15px;">
-                    ریمارکس پروڈکشن آفیسر: <span style="font-weight:normal;border-bottom:1px dashed #000;display:inline-block;width:75%;padding-right:10px;">${remarksProd || 'کوئی ریمارکس درج نہیں ہیں۔'}</span>
-                </div>
-
-                <div style="font-size:1.3rem;font-weight:bold;margin-top:20px;margin-bottom:10px;border-bottom:2px solid #000;padding-bottom:5px;">لیبارٹری ریمارکس (Lab Checks)</div>
-                <table class="main-table">
-                    <thead>
-                        <tr style="background:#f2f2f2;">
-                            <th style="width:8%; text-align:center;">Sr. No</th>
-                            <th style="width:12%; text-align:center;">حصہ</th>
-                            <th style="width:64%; text-align:right; padding-right:12px;">ٹیسٹ کی تفصیل</th>
-                            <th style="width:8%; text-align:center;">ہاں</th>
-                            <th style="width:8%; text-align:center;">نہیں</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${generateLabRowsHTML(insp, renderTick)}
-                    </tbody>
-                </table>
-                
-                <div style="font-size:1.2rem;margin-bottom:25px;font-weight:bold;margin-top:15px;">
-                    ریمارکس لیبارٹری: <span style="font-weight:normal;border-bottom:1px dashed #000;display:inline-block;width:75%;padding-right:10px;">${remarksLab || 'کوئی ریمارکس درج نہیں ہیں۔'}</span>
-                </div>
-
-                <div class="footer-block" style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 1.2rem; font-weight:bold;">
-                    <div style="width: 30%; text-align: center; border-top: 1px dashed #000; padding-top: 8px; margin-top: 40px;">دستخط پلانٹ آپریٹر</div>
-                    <div style="width: 30%; text-align: center; border-top: 1px dashed #000; padding-top: 8px; margin-top: 40px;">دستخط پروڈکشن آفیسر</div>
-                    <div style="width: 30%; text-align: center; border-top: 1px dashed #000; padding-top: 8px; margin-top: 40px;">دستخط پروڈکشن مینیجر</div>
-                </div>
-            </body>
-            </html>
+                ${buildSiloReportHTML(log2)}
+            </body></html>
         `);
         printWindow.document.close();
     };
@@ -362,7 +359,6 @@ try {
         const insp = log.inspection || {};
         const sealNo = log.sealNo || '';
         const date = log.date || '';
-        const date = log.date || '';
         const material = log.material || '';
         const officer = log.supervisor || ''; // officer name (mapped to supervisor field)
         const operator = log.operator || '';  // operator name
@@ -378,7 +374,15 @@ try {
         };
 
         const container = document.getElementById('silo-view-report-content');
-        container.innerHTML = `
+        if (!container) return;
+        container.innerHTML = buildSiloReportHTML(log);
+
+        document.getElementById('silo-history-modal').classList.remove('show');
+        document.getElementById('silo-report-view-modal').classList.add('show');
+    };
+
+    // dummy closing of old block — replaced by buildSiloReportHTML
+    const _dummy_removed_block = `
             <div style="border: 2px solid #cbd5e1; padding: 2.5rem; border-radius: 8px; background: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                 <!-- Header Info -->
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; border-bottom:3px double #cbd5e1; padding-bottom:1.25rem;">
@@ -445,9 +449,7 @@ try {
             </div>
         `;
 
-        document.getElementById('silo-history-modal').classList.remove('show');
-        document.getElementById('silo-report-view-modal').classList.add('show');
-    };
+    `; // end dummy
 
     const renderTableMarkup = (logsList) => {
         if (logsList.length === 0) {

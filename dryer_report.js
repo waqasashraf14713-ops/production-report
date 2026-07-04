@@ -479,7 +479,13 @@ function generateDryerReportHtml(record) {
         <div class="pdf-section" style="page-break-inside: avoid; margin-top:20px; border-top:2px solid #000; padding-top:10px;">
             <h3 style="font-size:16px; margin-bottom:10px;">Summary & Approval</h3>
             <p style="margin-bottom:8px;"><strong>Summary:</strong> ${record.summary || '-'}</p>
-            <p style="margin-bottom:8px;"><strong>Plant Supervisor Approval:</strong> ${record.supervisor_approval || '<span style="color:#64748b;font-style:italic;">Pending</span>'}</p>
+            <p style="margin-bottom:8px; display: flex; align-items: center; gap: 8px;">
+                <strong>Plant Supervisor Approval:</strong> 
+                ${record.supervisor_approval 
+                    ? `<span style="background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 4px;">🟢 Approved by ${record.supervisor_approval}</span>`
+                    : `<span style="background-color: #fef3c7; color: #d97706; border: 1px solid #fde68a; padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 4px;">⚠️ Pending</span>`
+                }
+            </p>
         </div>
     `;
 }

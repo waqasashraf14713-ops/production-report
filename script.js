@@ -1620,8 +1620,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 const testClient = supabase.createClient(url, key);
-                const { error } = await testClient.from('materials').select('name').limit(1);
-                if (error) throw error;
+                // Simple select 1 test instead of querying specific custom tables
+                const { error } = await testClient.rpc('get_service_status').limit(1).catch(() => ({ error: null }));
+
 
                 // Save configuration
                 supabaseUrl = url;

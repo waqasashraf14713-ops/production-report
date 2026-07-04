@@ -36,7 +36,10 @@ const filesToCopy = [
     'plant_report.js',
     'shift_report_pdf.js',
     'less_excess_pdf.js',
-    'pellet_efficiency.js'
+    'pellet_efficiency.js',
+    'silo_performa.js',
+    'batching_audit.js',
+    'dryer_report.js'
 ];
 filesToCopy.forEach(file => {
     const srcPath = path.join(__dirname, file);
