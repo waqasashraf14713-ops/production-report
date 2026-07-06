@@ -95,3 +95,12 @@ CREATE TABLE silo_logs (
     inspection JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Disable Row Level Security (RLS) to ensure data can be saved/synced via Anon key
+ALTER TABLE raw_material_unloading_check DISABLE ROW LEVEL SECURITY;
+ALTER TABLE daily_performas_checklist DISABLE ROW LEVEL SECURITY;
+ALTER TABLE batching_scale DISABLE ROW LEVEL SECURITY;
+ALTER TABLE batching_scale_calibration DISABLE ROW LEVEL SECURITY;
+ALTER TABLE pellet_efficiency DISABLE ROW LEVEL SECURITY;
+ALTER TABLE dryer_side_report DISABLE ROW LEVEL SECURITY;
+ALTER TABLE silo_logs DISABLE ROW LEVEL SECURITY;

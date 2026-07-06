@@ -28,6 +28,26 @@ try {
         }
     };
 
+    const formatDateToDb = (dateStr) => {
+        if (!dateStr) return new Date().toISOString().split('T')[0];
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+            if (parts[0].length === 4) {
+                return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+            }
+            const day = parts[0].padStart(2, '0');
+            const monthStr = parts[1].toLowerCase().replace('.', '');
+            const year = parts[2];
+            const months = {
+                jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
+                jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12'
+            };
+            const month = months[monthStr.substring(0, 3)] || '12';
+            return `${year}-${month}-${day}`;
+        }
+        return new Date().toISOString().split('T')[0];
+    };
+
     const saveSiloLogs = () => {
         localStorage.setItem(LS_SILO_LOGS, JSON.stringify(siloLogs));
     };
@@ -318,6 +338,152 @@ try {
         </div>`;
     };
 
+    const buildSiloDischargeReportHTML = (log) => {
+        const disInsp = log.dischargeInspection || {};
+        const gates = log.gates || {};
+        const siloNo = log.siloNumber ? log.siloNumber.replace('Silo ', '') : '';
+        const date = log.date || '';
+        const material = log.material || '';
+        const mechDept = disInsp.mechDept || '';
+        const operator = log.operator || '';
+
+        const tick = (val) => val
+            ? '<span style="font-family:Arial,sans-serif;font-size:1.1rem;color:#16a34a;font-weight:bold;">✔</span>'
+            : '<span style="font-family:Arial,sans-serif;font-size:0.9rem;color:#cbd5e1;">-</span>';
+
+        return `
+        <div style="font-family:'Arial',sans-serif;direction:ltr;padding:28px 32px;background:#fff;color:#000;max-width:820px;margin:0 auto;height:100%;display:flex;flex-direction:column;">
+            <!-- Header -->
+            <div style="border:2px solid #000;text-align:center;margin-bottom:20px;">
+                <h1 style="font-size:1.6rem;font-weight:bold;margin:10px 0;letter-spacing:1px;text-transform:uppercase;">ASIA POULTRY FEEDS (PVT) LTD. Unit-1</h1>
+                <div style="background:#f1f5f9;border-top:2px solid #000;padding:8px;font-size:1.3rem;font-weight:bold;">
+                    Silo Discharge Performa (Concrete Silo)
+                </div>
+            </div>
+
+            <!-- Metadata row 1 -->
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px;font-size:1.1rem;font-weight:bold;">
+                <div style="flex:1;">Silo No: <span style="border-bottom:1px solid #000;padding:0 40px;display:inline-block;">${siloNo}</span></div>
+                <div style="flex:1;text-align:right;">Date: <span style="border-bottom:1px solid #000;padding:0 40px;display:inline-block;">${date}</span></div>
+            </div>
+
+            <!-- Metadata row 2 -->
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px;font-size:1.1rem;font-weight:bold;">
+                <div style="flex:1;">Discharge Material <span style="border-bottom:1px solid #000;padding:0 40px;display:inline-block;">${material}</span></div>
+            </div>
+
+
+            <!-- Gates Table -->
+            <div style="margin:0 auto 20px auto;width:100%;">
+                <table style="width:100%;border-collapse:collapse;border:2px solid #000;text-align:center;">
+                    <thead>
+                        <tr>
+                            <th colspan="8" style="border:1px solid #000;padding:6px;background:#f1f5f9;font-weight:bold;">Gates number</th>
+                        </tr>
+                        <tr>
+                            <th style="border:1px solid #000;padding:6px;">🔒 1</th>
+                            <th style="border:1px solid #000;padding:6px;">🔒 2</th>
+                            <th style="border:1px solid #000;padding:6px;">🔒 3</th>
+                            <th style="border:1px solid #000;padding:6px;">🔒 4</th>
+                            <th style="border:1px solid #000;padding:6px;">🔒 5</th>
+                            <th style="border:1px solid #000;padding:6px;">🔒 6</th>
+                            <th style="border:1px solid #000;padding:6px;">🔒 7</th>
+                            <th style="border:1px solid #000;padding:6px;">🔒 8</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border:1px solid #000;padding:8px;font-weight:bold;position:relative;"><span style="position:absolute;left:-80px;top:8px;">Seal #</span>${gates.seal1 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.seal2 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.seal3 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.seal4 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.seal5 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.seal6 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.seal7 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.seal8 || ''}</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #000;padding:8px;font-weight:bold;position:relative;"><span style="position:absolute;left:-80px;top:8px;">Gate Open</span>${gates.open1 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.open2 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.open3 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.open4 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.open5 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.open6 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.open7 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.open8 || ''}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Urdu Inspection Table -->
+            <table style="width:100%;border-collapse:collapse;border:2px solid #000;margin-bottom:30px;direction:rtl;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;font-size:1.2rem;">
+                <thead>
+                    <tr>
+                        <th style="border:1px solid #000;padding:8px;text-align:right;">مندرجہ ذیل نکات کو یقینی بنائیں: (پروڈکشن ڈیپائرٹمنٹ)</th>
+                        <th style="border:1px solid #000;padding:8px;text-align:center;width:20%;">پلانٹ آپریٹر</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border:1px solid #000;padding:8px;text-align:right;">کیاسائلو کے سینٹر گیٹ سے مٹیریل آنا مکمل بند ہو گیا ہے؟</td>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;font-family:Arial,sans-serif;">${tick(disInsp.dis1)}</td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #000;padding:8px;text-align:right;">سائلو کے سینٹر ڈسچارج گیٹ کو راڈ سے چیک کرلیا گیا ہے؟</td>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;font-family:Arial,sans-serif;">${tick(disInsp.dis2)}</td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #000;padding:8px;text-align:right;">سائیلوز رپورٹ کے مطابق مٹیریل کا بیلینس کتنا ہے</td>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;font-family:Arial,sans-serif;font-weight:bold;">${disInsp.balance || ''}</td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #000;padding:8px;text-align:right;">سائلو کے ٹاپ ونڈو سے ٹارچ لائٹ سے چیک کیا ہے۔</td>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;font-family:Arial,sans-serif;">${tick(disInsp.dis4)}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Signatures -->
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px;margin-bottom:20px;font-size:0.9rem;font-weight:bold;text-align:center;">
+                <div style="flex:1; margin:0 10px;">
+                    <div style="border-bottom:2px solid #000;min-height:30px;padding-bottom:5px;">${operator}</div>
+                    <div style="margin-top:8px;">Plant Operator</div>
+                </div>
+                <div style="flex:1; margin:0 10px;">
+                    <div style="border-bottom:2px solid #000;min-height:30px;padding-bottom:5px;">${mechDept}</div>
+                    <div style="margin-top:8px;">Mechanical Dept.</div>
+                </div>
+                <div style="flex:1; margin:0 10px;">
+                    <div style="border-bottom:2px solid #000;min-height:30px;padding-bottom:5px;"></div>
+                    <div style="margin-top:8px;">Production Officer</div>
+                </div>
+                <div style="flex:1; margin:0 10px;">
+                    <div style="border-bottom:2px solid #000;min-height:30px;padding-bottom:5px;"></div>
+                    <div style="margin-top:8px;">Production Manager</div>
+                </div>
+            </div>
+
+            <!-- Footer Document Control -->
+            <table style="width:100%;border-collapse:collapse;border:2px solid #000;text-align:center;font-weight:bold;font-size:0.9rem;background:#dbeafe;">
+                <tbody>
+                    <tr>
+                        <td style="border:1px solid #000;padding:8px;width:10%;">Document<br>Control<br>Guide</td>
+                        <td style="border:1px solid #000;padding:8px;">Creator</td>
+                        <td style="border:1px solid #000;padding:8px;">Control<br>Room</td>
+                        <td style="border:1px solid #000;padding:8px;">Recorder</td>
+                        <td style="border:1px solid #000;padding:8px;">Control<br>Room</td>
+                        <td style="border:1px solid #000;padding:8px;">Record<br>Retention</td>
+                        <td style="border:1px solid #000;padding:8px;">Silo End</td>
+                        <td style="border:1px solid #000;padding:8px;">Final<br>Storage</td>
+                        <td style="border:1px solid #000;padding:8px;">Boiler</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        `;
+    };
+
     // Print Silo Inspection Report as beautiful paper
     window.printSiloInspection = (id) => {
         const log = siloLogs.find(x => x.id === id);
@@ -327,10 +493,13 @@ try {
         if (!log2) return alert('Record not found.');
         const siloNo2 = log2.siloNumber ? log2.siloNumber.replace('Silo ', '') : '';
         const printWindow = window.open('', '_blank', 'width=920,height=1000');
+        
+        const reportHTML = log2.operation === 'Discharging' ? buildSiloDischargeReportHTML(log2) : buildSiloReportHTML(log2);
+
         printWindow.document.write(`
             <html><head>
                 <meta charset="UTF-8">
-                <title>Silo ${siloNo2} Inspection Report</title>
+                <title>Silo ${siloNo2} ${log2.operation} Report</title>
                 <link href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css" rel="stylesheet">
                 <style>
                     * { box-sizing: border-box; }
@@ -339,7 +508,7 @@ try {
                 </style>
             </head>
             <body onload="window.print();">
-                ${buildSiloReportHTML(log2)}
+                ${reportHTML}
             </body></html>
         `);
         printWindow.document.close();
@@ -375,7 +544,8 @@ try {
 
         const container = document.getElementById('silo-view-report-content');
         if (!container) return;
-        container.innerHTML = buildSiloReportHTML(log);
+        
+        container.innerHTML = log.operation === 'Discharging' ? buildSiloDischargeReportHTML(log) : buildSiloReportHTML(log);
 
         document.getElementById('silo-history-modal').classList.remove('show');
         document.getElementById('silo-report-view-modal').classList.add('show');
@@ -392,7 +562,9 @@ try {
         let rows = '';
         [...logsList].reverse().forEach(log => {
             const hasInspection = log.inspection ? '✓ Yes' : '-';
-            const printBtn = log.operation === 'Filling' ? `<button class="btn btn-primary" style="padding:0.2rem 0.4rem; font-size:0.75rem; background:#8b5cf6; border-color:#8b5cf6;" onclick="printSiloInspection(${log.id})">🖨️ Print</button>` : '';
+            const printBtn = (log.operation === 'Filling' || log.operation === 'Discharging') 
+                ? `<button class="btn btn-primary" style="padding:0.2rem 0.4rem; font-size:0.75rem; background:#8b5cf6; border-color:#8b5cf6;" onclick="printSiloInspection(${log.id})">🖨️ Print</button>` 
+                : '';
             rows += `
                 <tr style="border-bottom:1px solid var(--card-border);">
                     <td style="font-weight:600;">${log.date}</td>
@@ -400,9 +572,7 @@ try {
                     <td style="font-weight:700;">${log.siloNumber}</td>
                     <td style="font-weight:700;color:${log.operation === 'Filling'?'#10b981':'#ef4444'};">${log.operation}</td>
                     <td>${log.material}</td>
-                    <td>${log.moisture ? log.moisture + '%' : '-'}</td>
                     <td style="font-weight:700;color:#2563eb;">${log.netQty || 0}</td>
-                    <td>${log.temperature ? log.temperature + '°C' : '-'}</td>
                     <td>${log.operator || '-'}</td>
                     <td>${log.sealNo || '-'}</td>
                     <td>${hasInspection}</td>
@@ -425,9 +595,7 @@ try {
                             <th>Silo No</th>
                             <th>Operation</th>
                             <th>Material</th>
-                            <th>Moisture %</th>
                             <th>Net Qty (T)</th>
-                            <th>Temp (°C)</th>
                             <th>Performed By</th>
                             <th>Seal No</th>
                             <th>Inspected</th>
@@ -471,7 +639,7 @@ try {
                 card.innerHTML = `
                     <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;padding-bottom:0.5rem;margin-bottom:0.25rem;">
                         <span style="font-weight:800;font-size:1.1rem;color:#1e293b;">🏭 Silo ${i}</span>
-                        <span style="font-size:0.7rem;background:#f1f5f9;color:#475569;padding:0.15rem 0.4rem;border-radius:3px;font-weight:600;">Status: Active</span>
+                        <span style="font-size:0.7rem;background:#dcfce7;color:#166534;padding:0.15rem 0.4rem;border-radius:3px;font-weight:600;">Status: OK</span>
                     </div>
                     <div style="display:flex;flex-direction:column;gap:0.5rem;">
                         <button class="btn btn-secondary" onclick="window.openSiloHistory('Silo ${i}', 'Filling')" style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.75rem;font-size:0.8rem;background:#ecfdf5;border-color:#a7f3d0;color:#065f46;font-weight:700;">
@@ -524,7 +692,7 @@ try {
             try {
                 const dbRecord = {
                     id: log.id,
-                    date: log.date.includes('-') && log.date.split('-').length === 3 ? `${log.date.split('-')[2]}-${log.date.split('-')[1] === 'Jan'?'01':log.date.split('-')[1] === 'Feb'?'02':log.date.split('-')[1] === 'Mar'?'03':log.date.split('-')[1] === 'Apr'?'04':log.date.split('-')[1] === 'May'?'05':log.date.split('-')[1] === 'Jun'?'06':log.date.split('-')[1] === 'Jul'?'07':log.date.split('-')[1] === 'Aug'?'08':log.date.split('-')[1] === 'Sep'?'09':log.date.split('-')[1] === 'Oct'?'10':log.date.split('-')[1] === 'Nov'?'11':'12'}-${log.date.split('-')[0].padStart(2,'0')}` : new Date().toISOString().split('T')[0],
+                    date: formatDateToDb(log.date),
                     shift: log.shift,
                     silo_number: log.siloNumber,
                     operation_type: log.operation,
@@ -533,12 +701,14 @@ try {
                     net_qty: log.netQty,
                     temperature: log.temperature,
                     performed_by: log.operator,
-                    
-                    
                     remarks: log.remarks,
                     seal_no: log.sealNo,
                     supervisor: log.supervisor,
-                    inspection: log.inspection
+                    inspection: {
+                        ...(log.inspection || {}),
+                        remarksProd: log.remarksProd,
+                        remarksLab: log.remarksLab
+                    }
                 };
                 const { error } = await sbClient.from('silo_logs').upsert([dbRecord]);
                 if (error) throw error;
@@ -616,9 +786,7 @@ try {
                     <th style="padding:0.5rem;">Date</th>
                     <th style="padding:0.5rem;">Shift</th>
                     <th style="padding:0.5rem;">Material</th>
-                    <th style="padding:0.5rem;">Moisture</th>
                     <th style="padding:0.5rem;">Net Qty (T)</th>
-                    <th style="padding:0.5rem;">Temp</th>
                     <th style="padding:0.5rem;">Performed By</th>
                     <th class="no-print" style="padding:0.5rem;">Actions</th>
                 </tr>
@@ -630,9 +798,7 @@ try {
                         <td style="font-weight:600;padding:0.5rem;">${log.date}</td>
                         <td style="padding:0.5rem;">${log.shift || 'A'}</td>
                         <td style="padding:0.5rem;font-weight:600;">${log.material}</td>
-                        <td style="padding:0.5rem;font-weight:700;">${log.moisture ? log.moisture + '%' : '-'}</td>
                         <td style="padding:0.5rem;font-weight:700;color:#2563eb;">${log.netQty || 0}</td>
-                        <td style="padding:0.5rem;">${log.temperature ? log.temperature + '°C' : '-'}</td>
                         <td style="padding:0.5rem;">${log.operator || '-'}</td>
                         <td class="no-print" style="padding:0.5rem;display:flex;gap:0.2rem;">
                             <button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;" onclick="window.editSiloLog(${log.id})">✏️ Edit</button>
@@ -655,6 +821,39 @@ try {
         `;
     };
 
+    const toggleSiloLogSections = (operation) => {
+        const sealGroup = document.getElementById('fg-seal-no');
+        const officerGroup = document.getElementById('fg-officer');
+        const mechDeptGroup = document.getElementById('fg-mech-dept');
+        const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
+        const dischargeSection = document.getElementById('sl-modal-discharge-section-direct');
+        const hiddenFieldsWrapper = document.getElementById('sl-modal-hidden-fields');
+        const materialInput = document.getElementById('sl-modal-material');
+
+        if (operation === 'Filling') {
+            if (sealGroup) sealGroup.style.display = 'block';
+            if (officerGroup) officerGroup.style.display = 'block';
+            if (mechDeptGroup) mechDeptGroup.style.display = 'none';
+            if (inspectionSection) inspectionSection.style.display = 'block';
+            if (dischargeSection) dischargeSection.style.display = 'none';
+            if (materialInput) materialInput.readOnly = false;
+        } else if (operation === 'Discharging') {
+            if (sealGroup) sealGroup.style.display = 'none';
+            if (officerGroup) officerGroup.style.display = 'none';
+            if (mechDeptGroup) mechDeptGroup.style.display = 'block';
+            if (inspectionSection) inspectionSection.style.display = 'none';
+            if (dischargeSection) dischargeSection.style.display = 'block';
+            if (materialInput) materialInput.readOnly = true;
+        } else {
+            if (sealGroup) sealGroup.style.display = 'none';
+            if (officerGroup) officerGroup.style.display = 'none';
+            if (inspectionSection) inspectionSection.style.display = 'none';
+            if (dischargeSection) dischargeSection.style.display = 'none';
+        }
+        
+        if (hiddenFieldsWrapper) hiddenFieldsWrapper.style.display = 'none';
+    };
+
     window.openSiloLogModal = (operationType, siloNum) => {
         activeLogId = null;
         document.getElementById('silo-log-modal-title').textContent = `New Silo ${siloNum} - ${operationType} Performa`;
@@ -666,8 +865,10 @@ try {
         
         const operationSelect = document.getElementById('sl-modal-operation');
         operationSelect.value = operationType;
-
-        document.getElementById('sl-modal-seal-no').value = '';
+        for (let i = 1; i <= 8; i++) {
+            const sealInput = document.getElementById(`sl-modal-seal-${i}`);
+            if (sealInput) sealInput.value = '';
+        }
         document.getElementById('sl-modal-officer').value = 'M. Zubair';
         document.getElementById('sl-modal-operator').value = 'Zubair';
 
@@ -699,20 +900,21 @@ try {
             modalCard.style.borderRadius = '0';
             modalCard.style.margin = '0';
         }
-
-        if (operationType === 'Filling') {
-            if (sealGroup) sealGroup.style.display = 'block';
-            if (officerGroup) officerGroup.style.display = 'block';
-            if (inspectionSection) inspectionSection.style.display = 'block';
-            if (hiddenFieldsWrapper) hiddenFieldsWrapper.style.display = 'none';
-        } else {
-            if (sealGroup) sealGroup.style.display = 'none';
-            if (officerGroup) officerGroup.style.display = 'none';
-            if (inspectionSection) inspectionSection.style.display = 'none';
-            if (hiddenFieldsWrapper) hiddenFieldsWrapper.style.display = 'grid';
+        const modalOverlay = document.getElementById('silo-log-modal');
+        if (modalOverlay) {
+            modalOverlay.style.padding = '0';
         }
 
-        document.getElementById('sl-modal-material').value = 'Maize';
+        toggleSiloLogSections(operationType);
+
+        let defaultMaterial = 'Maize';
+        if (operationType === 'Discharging') {
+            const lastFillingLog = siloLogs.slice().reverse().find(l => l.siloNumber === siloNum && l.operation === 'Filling');
+            if (lastFillingLog && lastFillingLog.material) {
+                defaultMaterial = lastFillingLog.material;
+            }
+        }
+        document.getElementById('sl-modal-material').value = defaultMaterial;
         document.getElementById('sl-modal-moisture').value = '';
         document.getElementById('sl-modal-net-wt').value = '';
         document.getElementById('sl-modal-temp').value = '';
@@ -743,6 +945,7 @@ try {
         const sealGroup = document.getElementById('fg-seal-no');
         const officerGroup = document.getElementById('fg-officer');
         const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
+        const dischargeSection = document.getElementById('sl-modal-discharge-section-direct');
         const hiddenFieldsWrapper = document.getElementById('sl-modal-hidden-fields');
 
         if (modalCard) {
@@ -753,15 +956,18 @@ try {
             modalCard.style.borderRadius = '0';
             modalCard.style.margin = '0';
         }
+        const modalOverlay = document.getElementById('silo-log-modal');
+        if (modalOverlay) {
+            modalOverlay.style.padding = '0';
+        }
 
-        if (log.operation === 'Filling') {
-            if (sealGroup) sealGroup.style.display = 'block';
-            if (officerGroup) officerGroup.style.display = 'block';
-            if (inspectionSection) inspectionSection.style.display = 'block';
-            if (hiddenFieldsWrapper) hiddenFieldsWrapper.style.display = 'none';
+        toggleSiloLogSections(log.operation);
 
-            document.getElementById('sl-modal-seal-no').value = log.sealNo || '';
-            document.getElementById('sl-modal-officer').value = log.supervisor || 'M. Zubair'; // mapped supervisor field stores Officer Name
+        if (log.operation === 'Filling') {            const savedSeals = log.sealNo ? log.sealNo.split(',').map(s => s.trim()) : [];
+            for (let i = 1; i <= 8; i++) {
+                document.getElementById(`sl-modal-seal-${i}`).value = savedSeals[i - 1] || '';
+            }
+            document.getElementById('sl-modal-officer').value = log.supervisor || 'M. Zubair';
 
             const insp = log.inspection || {};
             for (let i = 1; i <= 4; i++) {
@@ -779,11 +985,23 @@ try {
                 document.getElementById(`sl-chk-lab${i}-yes`).checked = checked;
                 document.getElementById(`sl-chk-lab${i}-no`).checked = !checked;
             }
-        } else {
-            if (sealGroup) sealGroup.style.display = 'none';
-            if (officerGroup) officerGroup.style.display = 'none';
-            if (inspectionSection) inspectionSection.style.display = 'none';
-            if (hiddenFieldsWrapper) hiddenFieldsWrapper.style.display = 'grid';
+        } else if (log.operation === 'Discharging') {
+            const disInsp = log.dischargeInspection || {};
+            document.getElementById('sl-modal-mech-dept').value = disInsp.mechDept || '';
+            document.getElementById('sl-dis-balance').value = disInsp.balance || '';
+
+            document.getElementById('sl-chk-dis1-yes').checked = !!disInsp.dis1;
+            document.getElementById('sl-chk-dis1-no').checked = !disInsp.dis1;
+            document.getElementById('sl-chk-dis2-yes').checked = !!disInsp.dis2;
+            document.getElementById('sl-chk-dis2-no').checked = !disInsp.dis2;
+            document.getElementById('sl-chk-dis4-yes').checked = !!disInsp.dis4;
+            document.getElementById('sl-chk-dis4-no').checked = !disInsp.dis4;
+
+            const gates = log.gates || {};
+            [1,2,3,4,5,6,7,8].forEach(num => {
+                document.getElementById(`sl-dis-seal-${num}`).value = gates[`seal${num}`] || '';
+                document.getElementById(`sl-dis-gate-${num}`).value = gates[`open${num}`] || '';
+            });
         }
 
         document.getElementById('sl-modal-material').value = log.material || '';
@@ -827,6 +1045,24 @@ try {
         const btnClose = document.getElementById('silo-log-modal-close');
         const btnCancel = document.getElementById('btn-cancel-silo-log');
         const btnSave = document.getElementById('btn-save-silo-log');
+        const operationSelect = document.getElementById('sl-modal-operation');
+
+        if (operationSelect) {
+            operationSelect.addEventListener('change', (e) => {
+                toggleSiloLogSections(e.target.value);
+                if (!activeLogId) {
+                    if (e.target.value === 'Discharging') {
+                        const siloNum = document.getElementById('sl-modal-silo').value;
+                        const lastFillingLog = siloLogs.slice().reverse().find(l => l.siloNumber === siloNum && l.operation === 'Filling');
+                        if (lastFillingLog && lastFillingLog.material) {
+                            document.getElementById('sl-modal-material').value = lastFillingLog.material;
+                        }
+                    } else if (e.target.value === 'Filling') {
+                        document.getElementById('sl-modal-material').value = 'Maize';
+                    }
+                }
+            });
+        }
 
         const navPerforma = document.getElementById('nav-silo-performa');
 
@@ -922,14 +1158,20 @@ try {
                 if (!material) return alert('Please enter Material Name.');
 
                 let sealNo = '';
-                let supervisor = ''; // stores Officer Name
+                let supervisor = ''; 
                 let inspection = null;
+                let dischargeInspection = null;
+                let gates = null;
 
                 if (operation === 'Filling') {
-                    sealNo = document.getElementById('sl-modal-seal-no').value.trim();
-                    supervisor = document.getElementById('sl-modal-officer').value; // Officer Name select value mapped to supervisor column
+                    let allSeals = [];
+                    for (let i = 1; i <= 8; i++) {
+                        let val = document.getElementById(`sl-modal-seal-${i}`).value.trim();
+                        if(val) allSeals.push(val);
+                    }
+                    sealNo = allSeals.join(', ');
+                    supervisor = document.getElementById('sl-modal-officer').value; 
                     
-                    // Maintain existing approval state if editing
                     let prevApproval = false;
                     if (activeLogId) {
                         const existing = siloLogs.find(x => x.id === activeLogId);
@@ -957,15 +1199,44 @@ try {
                         bot12: document.getElementById('sl-chk-bot12-yes').checked,
                         lab1: document.getElementById('sl-chk-lab1-yes').checked,
                         lab2: document.getElementById('sl-chk-lab2-yes').checked,
-                        managerApproved: prevApproval
+                        managerApproved: prevApproval,
+                        remarksProd,
+                        remarksLab
                     };
+                } else if (operation === 'Discharging') {
+                    dischargeInspection = {
+                        mechDept: document.getElementById('sl-modal-mech-dept').value.trim(),
+                        balance: document.getElementById('sl-dis-balance').value.trim(),
+                        dis1: document.getElementById('sl-chk-dis1-yes').checked,
+                        dis2: document.getElementById('sl-chk-dis2-yes').checked,
+                        dis4: document.getElementById('sl-chk-dis4-yes').checked
+                    };
+                    gates = {};
+                    let disSealsArr = [];
+                    [1,2,3,4,5,6,7,8].forEach(num => {
+                        const sealVal = document.getElementById(`sl-dis-seal-${num}`).value.trim();
+                        gates[`seal${num}`] = sealVal;
+                        gates[`open${num}`] = document.getElementById(`sl-dis-gate-${num}`).value.trim();
+                        if (sealVal) disSealsArr.push(sealVal);
+                    });
+
+                    const lastFillingLog = siloLogs.slice().reverse().find(l => l.siloNumber === siloNumber && l.operation === 'Filling');
+                    if (lastFillingLog) {
+                        const fillingSeals = lastFillingLog.sealNo || '';
+                        const currentSeals = disSealsArr.join(', ');
+                        if (fillingSeals !== currentSeals && !remarks) {
+                            return alert('Seal numbers do not match the filling records. Please provide remarks.');
+                        }
+                    }
                 }
+
+                if (!inspection) inspection = { remarksProd, remarksLab };
 
                 const log = {
                     id: activeLogId || Date.now(),
                     date, shift, siloNumber, operation, material, moisture,
                     netQty, temperature, operator, remarksProd, remarksLab, remarks,
-                    sealNo, supervisor, inspection
+                    sealNo, supervisor, inspection, dischargeInspection, gates
                 };
 
                 if (activeLogId) {
@@ -984,7 +1255,7 @@ try {
                     try {
                         const dbRecord = {
                             id: log.id,
-                            date: date.includes('-') && date.split('-').length === 3 ? `${date.split('-')[2]}-${date.split('-')[1] === 'Jan'?'01':date.split('-')[1] === 'Feb'?'02':date.split('-')[1] === 'Mar'?'03':date.split('-')[1] === 'Apr'?'04':date.split('-')[1] === 'May'?'05':date.split('-')[1] === 'Jun'?'06':date.split('-')[1] === 'Jul'?'07':date.split('-')[1] === 'Aug'?'08':date.split('-')[1] === 'Sep'?'09':date.split('-')[1] === 'Oct'?'10':date.split('-')[1] === 'Nov'?'11':'12'}-${date.split('-')[0].padStart(2,'0')}` : new Date().toISOString().split('T')[0],
+                            date: formatDateToDb(date),
                             shift: log.shift,
                             silo_number: log.siloNumber,
                             operation_type: log.operation,
@@ -993,12 +1264,14 @@ try {
                             net_qty: log.netQty,
                             temperature: log.temperature,
                             performed_by: log.operator,
-                            
-                            
                             remarks: log.remarks,
                             seal_no: log.sealNo,
                             supervisor: log.supervisor,
-                            inspection: log.inspection
+                            inspection: {
+                                ...log.inspection,
+                                dischargeInspection: log.dischargeInspection,
+                                gates: log.gates
+                            }
                         };
 
                         const { error } = await sbClient.from('silo_logs').upsert([dbRecord]);
@@ -1036,7 +1309,7 @@ try {
                         console.log(`Pushing ${unsyncedLogs.length} unsynced local logs to Supabase...`);
                         const recordsToInsert = unsyncedLogs.map(log => ({
                             id: log.id,
-                            date: log.date.includes('-') && log.date.split('-').length === 3 ? `${log.date.split('-')[2]}-${log.date.split('-')[1] === 'Jan'?'01':log.date.split('-')[1] === 'Feb'?'02':log.date.split('-')[1] === 'Mar'?'03':log.date.split('-')[1] === 'Apr'?'04':log.date.split('-')[1] === 'May'?'05':log.date.split('-')[1] === 'Jun'?'06':log.date.split('-')[1] === 'Jul'?'07':log.date.split('-')[1] === 'Aug'?'08':log.date.split('-')[1] === 'Sep'?'09':log.date.split('-')[1] === 'Oct'?'10':log.date.split('-')[1] === 'Nov'?'11':'12'}-${log.date.split('-')[0].padStart(2,'0')}` : new Date().toISOString().split('T')[0],
+                            date: formatDateToDb(log.date),
                             shift: log.shift,
                             silo_number: log.siloNumber,
                             operation_type: log.operation,
@@ -1045,12 +1318,14 @@ try {
                             net_qty: log.netQty,
                             temperature: log.temperature,
                             performed_by: log.operator,
-                            
-                            
                             remarks: log.remarks,
                             seal_no: log.sealNo,
                             supervisor: log.supervisor,
-                            inspection: log.inspection
+                            inspection: {
+                                ...(log.inspection || {}),
+                                remarksProd: log.remarksProd,
+                                remarksLab: log.remarksLab
+                            }
                         }));
                         
                         await sbClient.from('silo_logs').upsert(recordsToInsert);
@@ -1073,9 +1348,9 @@ try {
                                     netQty: r.net_qty || 0,
                                     temperature: r.temperature || 0,
                                     operator: r.performed_by,
-                                    
-                                    
                                     remarks: r.remarks,
+                                    remarksProd: r.inspection && r.inspection.remarksProd ? r.inspection.remarksProd : (r.remarks || ''),
+                                    remarksLab: r.inspection && r.inspection.remarksLab ? r.inspection.remarksLab : '',
                                     sealNo: r.seal_no,
                                     supervisor: r.supervisor,
                                     inspection: r.inspection
@@ -1099,9 +1374,9 @@ try {
                                 netQty: r.net_qty || 0,
                                 temperature: r.temperature || 0,
                                 operator: r.performed_by,
-                                
-                                
                                 remarks: r.remarks,
+                                remarksProd: r.inspection && r.inspection.remarksProd ? r.inspection.remarksProd : (r.remarks || ''),
+                                remarksLab: r.inspection && r.inspection.remarksLab ? r.inspection.remarksLab : '',
                                 sealNo: r.seal_no,
                                 supervisor: r.supervisor,
                                 inspection: r.inspection

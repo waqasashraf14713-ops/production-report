@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Script Error Diagnosis</title>
+<style>
+  body { font-family: monospace; background: #1a1a2e; color: #eee; padding: 2rem; }
+  h2 { color: #f59e0b; }
+  .ok   { color: #22c55e; }
+  .err  { color: #ef4444; font-weight: bold; }
+  .info { color: #60a5fa; }
+  .box  { background: #16213e; border: 1px solid #334155; border-radius: 8px; padding: 1rem; margin: 0.5rem 0; }
+  #log  { white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h2>Script Error Diagnosis</h2>
+<div class="box"><div id="log">Checking...\n</div></div>
+
+<script>
+const log = document.getElementById('log');
+function write(msg, cls) {
+    const span = document.createElement('span');
+    span.className = cls || '';
+    span.textContent = msg + '\n';
+    log.appendChild(span);
+}
+
+window.onerror = function(msg, src, line, col, err) {
+    write('WINDOW ERROR: ' + msg + '\n   File: ' + (src||'unknown') + '\n   Line: ' + line + ', Col: ' + col, 'err');
+    return true;
+};
+window.addEventListener('unhandledrejection', function(e) {
+    write('UNHANDLED PROMISE REJECTION: ' + (e.reason ? (e.reason.message || e.reason) : 'unknown'), 'err');
+});
+
+write('Error handlers attached', 'ok');
+
+write('\n--- Checking Supabase CDN ---', 'info');
+const sbScript = document.createElement('script');
+sbScript.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+sbScript.onload = function() {
+    write('Supabase loaded: ' + (typeof supabase !== 'undefined' ? 'OK' : 'supabase UNDEFINED!'), typeof supabase !== 'undefined' ? 'ok' : 'err');
+    checkThreeJS();
+};
+sbScript.onerror = function() { write('Supabase CDN FAILED to load!', 'err'); checkThreeJS(); };
+document.head.appendChild(sbScript);
+
+function checkThreeJS() {
+    write('\n--- Checking Three.js CDN ---', 'info');
+    const threeScript = document.createElement('script');
+    threeScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    threeScript.onload = function() { write('Three.js loaded: ' + (typeof THREE !== 'undefined' ? 'OK' : 'THREE UNDEFINED!'), typeof THREE !== 'undefined' ? 'ok' : 'err'); checkChartJS(); };
+    threeScript.onerror = function() { write('Three.js CDN FAILED!', 'err'); checkChartJS(); };
+    document.head.appendChild(threeScript);
+}
+
+function checkChartJS() {
+    write('\n--- Checking Chart.js CDN ---', 'info');
+    const cs = document.createElement('script');
+    cs.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js';
+    cs.onload = function() { write('Chart.js loaded OK', 'ok'); checkLocalScripts(); };
+    cs.onerror = function() { write('Chart.js CDN FAILED!', 'err'); checkLocalScripts(); };
+    document.head.appendChild(cs);
+}
+
+function checkLocalScripts() {
+    write('\n--- Checking Local Scripts ---', 'info');
+    const localScripts = [
+        'env.js',
+        'silo_dump.js',
+        'quality_standards.js',
+        'plant_report.js',
+        'silo_moisture.js',
+        'pellet_efficiency.js',
+        'batching_audit.js',
+        'silo_performa.js',
+        'dryer_report.js',
+        'script.js',
+        'shift_report_pdf.js',
+        'less_excess_pdf.js'
+    ];
+    
+    let i = 0;
+    function loadNext() {
+        if (i >= localScripts.length) {
+            write('\nALL CHECKS COMPLETE', 'ok');
+            write('If no errors above, issue may be in DOMContentLoaded init.', 'info');
+            return;
+        }
+        const name = localScripts[i++];
+        const s = document.createElement('script');
+        s.src = name + '?t=' + Date.now();
+        s.onload = function() { write(name + ' loaded OK', 'ok'); loadNext(); };
+        s.onerror = function() { write(name + ' FAILED TO LOAD', 'err'); loadNext(); };
+        document.body.appendChild(s);
+    }
+    loadNext();
+}
+</script>
+</body>
+</html>

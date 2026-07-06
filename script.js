@@ -2244,6 +2244,31 @@ document.addEventListener('DOMContentLoaded', () => {
             return `${day}-${month}-${year}`;
         };
 
+        const calculateNoOfDays = (startStr, endStr) => {
+            if (!startStr || startStr === '-' || startStr === 'None') return '-';
+            const parseDate = (str) => {
+                if (!str) return null;
+                const cleaned = str.split(' ')[0];
+                const d = new Date(cleaned);
+                if (!isNaN(d.getTime())) return d;
+                const d2 = new Date(str);
+                if (!isNaN(d2.getTime())) return d2;
+                return null;
+            };
+            const startDate = parseDate(startStr);
+            if (!startDate) return '-';
+            let endDate;
+            if (!endStr || endStr === 'In Progress' || endStr === '-' || endStr === 'None') {
+                endDate = new Date();
+            } else {
+                endDate = parseDate(endStr);
+                if (!endDate) endDate = new Date();
+            }
+            const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        };
+
         const getStorageLife = (moisture, temp) => {
             const t = Math.round(temp || 15);
             if (t < 13 || t > 26) return 'Out of Range';
@@ -2451,6 +2476,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="metric-label">
                                 <span>Filling End</span>
                                 <span class="metric-value" id="fend-${silo.id}" style="font-size:0.8rem;">${formatDateOnly(silo.fillingEnd)}</span>
+                            </div>
+                        </div>
+
+                        <!-- No of Days -->
+                        <div class="metric" style="background:rgba(139,92,246,0.06); padding:0.4rem 0.6rem; border-radius:6px; border:1px solid rgba(139,92,246,0.15);">
+                            <div class="metric-label">
+                                <span>📅 No of Days</span>
+                                <span class="metric-value" id="ndays-${silo.id}" style="font-weight:800; font-size:0.95rem; color:${(() => { const d = calculateNoOfDays(silo.fillingStart, silo.fillingEnd); if (d === '-') return 'var(--text-secondary)'; if (d <= 7) return '#10b981'; if (d <= 14) return '#f59e0b'; return '#ef4444'; })()};">${(() => { const d = calculateNoOfDays(silo.fillingStart, silo.fillingEnd); return d === '-' ? '-' : d + ' Days'; })()}</span>
                             </div>
                         </div>
 

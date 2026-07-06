@@ -1846,13 +1846,22 @@ order by
                                 <option value="C">Shift C</option>
                             </select>
                         </div>
-                        <div class="form-group" id="fg-seal-no">
-                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Seal Number (سیل نمبر)</label>
-                            <input type="text" id="sl-modal-seal-no" placeholder="e.g. 257459 -> 62" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;font-weight:700;outline:none;" />
+                        <div class="form-group" id="fg-seal-no" style="grid-column: 1 / -1; margin-top: 0.5rem;">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Seal Numbers (سیل نمبرز) - Gates 1 to 8</label>
+                            <div style="display:grid;grid-template-columns:repeat(8, 1fr);gap:0.5rem;">
+                                <input type="text" id="sl-modal-seal-1" placeholder="G1" title="Gate 1" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;font-weight:700;outline:none;text-align:center;" />
+                                <input type="text" id="sl-modal-seal-2" placeholder="G2" title="Gate 2" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;font-weight:700;outline:none;text-align:center;" />
+                                <input type="text" id="sl-modal-seal-3" placeholder="G3" title="Gate 3" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;font-weight:700;outline:none;text-align:center;" />
+                                <input type="text" id="sl-modal-seal-4" placeholder="G4" title="Gate 4" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;font-weight:700;outline:none;text-align:center;" />
+                                <input type="text" id="sl-modal-seal-5" placeholder="G5" title="Gate 5" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;font-weight:700;outline:none;text-align:center;" />
+                                <input type="text" id="sl-modal-seal-6" placeholder="G6" title="Gate 6" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;font-weight:700;outline:none;text-align:center;" />
+                                <input type="text" id="sl-modal-seal-7" placeholder="G7" title="Gate 7" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;font-weight:700;outline:none;text-align:center;" />
+                                <input type="text" id="sl-modal-seal-8" placeholder="G8" title="Gate 8" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;font-weight:700;outline:none;text-align:center;" />
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Row 2: Officer Name, Operator Name (Wide inputs to prevent label wrapping) -->
+                    <!-- Row 2: Officer/Mech Name, Operator Name (Wide inputs to prevent label wrapping) -->
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
                         <div class="form-group" id="fg-officer">
                             <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Officer Name (آفیسر کا نام)</label>
@@ -1862,6 +1871,10 @@ order by
                                 <option value="Amir">Amir</option>
                                 <option value="Ramzan">Ramzan</option>
                             </select>
+                        </div>
+                        <div class="form-group" id="fg-mech-dept" style="display:none;">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Mechanical depart Name</label>
+                            <input type="text" id="sl-modal-mech-dept" placeholder="e.g. M. Irfan" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;outline:none;" />
                         </div>
                         <div class="form-group" id="fg-operator">
                             <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Operator Name (آپریٹر کا نام)</label>
@@ -2033,6 +2046,94 @@ order by
                     <div style="margin-top:1rem;">
                         <label style="font-weight:600;display:block;margin-bottom:0.5rem;color:var(--text-primary);">Remarks Laboratory:</label>
                         <input type="text" id="sl-modal-remarks-lab" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;outline:none;" />
+                    </div>
+                </div>
+
+                <!-- 3. Discharge inspection checklist table (ONLY displayed for Discharging) -->
+                <div id="sl-modal-discharge-section-direct" style="display:none;background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.02);margin-bottom:1.5rem;">
+                    
+
+                    <h4 style="margin-top:1rem;margin-bottom:0.5rem;font-weight:600;">Gates number</h4>
+                    <div class="table-responsive" style="margin-bottom:1.5rem;">
+                        <table class="report-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;text-align:center;">
+                            <thead>
+                                <tr style="background:#f1f5f9;color:#334155;font-weight:700;">
+                                    <th style="border:1px solid #cbd5e1;"></th>
+                                    <th style="border:1px solid #cbd5e1;">🔒 1</th>
+                                    <th style="border:1px solid #cbd5e1;">🔒 2</th>
+                                    <th style="border:1px solid #cbd5e1;">🔒 3</th>
+                                    <th style="border:1px solid #cbd5e1;">🔒 4</th>
+                                    <th style="border:1px solid #cbd5e1;">🔒 5</th>
+                                    <th style="border:1px solid #cbd5e1;">🔒 6</th>
+                                    <th style="border:1px solid #cbd5e1;">🔒 7</th>
+                                    <th style="border:1px solid #cbd5e1;">🔒 8</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-weight:bold;text-align:left;border:1px solid #cbd5e1;padding:8px;">Seal #</td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-seal-1" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-seal-2" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-seal-3" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-seal-4" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-seal-5" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-seal-6" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-seal-7" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-seal-8" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;text-align:left;border:1px solid #cbd5e1;padding:8px;">Gate Open</td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-gate-1" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-gate-2" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-gate-3" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-gate-4" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-gate-5" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-gate-6" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-gate-7" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="sl-dis-gate-8" style="width:100%;border:none;padding:8px;text-align:center;outline:none;background:transparent;" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="report-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                            <thead>
+                                <tr style="background:#f1f5f9;color:#334155;font-weight:700;">
+                                    <th style="width:20%;text-align:center;">پلانٹ آپریٹر</th>
+                                    <th class="urdu-text" style="width:80%;text-align:right;">مندرجہ ذیل نکات کو یقینی بنائیں: (پروڈکشن ڈیپارٹمنٹ)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;display:flex;justify-content:center;gap:15px;align-items:center;height:100%;padding:10px;">
+                                        <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="rdo-dis1" id="sl-chk-dis1-no" value="no" checked> نہیں</label>
+                                        <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="rdo-dis1" id="sl-chk-dis1-yes" value="yes"> ہاں</label>
+                                    </td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;padding:10px;">کیا سائلو کے سینٹر گیٹ سے مٹیریل آنا مکمل بند ہو گیا ہے؟</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;display:flex;justify-content:center;gap:15px;align-items:center;height:100%;padding:10px;">
+                                        <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="rdo-dis2" id="sl-chk-dis2-no" value="no" checked> نہیں</label>
+                                        <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="rdo-dis2" id="sl-chk-dis2-yes" value="yes"> ہاں</label>
+                                    </td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;padding:10px;">سائلو کے سینٹر ڈسچارج گیٹ کو راڈ سے چیک کرلیا گیا ہے؟</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;padding:0;">
+                                        <input type="text" id="sl-dis-balance" placeholder="بیلینس" style="width:100%;border:none;padding:10px;text-align:center;outline:none;background:transparent;" />
+                                    </td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;padding:10px;">سائیلوز رپورٹ کے مطابق مٹیریل کا بیلینس کتنا ہے۔</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:center;border:1px solid #cbd5e1;display:flex;justify-content:center;gap:15px;align-items:center;height:100%;padding:10px;">
+                                        <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="rdo-dis4" id="sl-chk-dis4-no" value="no" checked> نہیں</label>
+                                        <label style="display:flex;align-items:center;gap:4px;"><input type="radio" name="rdo-dis4" id="sl-chk-dis4-yes" value="yes"> ہاں</label>
+                                    </td>
+                                    <td class="urdu-text" style="border:1px solid #cbd5e1;padding:10px;">سائلو کے ٹاپ ونڈو سے ٹارچ لائٹ سے چیک کیا ہے۔</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
