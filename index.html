@@ -216,17 +216,7 @@
 
             <!-- KPI Metric Cards Row -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
-                <!-- Unit per Bag -->
-                <div style="background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem; position: relative; overflow: hidden;">
-                    <div style="width: 60px; height: 60px; border-radius: 12px; background: linear-gradient(135deg, #10b981, #34d399); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; box-shadow: 0 4px 10px rgba(16,185,129,0.3);">⚡</div>
-                    <div>
-                        <div style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Unit Per Bag</div>
-                        <div id="exec-unit-per-bag" style="font-size: 1.8rem; font-weight: 800; color: #0f172a; margin-top: 0.25rem;">--</div>
-                    </div>
-                    <div style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.03; pointer-events: none;">⚡</div>
-                </div>
-
-                <!-- On Duty Officer -->
+                <!-- On Duty Officer (Moved to Top/First) -->
                 <div style="background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem; position: relative; overflow: hidden;">
                     <div style="width: 60px; height: 60px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #60a5fa); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; box-shadow: 0 4px 10px rgba(59,130,246,0.3);">🧑‍💼</div>
                     <div>
@@ -234,6 +224,16 @@
                         <div id="exec-duty-officer" style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-top: 0.25rem;">--</div>
                     </div>
                     <div style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.03; pointer-events: none;">🧑‍💼</div>
+                </div>
+
+                <!-- Electric Unit per Bag (Moved to Second) -->
+                <div style="background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem; position: relative; overflow: hidden;">
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: linear-gradient(135deg, #10b981, #34d399); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; box-shadow: 0 4px 10px rgba(16,185,129,0.3);">⚡</div>
+                    <div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Electric Unit Per Bag</div>
+                        <div id="exec-unit-per-bag" style="font-size: 1.8rem; font-weight: 800; color: #0f172a; margin-top: 0.25rem;">--</div>
+                    </div>
+                    <div style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.03; pointer-events: none;">⚡</div>
                 </div>
 
                 <!-- Maize Moisture Difference -->
@@ -255,7 +255,7 @@
                 
                 <!-- Pellet A Average Needle Graph -->
                 <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);">
-                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">🎯 Pellet A Average (Needle Graph)</h3>
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">🎯 A Pellet Efficiency</h3>
                     <div style="position: relative; height: 220px; width: 100%; display: flex; justify-content: center; align-items: center;">
                         <canvas id="exec-pellet-a-gauge"></canvas>
                         <div style="position: absolute; bottom: 10px; text-align: center; width: 100%;">
@@ -270,7 +270,7 @@
 
                 <!-- Pellet B Average Needle Graph -->
                 <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);">
-                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">🎯 Pellet B Average (Needle Graph)</h3>
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">🎯 B Pellet Efficiency</h3>
                     <div style="position: relative; height: 220px; width: 100%; display: flex; justify-content: center; align-items: center;">
                         <canvas id="exec-pellet-b-gauge"></canvas>
                         <div style="position: absolute; bottom: 10px; text-align: center; width: 100%;">
