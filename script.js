@@ -86,6 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 actionsDiv.style.display = 'flex';
             }
         }
+        
+        const globalTitle = document.querySelector('header h1');
+        if (globalTitle) {
+            if (activeView === viewExecutiveDashboard) {
+                globalTitle.style.display = 'none';
+            } else {
+                globalTitle.style.display = 'block';
+            }
+        }
     };
 
     if (navDashboard) {
