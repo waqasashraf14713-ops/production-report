@@ -150,12 +150,16 @@ function updateExecutiveDashboard() {
     if (dailyATime > 0) aAvg = Math.round(dailyAProd / dailyATime);
     if (dailyBTime > 0) bAvg = Math.round(dailyBProd / dailyBTime);
 
-    let monthlyAAvg = '--', monthlyBAvg = '--';
-    if (monthlyATime > 0) monthlyAAvg = Math.round(monthlyAProd / monthlyATime) + ' Tons/Hr';
-    if (monthlyBTime > 0) monthlyBAvg = Math.round(monthlyBProd / monthlyBTime) + ' Tons/Hr';
+    let aEff = 0, bEff = 0;
+    if (aAvg > 0) aEff = Math.round((aAvg / 600) * 100);
+    if (bAvg > 0) bEff = Math.round((bAvg / 800) * 100);
 
-    document.getElementById('exec-pellet-a-value').textContent = aAvg;
-    document.getElementById('exec-pellet-b-value').textContent = bAvg;
+    let monthlyAAvg = '--', monthlyBAvg = '--';
+    if (monthlyATime > 0) monthlyAAvg = Math.round(((monthlyAProd / monthlyATime) / 600) * 100) + '%';
+    if (monthlyBTime > 0) monthlyBAvg = Math.round(((monthlyBProd / monthlyBTime) / 800) * 100) + '%';
+
+    document.getElementById('exec-pellet-a-value').textContent = aEff + '%';
+    document.getElementById('exec-pellet-b-value').textContent = bEff + '%';
     
     const monthlyAEl = document.getElementById('exec-pellet-a-monthly');
     const monthlyBEl = document.getElementById('exec-pellet-b-monthly');
@@ -163,11 +167,11 @@ function updateExecutiveDashboard() {
     if (monthlyBEl) monthlyBEl.textContent = monthlyBAvg;
     
     if (execPelletAGaugeChart) {
-        execPelletAGaugeChart.data.datasets[0].needleValue = aAvg;
+        execPelletAGaugeChart.data.datasets[0].needleValue = aEff;
         execPelletAGaugeChart.update();
     }
     if (execPelletBGaugeChart) {
-        execPelletBGaugeChart.data.datasets[0].needleValue = bAvg;
+        execPelletBGaugeChart.data.datasets[0].needleValue = bEff;
         execPelletBGaugeChart.update();
     }
 
