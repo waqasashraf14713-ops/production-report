@@ -200,14 +200,8 @@ function updateExecutiveDashboard() {
 
     document.getElementById('exec-unit-per-bag').textContent = unitPerBag;
 
-    // 3. On Duty Officer
-    let officer = '--';
-    try {
-        const shiftReports = JSON.parse(localStorage.getItem('fmpr_shiftReports') || '[]');
-        if (shiftReports.length > 0) {
-            officer = shiftReports[shiftReports.length - 1].officerName || 'Unknown';
-        }
-    } catch(e) {}
+    // 3. On Duty Officer (Dynamic by time)
+    let officer = window.getDefaultOfficer ? window.getDefaultOfficer(true) : '--';
     document.getElementById('exec-duty-officer').textContent = officer;
 
     // 4. Maize Moisture Difference (From Daily Maize Logs)
