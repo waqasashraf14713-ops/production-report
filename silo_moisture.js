@@ -78,7 +78,6 @@ try {
         document.getElementById('sm-date').value = r.date || '';
         document.getElementById('sm-shift').value = r.shift || 'Morning';
         document.getElementById('sm-officer').value = r.officerName || '';
-        document.getElementById('sm-ctrl-moisture').value = r.ctrlMoisture || '';
 
         const tbody = document.getElementById('sm-rows-tbody');
         tbody.innerHTML = '';
@@ -109,6 +108,7 @@ try {
         tr.innerHTML = `
             <td>${siloSel(`sm-silo-${rId}`)}</td>
             <td>${matInp(`sm-mat-${rId}`)}</td>
+            <td>${num(`sm-moist-ctrl-${rId}`)}</td>
             <td>${num(`sm-moist-ungrind-${rId}`)}</td>
             <td>${num(`sm-moist-grind-${rId}`)}</td>
             <td>${inp(`sm-rem-${rId}`)}</td>
@@ -118,6 +118,7 @@ try {
 
         if (data.silo) document.getElementById(`sm-silo-${rId}`).value = data.silo;
         if (data.material) document.getElementById(`sm-mat-${rId}`).value = data.material;
+        if (data.ctrlMoisture !== undefined) document.getElementById(`sm-moist-ctrl-${rId}`).value = data.ctrlMoisture;
         
         if (data.moistureUngrind !== undefined) {
             document.getElementById(`sm-moist-ungrind-${rId}`).value = data.moistureUngrind;
@@ -138,7 +139,6 @@ try {
         
         document.getElementById('sm-shift').value = 'Morning';
         document.getElementById('sm-officer').value = '';
-        document.getElementById('sm-ctrl-moisture').value = '';
 
         const tbody = document.getElementById('sm-rows-tbody');
         tbody.innerHTML = '';
@@ -158,19 +158,19 @@ try {
 
         const shift = document.getElementById('sm-shift').value;
         const officerName = document.getElementById('sm-officer').value;
-        const ctrlMoisture = document.getElementById('sm-ctrl-moisture').value.trim();
 
         const rows = [];
         document.querySelectorAll('#sm-rows-tbody .sm-row').forEach(tr => {
             const rId = tr.dataset.rid;
             const silo = document.getElementById(`sm-silo-${rId}`).value.trim();
             const material = document.getElementById(`sm-mat-${rId}`).value.trim();
+            const ctrlMoisture = document.getElementById(`sm-moist-ctrl-${rId}`).value.trim();
             const moistureUngrind = document.getElementById(`sm-moist-ungrind-${rId}`).value.trim();
             const moistureGrind = document.getElementById(`sm-moist-grind-${rId}`).value.trim();
             const remarks = document.getElementById(`sm-rem-${rId}`).value.trim();
             
-            if (silo || material || moistureUngrind || moistureGrind) {
-                rows.push({ silo, material, moistureUngrind, moistureGrind, remarks });
+            if (silo || material || ctrlMoisture || moistureUngrind || moistureGrind) {
+                rows.push({ silo, material, ctrlMoisture, moistureUngrind, moistureGrind, remarks });
             }
         });
 
@@ -179,7 +179,6 @@ try {
             date,
             shift,
             officerName,
-            ctrlMoisture,
             rows
         };
 
@@ -278,7 +277,7 @@ try {
         siloMoistData.filter(r => r.date === date).forEach(report => {
             if (report.rows) {
                 report.rows.forEach(row => {
-                    const m = parseFloat(row.moisture);
+                    const m = parseFloat(row.ctrlMoisture);
                     if (!isNaN(m)) {
                         sum += m;
                         count++;

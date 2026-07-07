@@ -58,6 +58,9 @@
         document.body.appendChild(div);
     });
     </script>
+    <!-- Flatpickr for date formatting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
     <div class="layout-wrapper">
@@ -69,6 +72,10 @@
                 <a href="#dashboard" class="nav-item active" id="nav-dashboard">
                     <span class="nav-icon">📊</span>
                     <span>Dashboard</span>
+                </a>
+                <a href="#executive-dashboard" class="nav-item" id="nav-executive-dashboard">
+                    <span class="nav-icon">📈</span>
+                    <span>Executive Dashboard</span>
                 </a>
                 <a href="#silo-status" class="nav-item" id="nav-silo-status">
                     <span class="nav-icon">🏭</span>
@@ -135,10 +142,15 @@
 
             <!-- Quick Access Dashboard Cards -->
             <section class="dash-quick-grid">
+                <div class="dash-quick-card" onclick="document.getElementById('nav-executive-dashboard').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">📈</div>
+                    <div class="dash-quick-label">Executive Analytics</div>
+                    <div class="dash-quick-desc">KPIs & Needle Graphs</div>
+                </div>
                 <div class="dash-quick-card" onclick="document.getElementById('nav-silo-status').click()">
                     <div class="dash-quick-icon" style="background:linear-gradient(135deg,#6366f1,#818cf8);">🏭</div>
                     <div class="dash-quick-label">Silo Status</div>
-                    <div class="dash-quick-desc">Monitor all silos live</div>
+                    <div class="dash-quick-desc">Live capacity & inventory</div>
                 </div>
                 <div class="dash-quick-card" onclick="document.getElementById('nav-daily-report').click()">
                     <div class="dash-quick-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">📋</div>
@@ -187,6 +199,112 @@
                     <div class="dash-quick-desc">Filling & Discharge logs</div>
                 </div>
             </section>
+        </div>
+
+        <!-- Executive Analytics Dashboard -->
+        <div id="view-executive-dashboard" class="view-section" style="display: none; padding-top: 1rem;">
+            <div class="table-header" style="border-bottom: 2px solid var(--card-border); padding-bottom: 0.75rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2>📈 Executive Analytics Dashboard</h2>
+                    <span style="font-size:0.9rem;color:var(--text-secondary);font-weight:600;">Real-time KPIs & Performance Metrics</span>
+                </div>
+                <div>
+                    <label for="exec-filter-date" style="font-weight:600;color:var(--text-secondary);font-size:0.9rem;">Date:</label>
+                    <input type="text" id="exec-filter-date" style="border-radius:4px;border:1px solid var(--card-border);padding:0.4rem 0.6rem;background:var(--card-bg);color:var(--text-primary);outline:none;font-weight:600;text-align:center;width:150px;">
+                </div>
+            </div>
+
+            <!-- KPI Metric Cards Row -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+                <!-- Unit per Bag -->
+                <div style="background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem; position: relative; overflow: hidden;">
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: linear-gradient(135deg, #10b981, #34d399); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; box-shadow: 0 4px 10px rgba(16,185,129,0.3);">⚡</div>
+                    <div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Unit Per Bag</div>
+                        <div id="exec-unit-per-bag" style="font-size: 1.8rem; font-weight: 800; color: #0f172a; margin-top: 0.25rem;">--</div>
+                    </div>
+                    <div style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.03; pointer-events: none;">⚡</div>
+                </div>
+
+                <!-- On Duty Officer -->
+                <div style="background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem; position: relative; overflow: hidden;">
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #60a5fa); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; box-shadow: 0 4px 10px rgba(59,130,246,0.3);">🧑‍💼</div>
+                    <div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">On Duty Officer</div>
+                        <div id="exec-duty-officer" style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-top: 0.25rem;">--</div>
+                    </div>
+                    <div style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.03; pointer-events: none;">🧑‍💼</div>
+                </div>
+
+                <!-- Maize Moisture Difference -->
+                <div style="background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem; position: relative; overflow: hidden;">
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: linear-gradient(135deg, #8b5cf6, #a78bfa); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; box-shadow: 0 4px 10px rgba(139,92,246,0.3);">💧</div>
+                    <div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Maize Moisture Diff</div>
+                        <div style="display: flex; align-items:baseline; gap: 0.5rem; margin-top: 0.25rem;">
+                            <span id="exec-moisture-diff" style="font-size: 1.8rem; font-weight: 800; color: #0f172a;">--</span>
+                            <span id="exec-moisture-diff-status" style="font-size: 0.9rem; font-weight: 600;"></span>
+                        </div>
+                    </div>
+                    <div style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.03; pointer-events: none;">💧</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+                
+                <!-- Pellet A Average Needle Graph -->
+                <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">🎯 Pellet A Average (Needle Graph)</h3>
+                    <div style="position: relative; height: 220px; width: 100%; display: flex; justify-content: center; align-items: center;">
+                        <canvas id="exec-pellet-a-gauge"></canvas>
+                        <div style="position: absolute; bottom: 10px; text-align: center; width: 100%;">
+                            <div id="exec-pellet-a-value" style="font-size: 2rem; font-weight: 800; color: #0f172a;">--</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">Daily Avg (Tons/Hr)</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 1rem; font-weight: 600; color: #3b82f6;">
+                        Monthly Avg: <span id="exec-pellet-a-monthly">--</span>
+                    </div>
+                </div>
+
+                <!-- Pellet B Average Needle Graph -->
+                <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">🎯 Pellet B Average (Needle Graph)</h3>
+                    <div style="position: relative; height: 220px; width: 100%; display: flex; justify-content: center; align-items: center;">
+                        <canvas id="exec-pellet-b-gauge"></canvas>
+                        <div style="position: absolute; bottom: 10px; text-align: center; width: 100%;">
+                            <div id="exec-pellet-b-value" style="font-size: 2rem; font-weight: 800; color: #0f172a;">--</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">Daily Avg (Tons/Hr)</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 1rem; font-weight: 600; color: #10b981;">
+                        Monthly Avg: <span id="exec-pellet-b-monthly">--</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Trend Charts Row -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                
+                <!-- Daily Trend Chart -->
+                <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">📅 Daily Trend (Current Month)</h3>
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="exec-daily-trend-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Monthly Trend Chart -->
+                <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">📊 Monthly Trend (Current Year)</h3>
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="exec-monthly-trend-chart"></canvas>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
         <div id="view-silo-status" class="view-section" style="display: none;">
@@ -811,7 +929,7 @@
         <div id="view-batching-audit" class="view-section" style="display: none;">
             <section class="table-container">
                 <div class="table-header">
-                    <h2>💊 Batching Medicine Audit</h2>
+                    <h2>💊 Batching Medicine & Oil Audit</h2>
                     <div class="header-actions" style="display:flex;gap:1rem;align-items:center;">
                         <div style="display:flex;align-items:center;gap:0.5rem;">
                             <label for="ba-filter-date" style="font-weight:600;color:var(--text-secondary);font-size:0.9rem;">Date:</label>
@@ -870,7 +988,7 @@
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; margin-top:2rem;">
                     <!-- A Pellet Gauge Card -->
                     <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;align-items:center;">
-                        <h3 style="margin-bottom:0.75rem;color:var(--text-primary);font-size:1.05rem;text-align:center;margin-top:0;">🎯 A Pellet Average Efficiency</h3>
+                        <h3 style="margin-bottom:0.75rem;color:var(--text-primary);font-size:1.05rem;text-align:center;margin-top:0;">🎯 A Pellet Efficiency</h3>
                         <div style="width:100%;height:180px;position:relative;display:flex;justify-content:center;">
                             <canvas id="pe-gauge-canvas-a" width="300" height="180" style="max-width:100%;"></canvas>
                         </div>
@@ -878,7 +996,7 @@
                     </div>
                     <!-- B Pellet Gauge Card -->
                     <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);display:flex;flex-direction:column;align-items:center;">
-                        <h3 style="margin-bottom:0.75rem;color:var(--text-primary);font-size:1.05rem;text-align:center;margin-top:0;">🎯 B Pellet Average Efficiency</h3>
+                        <h3 style="margin-bottom:0.75rem;color:var(--text-primary);font-size:1.05rem;text-align:center;margin-top:0;">🎯 B Pellet Efficiency</h3>
                         <div style="width:100%;height:180px;position:relative;display:flex;justify-content:center;">
                             <canvas id="pe-gauge-canvas-b" width="300" height="180" style="max-width:100%;"></canvas>
                         </div>
@@ -947,12 +1065,12 @@
 
     <!-- Dryer Record View Modal -->
     <div id="dryer-record-view-modal" class="modal-overlay">
-        <div class="modal-card" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-card" style="width: 100vw; height: 100vh; max-width: 100vw; max-height: 100vh; margin: 0; border-radius: 0; overflow-y: auto; display: flex; flex-direction: column;">
             <div class="modal-header">
                 <h2>View Dryer Side Report</h2>
                 <button onclick="document.getElementById('dryer-record-view-modal').classList.remove('show')" class="modal-close-btn">&times;</button>
             </div>
-            <div class="modal-body" id="dryer-record-view-content" style="font-size: 14px; padding-bottom: 2rem; background: #fff; border-radius: 8px; padding: 1rem; color: #000;">
+            <div class="modal-body" id="dryer-record-view-content" style="flex: 1; font-size: 14px; padding-bottom: 2rem; background: #fff; border-radius: 8px; padding: 1rem; color: #000;">
             </div>
         </div>
     </div>
@@ -1822,6 +1940,7 @@ order by
                     <select id="sl-modal-operation">
                         <option value="Filling">Filling</option>
                         <option value="Discharging">Discharging</option>
+                        <option value="Silo Fumigation">Silo Fumigation</option>
                     </select>
                 </div>
 
@@ -2137,6 +2256,248 @@ order by
                     </div>
                 </div>
 
+                <!-- 4. Silo Fumigation Performa -->
+                <div id="sl-modal-fumigation-section" style="display:none;background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.02);margin-bottom:1.5rem;">
+                    <h3 style="margin-bottom:1rem;color:var(--text-primary);border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;">Silo Fumigation Performa</h3>
+
+                    <div class="table-responsive" style="margin-bottom:1.5rem;">
+                        <table class="report-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;text-align:center;">
+                            <thead>
+                                <tr style="background:#f1f5f9;color:#334155;font-weight:700;">
+                                    <th style="border:1px solid #cbd5e1;width:5%;">Sr#</th>
+                                    <th style="border:1px solid #cbd5e1;width:35%;text-align:left;">Check Points</th>
+                                    <th style="border:1px solid #cbd5e1;width:30%;">YES=✓</th>
+                                    <th style="border:1px solid #cbd5e1;width:30%;">NO=X</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 1 -->
+                                <tr>
+                                    <td style="border:1px solid #cbd5e1;font-weight:bold;">1</td>
+                                    <td style="border:1px solid #cbd5e1;text-align:left;padding:8px;">All Silo Discharge Gates are Seal.</td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;" colspan="2">
+                                        <table style="width:100%;border-collapse:collapse;">
+                                            <tr>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">G1</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">G2</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">G3</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">G4</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">G5</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">G6</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">G7</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">G8</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-g1"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-g2"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-g3"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-g4"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-g5"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-g6"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-g7"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-g8"></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <!-- 2 -->
+                                <tr>
+                                    <td style="border:1px solid #cbd5e1;font-weight:bold;">2</td>
+                                    <td style="border:1px solid #cbd5e1;text-align:left;padding:8px;">Silo's Enterance Windows are Seal.</td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;" colspan="2">
+                                        <table style="width:100%;border-collapse:collapse;">
+                                            <tr>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;width:50%;">Upper Window</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;width:50%;">Lower Window</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-uw"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-lw"></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <!-- 3 -->
+                                <tr>
+                                    <td style="border:1px solid #cbd5e1;font-weight:bold;">3</td>
+                                    <td style="border:1px solid #cbd5e1;text-align:left;padding:8px;">Silo's Fan Air Ducts are Seal.</td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;" colspan="2">
+                                        <table style="width:100%;border-collapse:collapse;">
+                                            <tr>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;width:50%;">Fan I</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;width:50%;">Fan II</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-fan1"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-fan2"></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <!-- 4 -->
+                                <tr>
+                                    <td style="border:1px solid #cbd5e1;font-weight:bold;">4</td>
+                                    <td style="border:1px solid #cbd5e1;text-align:left;padding:8px;">Air Discharge Ducts at Silo Top are Seal.</td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;" colspan="2">
+                                        <table style="width:100%;border-collapse:collapse;">
+                                            <tr>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">D1</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">D2</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">D3</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">D4</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">D5</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">D6</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">D7</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">D8</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-d1"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-d2"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-d3"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-d4"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-d5"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-d6"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-d7"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-d8"></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <!-- 5 -->
+                                <tr>
+                                    <td style="border:1px solid #cbd5e1;font-weight:bold;">5</td>
+                                    <td style="border:1px solid #cbd5e1;text-align:left;padding:8px;">Temperature Cable Inspection Windows are Seal.</td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;" colspan="2">
+                                        <table style="width:100%;border-collapse:collapse;">
+                                            <tr>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">C1</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">C2</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">C3</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">C4</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">C5</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">C6</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">C7</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.8rem;">C8</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-c1"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-c2"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-c3"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-c4"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-c5"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-c6"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-c7"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-c8"></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <!-- 6 -->
+                                <tr>
+                                    <td style="border:1px solid #cbd5e1;font-weight:bold;">6</td>
+                                    <td style="border:1px solid #cbd5e1;text-align:left;padding:8px;">Silo Filling Chutes(C) & Sampling Windows(W) are Seal.</td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;" colspan="2">
+                                        <table style="width:100%;border-collapse:collapse;">
+                                            <tr>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.75rem;">17.2C</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.75rem;">17.2W</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.7rem;">S#1,3,4,6,7,5,7</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.75rem;">17.1C</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.75rem;">17.1W</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.7rem;">S#2,3,5,6,8</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.75rem;">17.3C</td>
+                                                <td style="border:1px solid #cbd5e1;font-size:0.75rem;">17.W</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-172c"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-172w"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-s1"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-171c"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-171w"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-s2"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-173c"></td>
+                                                <td style="border:1px solid #cbd5e1;padding:4px;"><input type="checkbox" id="fum-17w"></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <!-- 7 -->
+                                <tr>
+                                    <td style="border:1px solid #cbd5e1;font-weight:bold;">7</td>
+                                    <td style="border:1px solid #cbd5e1;text-align:left;padding:8px;">Silo Top Main Hole is Seal.</td>
+                                    <td style="border:1px solid #cbd5e1;padding:8px;" colspan="2"><input type="checkbox" id="fum-mainhole"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="font-weight:600;display:block;margin-bottom:0.5rem;color:var(--text-primary);">Phosphine (PPM) Tracker</label>
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;background:#f1f5f9;padding:1rem;border-radius:8px;">
+                            <div style="text-align:center;">
+                                <input type="text" id="fum-ppm-48" style="width:60px;padding:4px;text-align:center;border:1px solid #cbd5e1;" />
+                                <div style="font-size:0.8rem;margin-top:4px;">48 Hr</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <input type="text" id="fum-ppm-72" style="width:60px;padding:4px;text-align:center;border:1px solid #cbd5e1;" />
+                                <div style="font-size:0.8rem;margin-top:4px;">72 Hr</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <input type="text" id="fum-ppm-120" style="width:60px;padding:4px;text-align:center;border:1px solid #cbd5e1;" />
+                                <div style="font-size:0.8rem;margin-top:4px;">120 Hr</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <input type="text" id="fum-ppm-168" style="width:60px;padding:4px;text-align:center;border:1px solid #cbd5e1;" />
+                                <div style="font-size:0.8rem;margin-top:4px;">168 Hr</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <input type="text" id="fum-ppm-216" style="width:60px;padding:4px;text-align:center;border:1px solid #cbd5e1;" />
+                                <div style="font-size:0.8rem;margin-top:4px;">216 Hr</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive" style="margin-bottom:1.5rem;">
+                        <table class="report-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;text-align:center;">
+                            <thead>
+                                <tr style="background:#f1f5f9;color:#334155;font-weight:700;">
+                                    <th style="border:1px solid #cbd5e1;">Silo Status</th>
+                                    <th style="border:1px solid #cbd5e1;" colspan="2">FULL</th>
+                                    <th style="border:1px solid #cbd5e1;" colspan="2">EMPTY</th>
+                                </tr>
+                                <tr style="background:#f1f5f9;color:#334155;font-weight:700;">
+                                    <th style="border:1px solid #cbd5e1;">Dosing Site</th>
+                                    <th style="border:1px solid #cbd5e1;">Stand. Qty</th>
+                                    <th style="border:1px solid #cbd5e1;">Actual Qty</th>
+                                    <th style="border:1px solid #cbd5e1;">Stand. Qty</th>
+                                    <th style="border:1px solid #cbd5e1;">Actual Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="border:1px solid #cbd5e1;font-weight:bold;">Fan I</td>
+                                    <td style="border:1px solid #cbd5e1;">2</td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="fum-qty-full-fan1" style="width:100%;border:none;padding:8px;text-align:center;outline:none;" /></td>
+                                    <td style="border:1px solid #cbd5e1;vertical-align:middle;" rowspan="3">8</td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="fum-qty-empty-fan1" style="width:100%;border:none;padding:8px;text-align:center;outline:none;" /></td>
+                                </tr>
+                                <tr>
+                                    <td style="border:1px solid #cbd5e1;font-weight:bold;">Fan II</td>
+                                    <td style="border:1px solid #cbd5e1;">2</td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="fum-qty-full-fan2" style="width:100%;border:none;padding:8px;text-align:center;outline:none;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="fum-qty-empty-fan2" style="width:100%;border:none;padding:8px;text-align:center;outline:none;" /></td>
+                                </tr>
+                                <tr>
+                                    <td style="border:1px solid #cbd5e1;font-weight:bold;">Silo Top</td>
+                                    <td style="border:1px solid #cbd5e1;">4</td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="fum-qty-full-top" style="width:100%;border:none;padding:8px;text-align:center;outline:none;" /></td>
+                                    <td style="border:1px solid #cbd5e1;padding:0;"><input type="text" id="fum-qty-empty-top" style="width:100%;border:none;padding:8px;text-align:center;outline:none;" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div class="form-group" style="background:#ffffff;padding:1.25rem;border-radius:8px;border:1px solid #cbd5e1;box-shadow:0 1px 3px rgba(0,0,0,0.02);">
                     <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.25rem;display:block;">Remarks / Any Issue (ریمارکس)</label>
                     <textarea id="sl-modal-remarks" placeholder="Any remarks or improvements..." style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;height:60px;resize:none;outline:none;"></textarea>
@@ -2190,12 +2551,12 @@ order by
 
     <!-- Performa Check List Modal -->
     <div id="performa-modal" class="modal-overlay">
-        <div class="modal-card" style="max-width:950px;width:95%;background:#ffffff;">
-            <div class="modal-header">
+        <div class="modal-card" style="max-width:95vw;width:95vw;height:90vh;max-height:90vh;border-radius:12px;background:#f0f8ff;display:flex;flex-direction:column;box-sizing:border-box;">
+            <div class="modal-header" style="background:rgba(255,255,255,0.7);backdrop-filter:blur(8px);border-top-left-radius:12px;border-top-right-radius:12px;">
                 <h2 id="performa-modal-title">Performas Check List</h2>
                 <button id="performa-modal-close" class="modal-close-btn">&times;</button>
             </div>
-            <div class="modal-body" style="padding:1.5rem 2rem; max-height: 75vh; overflow-y: auto;">
+            <div class="modal-body" style="padding:2rem; flex:1; overflow-y: auto;">
                 <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
                     <div class="form-group">
                         <label>Date</label>
@@ -2535,19 +2896,19 @@ order by
                     <div>
                         <h3 style="margin-bottom:0.5rem;color:var(--text-primary);border-bottom:2px solid var(--card-border);padding-bottom:0.25rem;">4. Silo Status</h3>
                         <table class="report-table" style="width:100%;">
-                            <thead><tr><th>Silo</th><th>On Time</th><th>Off Time</th></tr></thead>
+                            <thead><tr><th>Silo</th><th>On Time</th><th>Off Time</th><th>Meter (Hrs)</th></tr></thead>
                             <tbody>
-                                <tr><td>Silo 08</td><td><input type="time" id="silo08-on" style="width:100%;"></td><td><input type="time" id="silo08-off" style="width:100%;"></td></tr>
-                                <tr><td>Silo 09</td><td><input type="time" id="silo09-on" style="width:100%;"></td><td><input type="time" id="silo09-off" style="width:100%;"></td></tr>
-                                <tr><td>Silo 10</td><td><input type="time" id="silo10-on" style="width:100%;"></td><td><input type="time" id="silo10-off" style="width:100%;"></td></tr>
-                                <tr><td>Silo 11</td><td><input type="time" id="silo11-on" style="width:100%;"></td><td><input type="time" id="silo11-off" style="width:100%;"></td></tr>
-                                <tr><td>Silo 12</td><td><input type="time" id="silo12-on" style="width:100%;"></td><td><input type="time" id="silo12-off" style="width:100%;"></td></tr>
-                                <tr><td>Silo 13</td><td><input type="time" id="silo13-on" style="width:100%;"></td><td><input type="time" id="silo13-off" style="width:100%;"></td></tr>
-                                <tr><td>Silo 14</td><td><input type="time" id="silo14-on" style="width:100%;"></td><td><input type="time" id="silo14-off" style="width:100%;"></td></tr>
-                                <tr><td>Silo 15</td><td><input type="time" id="silo15-on" style="width:100%;"></td><td><input type="time" id="silo15-off" style="width:100%;"></td></tr>
-                                <tr><td>Silo 16</td><td><input type="time" id="silo16-on" style="width:100%;"></td><td><input type="time" id="silo16-off" style="width:100%;"></td></tr>
-                                <tr><td>Wet Bin</td><td><input type="time" id="wetbin-on" style="width:100%;"></td><td><input type="time" id="wetbin-off" style="width:100%;"></td></tr>
-                                <tr><td>Cooling Bin</td><td><input type="time" id="coolingbin-on" style="width:100%;"></td><td><input type="time" id="coolingbin-off" style="width:100%;"></td></tr>
+                                <tr><td>Silo 08</td><td><input type="time" id="silo08-on" style="width:100%;"></td><td><input type="time" id="silo08-off" style="width:100%;"></td><td><input type="number" id="silo08-meter" style="width:100%;" placeholder="Hrs"></td></tr>
+                                <tr><td>Silo 09</td><td><input type="time" id="silo09-on" style="width:100%;"></td><td><input type="time" id="silo09-off" style="width:100%;"></td><td><input type="number" id="silo09-meter" style="width:100%;" placeholder="Hrs"></td></tr>
+                                <tr><td>Silo 10</td><td><input type="time" id="silo10-on" style="width:100%;"></td><td><input type="time" id="silo10-off" style="width:100%;"></td><td><input type="number" id="silo10-meter" style="width:100%;" placeholder="Hrs"></td></tr>
+                                <tr><td>Silo 11</td><td><input type="time" id="silo11-on" style="width:100%;"></td><td><input type="time" id="silo11-off" style="width:100%;"></td><td><input type="number" id="silo11-meter" style="width:100%;" placeholder="Hrs"></td></tr>
+                                <tr><td>Silo 12</td><td><input type="time" id="silo12-on" style="width:100%;"></td><td><input type="time" id="silo12-off" style="width:100%;"></td><td><input type="number" id="silo12-meter" style="width:100%;" placeholder="Hrs"></td></tr>
+                                <tr><td>Silo 13</td><td><input type="time" id="silo13-on" style="width:100%;"></td><td><input type="time" id="silo13-off" style="width:100%;"></td><td><input type="number" id="silo13-meter" style="width:100%;" placeholder="Hrs"></td></tr>
+                                <tr><td>Silo 14</td><td><input type="time" id="silo14-on" style="width:100%;"></td><td><input type="time" id="silo14-off" style="width:100%;"></td><td><input type="number" id="silo14-meter" style="width:100%;" placeholder="Hrs"></td></tr>
+                                <tr><td>Silo 15</td><td><input type="time" id="silo15-on" style="width:100%;"></td><td><input type="time" id="silo15-off" style="width:100%;"></td><td><input type="number" id="silo15-meter" style="width:100%;" placeholder="Hrs"></td></tr>
+                                <tr><td>Silo 16</td><td><input type="time" id="silo16-on" style="width:100%;"></td><td><input type="time" id="silo16-off" style="width:100%;"></td><td><input type="number" id="silo16-meter" style="width:100%;" placeholder="Hrs"></td></tr>
+                                <tr><td>Wet Bin</td><td><input type="time" id="wetbin-on" style="width:100%;"></td><td><input type="time" id="wetbin-off" style="width:100%;"></td><td><input type="number" id="wetbin-meter" style="width:100%;" placeholder="Hrs"></td></tr>
+                                <tr><td>Cooling Bin</td><td><input type="time" id="coolingbin-on" style="width:100%;"></td><td><input type="time" id="coolingbin-off" style="width:100%;"></td><td><input type="number" id="coolingbin-meter" style="width:100%;" placeholder="Hrs"></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2684,12 +3045,12 @@ order by
 
     <!-- Silo Moisture Modal -->
     <div id="silo-moist-modal" class="modal-overlay">
-        <div class="modal-card" style="max-width:900px;width:95%;background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); color: #0f172a; border: 1px solid #cbd5e1; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
+        <div class="modal-card" style="max-width:100vw !important;width:100vw !important;height:100vh !important;margin:0 !important;border-radius:0 !important;background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); color: #0f172a; border: none; display: flex; flex-direction: column;">
             <div class="modal-header">
                 <h2 id="silo-moist-title">💧 Silo Moisture Report</h2>
                 <button id="silo-moist-close" class="modal-close-btn">&times;</button>
             </div>
-            <div class="modal-body" style="padding:1.5rem; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-body" style="padding:1.5rem; flex: 1; overflow-y: auto;">
                 <div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
                     <div class="form-group" style="width: 200px;">
                         <label>Date</label>
@@ -2712,10 +3073,6 @@ order by
                             <option value="M. Shoaib">M. Shoaib</option>
                         </select>
                     </div>
-                    <div class="form-group" style="width: 180px;">
-                        <label>💧 Control Room Moisture (%)</label>
-                        <input type="number" step="any" id="sm-ctrl-moisture" placeholder="e.g. 12.5" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;outline:none;background:var(--card-bg);color:var(--text-primary);" />
-                    </div>
                 </div>
                 
                 <table class="report-table" style="width:100%; border-collapse: collapse; margin-bottom: 1.5rem; text-align:center;">
@@ -2723,6 +3080,7 @@ order by
                         <tr>
                             <th>Silo No.</th>
                             <th>Material</th>
+                            <th>Control Room %</th>
                             <th>Lab Ungrind %</th>
                             <th>Lab Grind %</th>
                             <th>Remarks</th>
@@ -3105,6 +3463,7 @@ order by
     <script src="script.js?v=4"></script>
     <script src="shift_report_pdf.js?v=4"></script>
     <script src="less_excess_pdf.js?v=4"></script>
+    <script src="executive_dashboard.js?v=1"></script>
 
     <!-- Batching Scale inline script (avoids external file cache issues) -->
     <script>
@@ -3495,7 +3854,7 @@ order by
             const rEl = document.getElementById('batching-modal-remarks');
             
             if (dEl) dEl.value = record ? record.date : new Date().toISOString().split('T')[0];
-            if (offEl) offEl.value = record ? (record.officer || 'M. Zubair') : 'M. Zubair';
+            if (offEl) offEl.value = record ? (record.officer || window.getDefaultOfficer(true)) : window.getDefaultOfficer(true);
             if (rEl) rEl.value = record ? (record.remarks||'')  : '';
 
             if (record && record.operator) {

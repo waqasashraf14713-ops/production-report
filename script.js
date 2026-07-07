@@ -1,3 +1,38 @@
+window.getDefaultOfficer = function(includePrefix = true) {
+    const now = new Date();
+    const hour = now.getHours();
+    
+    let shift = '';
+    if (hour >= 6 && hour < 14) {
+        shift = 'Morning';
+    } else if (hour >= 14 && hour < 22) {
+        shift = 'Evening';
+    } else {
+        shift = 'Night';
+    }
+    
+    if (shift === 'Morning') {
+        return includePrefix ? 'M. Zubair' : 'Zubair';
+    }
+    
+    // Rotation starting week of July 6, 2026 (Monday)
+    // Logical day starts at 6:00 AM
+    const logicalDate = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    const epoch = new Date('2026-07-06T00:00:00');
+    // Compute diff ignoring time within the day to avoid timezone weirdness
+    const diffTime = logicalDate.getTime() - epoch.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const currentWeek = Math.floor(diffDays / 7);
+    
+    // Even week (0, 2...) -> Evening: Tahir, Night: Shoaib
+    // Odd week (1, 3...) -> Evening: Shoaib, Night: Tahir
+    let eveningOfficer = (currentWeek % 2 === 0) ? 'Tahir' : 'Shoaib';
+    let nightOfficer = (currentWeek % 2 === 0) ? 'Shoaib' : 'Tahir';
+    
+    let officer = shift === 'Evening' ? eveningOfficer : nightOfficer;
+    return includePrefix ? ('M. ' + officer) : officer;
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     try {
     // ─── Date / Time ───────────────────────────────────────────────────────────
@@ -29,12 +64,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewDryerRecords = document.getElementById('view-dryer-records');
     const navSiloPerforma = document.getElementById('nav-silo-performa');
     const viewSiloPerforma = document.getElementById('view-silo-performa');
+    const navExecutiveDashboard = document.getElementById('nav-executive-dashboard');
+    const viewExecutiveDashboard = document.getElementById('view-executive-dashboard');
 
     const switchView = (activeNav, activeView) => {
-        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navFiveS, navShiftReport, navBatchingAudit, navBatchingScale, navPelletEfficiency, navDryerRecords, navSiloPerforma].forEach(nav => {
+        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navFiveS, navShiftReport, navBatchingAudit, navBatchingScale, navPelletEfficiency, navDryerRecords, navSiloPerforma, navExecutiveDashboard].forEach(nav => {
             if (nav) nav.classList.remove('active');
         });
-        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewFiveS, viewShiftReport, viewBatchingAudit, viewBatchingScale, viewPelletEfficiency, viewDryerRecords, viewSiloPerforma].forEach(view => {
+        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewFiveS, viewShiftReport, viewBatchingAudit, viewBatchingScale, viewPelletEfficiency, viewDryerRecords, viewSiloPerforma, viewExecutiveDashboard].forEach(view => {
             if (view) view.style.display = 'none';
         });
 
@@ -55,6 +92,14 @@ document.addEventListener('DOMContentLoaded', () => {
         navDashboard.addEventListener('click', (e) => {
             e.preventDefault();
             switchView(navDashboard, viewDashboard);
+        });
+    }
+
+    if (navExecutiveDashboard) {
+        navExecutiveDashboard.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(navExecutiveDashboard, viewExecutiveDashboard);
+            if (window.updateExecutiveDashboard) window.updateExecutiveDashboard();
         });
     }
 
@@ -177,6 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const LS_DAILY_CHECKLISTS = 'fmpr_dailyChecklists';
     const LS_SHIFT_REPORTS    = 'fmpr_shiftReports';
     const LS_BATCHING_AUDITS  = 'fmpr_batchingAudits';
+    const LS_CLEANING_SCHEDULES = 'fmpr_cleaningSchedules';
     const LS_SB_URL      = 'fmpr_supabaseUrl';
     const LS_SB_KEY      = 'fmpr_supabaseKey';
     const LS_SB_DISABLED = 'fmpr_supabaseDisabled';
@@ -556,6 +602,38 @@ document.addEventListener('DOMContentLoaded', () => {
         is_locked: log.locked === true
     });
 
+    const mapCleaningScheduleFromDb = (dbRow) => ({
+        id: dbRow.id,
+        area: dbRow.area,
+        year: dbRow.year,
+        month: dbRow.month,
+        week: dbRow.week,
+        date: dbRow.schedule_date,
+        mirrors: dbRow.mirrors,
+        walls: dbRow.walls,
+        roof: dbRow.roof,
+        electricalPanel: dbRow.electrical_panel,
+        areaIncharge: dbRow.area_incharge || '',
+        siteIncharge: dbRow.site_incharge || '',
+        updatedAt: dbRow.updated_at
+    });
+
+    const mapCleaningScheduleToDb = (log) => ({
+        id: log.id,
+        area: log.area,
+        year: log.year,
+        month: log.month,
+        week: log.week,
+        schedule_date: log.date,
+        mirrors: log.mirrors,
+        walls: log.walls,
+        roof: log.roof,
+        electrical_panel: log.electricalPanel,
+        area_incharge: log.areaIncharge || '',
+        site_incharge: log.siteIncharge || '',
+        updated_at: log.updatedAt
+    });
+
     const mapDailyChecklistFromDb = (dbRow) => ({
         id: dbRow.id,
         date: dbRow.checklist_date,
@@ -911,6 +989,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 localStorage.setItem(LS_BATCHING_AUDITS, JSON.stringify(batchingAudits));
+
+                // Fetch Cleaning Schedules
+                const { data: dbCs, error: csErr } = await sbClient.from('cleaning_schedules').select('*').order('id', { ascending: true });
+                if (csErr) throw csErr;
+                if (dbCs && dbCs.length > 0) {
+                    window.cleaningSchedules = dbCs.map(mapCleaningScheduleFromDb);
+                } else {
+                    window.cleaningSchedules = JSON.parse(localStorage.getItem(LS_CLEANING_SCHEDULES)) || [];
+                    if (window.cleaningSchedules.length > 0) {
+                        await sbClient.from('cleaning_schedules').insert(window.cleaningSchedules.map(mapCleaningScheduleToDb));
+                    }
+                }
+                localStorage.setItem(LS_CLEANING_SCHEDULES, JSON.stringify(window.cleaningSchedules));
             } catch (err) {
                 console.error('Supabase fetch failed, fallback to local storage:', err);
                 loadFromLocalStorage();
@@ -953,6 +1044,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dailyChecklists = safeParse(LS_DAILY_CHECKLISTS, []);
         shiftReports = safeParse(LS_SHIFT_REPORTS, []);
         batchingAudits = safeParse(LS_BATCHING_AUDITS, []);
+        window.cleaningSchedules = safeParse(LS_CLEANING_SCHEDULES, []);
         enforceFixedCapacities();
     };
 
@@ -997,6 +1089,21 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error('Supabase save failed for 5S logs:', err);
                 alert('Supabase Save Error (5S Logs): ' + (err.message || err.details || JSON.stringify(err)));
+            }
+        }
+    };
+
+    const saveCleaningSchedules = async () => {
+        localStorage.setItem(LS_CLEANING_SCHEDULES, JSON.stringify(window.cleaningSchedules));
+        if (isSbConnected && sbClient) {
+            try {
+                const { error } = await sbClient
+                    .from('cleaning_schedules')
+                    .upsert(window.cleaningSchedules.map(mapCleaningScheduleToDb));
+                if (error) throw error;
+            } catch (err) {
+                console.error('Supabase save failed for cleaning schedules:', err);
+                alert('Supabase Save Error (Cleaning Schedules): ' + (err.message || err.details || JSON.stringify(err)));
             }
         }
     };
@@ -1065,6 +1172,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { error: baErr } = await sbClient.from('batching_audits').delete().gt('id', 0);
                 if (baErr) throw baErr;
 
+                // Delete cleaning schedules
+                const { error: csErr } = await sbClient.from('cleaning_schedules').delete().gt('id', 0);
+                if (csErr) throw csErr;
+
                 availableMaterials = [];
                 ensureDefaultMaterials();
                 silosData = generateSiloData(21);
@@ -1072,6 +1183,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 dailyChecklists = [];
                 shiftReports = [];
                 batchingAudits = [];
+                window.cleaningSchedules = [];
                 // This will trigger re-seeding inside loadAllData
                 await loadAllData();
                 renderSilos();
@@ -1087,6 +1199,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem(LS_DAILY_CHECKLISTS);
             localStorage.removeItem(LS_SHIFT_REPORTS);
             localStorage.removeItem(LS_BATCHING_AUDITS);
+            localStorage.removeItem(LS_CLEANING_SCHEDULES);
             localStorage.removeItem('fm_pellet_efficiency');
             availableMaterials = [];
             ensureDefaultMaterials();
@@ -1145,7 +1258,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (lastLog.shift === 'C') currentShift = 'A';
         }
         
-        let currentOfficer = 'Zubair';
+        let currentOfficer = window.getDefaultOfficer(false);
         for (let i = lessExcessLogs.length - 1; i >= 0; i--) {
             if (lessExcessLogs[i].shift === currentShift) {
                 currentOfficer = lessExcessLogs[i].officerName;
@@ -1782,10 +1895,11 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `
                 <td><strong><span class="editable-value" id="tbl-name-${silo.id}" title="Click to edit">${silo.name}</span></strong></td>
                 <td>
-                    <span class="status-indicator status-${silo.status.toLowerCase()} status-toggle" id="tbl-status-${silo.id}" title="Click to toggle status">
-                        <span class="status-dot"></span>
-                        ${silo.status}
-                    </span>
+                    <select class="status-select" data-id="${silo.id}"
+                        style="background:rgba(0,0,0,0.3);color:var(--text-primary);border:1px solid var(--card-border);
+                               padding:0.2rem 0.5rem;border-radius:0.25rem;font-family:inherit;font-size:0.85rem;outline:none;">
+                        ${['Empty','Filling','Discharging','Filling & Discharging','Active','Running','Stopped','Aeration','Recirculation','Under Fumigation','Maintenance'].map(s => `<option value="${s}" ${s===silo.status?'selected':''} style="background:var(--bg-color);">${s}</option>`).join('')}
+                    </select>
                 </td>
                 <td>
                     <select class="material-select" data-id="${silo.id}"
@@ -1858,12 +1972,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // Toggles
-            document.getElementById(`tbl-status-${silo.id}`).addEventListener('click', () => {
-                silo.status = silo.status === 'Running' ? 'Stopped' : 'Running';
-                if (silo.status === 'Stopped') silo.fanStatus = 'Off';
-                saveData(silo);
-                renderSilos();
-            });
+            const statusSel = tr.querySelector('.status-select');
+            if (statusSel) {
+                statusSel.addEventListener('change', (e) => {
+                    silo.status = e.target.value;
+                    if (silo.status === 'Stopped') silo.fanStatus = 'Off';
+                    saveData(silo);
+                    renderSilos();
+                });
+            }
 
             document.getElementById(`tbl-fan-${silo.id}`).addEventListener('click', () => {
                 silo.fanStatus = silo.fanStatus === 'On' ? 'Off' : 'On';
@@ -2344,30 +2461,39 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="silo-particle" style="left:75%;animation-delay:0.4s;"></span>
                             <span class="silo-particle" style="left:85%;animation-delay:2s;"></span>
                         </div>
-                        <!-- Filling Animation Elements -->
+                        <!-- Filling Pipe stays outside -->
                         <div class="silo-filling-pipe"></div>
-                        <div class="silo-grain-stream-wrapper" style="position: absolute; top: 35px; left: 0; width: 100%; height: calc(15px + 1.5px * ${100 - silo.fillLevel}); overflow: hidden; z-index: 15; pointer-events: none;">
-                            <div class="silo-grain-stream" style="top: 0; height: 100%;"></div>
-                            ${isFillingActive ? `
-                            <span class="silo-falling-grain" style="left:46%;width:4px;height:4px;animation:grainFall1 1.2s ease-in infinite 0s;"></span>
-                            <span class="silo-falling-grain" style="left:52%;width:3px;height:3px;animation:grainFall2 1.0s ease-in infinite 0.2s;"></span>
-                            <span class="silo-falling-grain" style="left:48%;width:3.5px;height:3.5px;animation:grainFall3 1.4s ease-in infinite 0.5s;"></span>
-                            <span class="silo-falling-grain" style="left:54%;width:3px;height:3px;animation:grainFall4 1.1s ease-in infinite 0.7s;"></span>
-                            <span class="silo-falling-grain" style="left:50%;width:4px;height:4px;animation:grainFall5 1.3s ease-in infinite 0.3s;"></span>
-                            <span class="silo-falling-grain" style="left:44%;width:3px;height:3px;animation:grainFall6 1.5s ease-in infinite 0.9s;"></span>
-                            <span class="silo-falling-grain" style="left:56%;width:2.5px;height:2.5px;animation:grainFall1 1.6s ease-in infinite 1.1s;"></span>
-                            <span class="silo-falling-grain" style="left:42%;width:3.5px;height:3.5px;animation:grainFall3 1.2s ease-in infinite 1.3s;"></span>
-                            ` : ''}
-                        </div>
-                        <div class="silo-grain-splash" style="bottom:${silo.fillLevel}%;">
-                            <span class="splash-particle" style="left:50%;top:50%;animation:splashLeft 0.8s ease-out infinite 0s;"></span>
-                            <span class="splash-particle" style="left:50%;top:50%;animation:splashRight 0.8s ease-out infinite 0.15s;"></span>
-                            <span class="splash-particle" style="left:50%;top:50%;animation:splashUp 0.7s ease-out infinite 0.3s;"></span>
-                            <span class="splash-particle" style="left:45%;top:50%;animation:splashLeftSmall 0.9s ease-out infinite 0.5s;"></span>
-                            <span class="splash-particle" style="left:55%;top:50%;animation:splashRightSmall 0.85s ease-out infinite 0.4s;"></span>
-                        </div>
-                        <div class="silo-filling-dust" style="bottom:${Math.min(silo.fillLevel + 5, 95)}%;"></div>
+                        
                         <div class="glass-silo-body">
+                            <!-- Filling Animation Elements Moved Inside so they are contained -->
+                            <div class="silo-grain-stream-wrapper" style="position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - ${silo.fillLevel}%); overflow: hidden; z-index: 15; pointer-events: none;">
+                                <!-- Removed continuous stream to show only individual maize grains -->
+                                ${isFillingActive ? `
+                                <span class="silo-falling-grain" style="left:46%;width:6px;height:8px;animation:grainFall1 1.2s ease-in infinite 0s;"></span>
+                                <span class="silo-falling-grain" style="left:52%;width:5px;height:7px;animation:grainFall2 1.0s ease-in infinite 0.1s;"></span>
+                                <span class="silo-falling-grain" style="left:48%;width:7px;height:9px;animation:grainFall3 1.4s ease-in infinite 0.3s;"></span>
+                                <span class="silo-falling-grain" style="left:54%;width:5px;height:7px;animation:grainFall4 1.1s ease-in infinite 0.4s;"></span>
+                                <span class="silo-falling-grain" style="left:50%;width:8px;height:10px;animation:grainFall5 1.3s ease-in infinite 0.2s;"></span>
+                                <span class="silo-falling-grain" style="left:44%;width:6px;height:8px;animation:grainFall6 1.5s ease-in infinite 0.5s;"></span>
+                                <span class="silo-falling-grain" style="left:56%;width:5px;height:6px;animation:grainFall1 1.6s ease-in infinite 0.6s;"></span>
+                                <span class="silo-falling-grain" style="left:42%;width:7px;height:9px;animation:grainFall3 1.2s ease-in infinite 0.7s;"></span>
+                                <span class="silo-falling-grain" style="left:47%;width:6px;height:8px;animation:grainFall2 1.1s ease-in infinite 0.8s;"></span>
+                                <span class="silo-falling-grain" style="left:53%;width:5px;height:7px;animation:grainFall5 1.3s ease-in infinite 0.9s;"></span>
+                                <span class="silo-falling-grain" style="left:45%;width:7px;height:9px;animation:grainFall4 1.0s ease-in infinite 1.0s;"></span>
+                                <span class="silo-falling-grain" style="left:51%;width:6px;height:8px;animation:grainFall6 1.4s ease-in infinite 1.1s;"></span>
+                                <span class="silo-falling-grain" style="left:49%;width:5px;height:7px;animation:grainFall1 1.2s ease-in infinite 1.2s;"></span>
+                                <span class="silo-falling-grain" style="left:55%;width:7px;height:9px;animation:grainFall3 1.5s ease-in infinite 1.3s;"></span>
+                                ` : ''}
+                            </div>
+                            <div class="silo-grain-splash" style="bottom:${silo.fillLevel}%; z-index:15;">
+                                <span class="splash-particle" style="left:50%;top:50%;animation:splashLeft 0.8s ease-out infinite 0s;"></span>
+                                <span class="splash-particle" style="left:50%;top:50%;animation:splashRight 0.8s ease-out infinite 0.15s;"></span>
+                                <span class="splash-particle" style="left:50%;top:50%;animation:splashUp 0.7s ease-out infinite 0.3s;"></span>
+                                <span class="splash-particle" style="left:45%;top:50%;animation:splashLeftSmall 0.9s ease-out infinite 0.5s;"></span>
+                                <span class="splash-particle" style="left:55%;top:50%;animation:splashRightSmall 0.85s ease-out infinite 0.4s;"></span>
+                            </div>
+                            <div class="silo-filling-dust" style="bottom:${Math.min(silo.fillLevel + 5, 95)}%; z-index:14;"></div>
+                            
                             <div class="glass-silo-maize" style="height: ${silo.fillLevel}%; ${silo.fillLevel == 0 ? 'display: none;' : ''}"></div>
                             <div class="glass-silo-reflection"></div>
                             ${silo.status === 'Under Fumigation' ? `
@@ -2408,10 +2534,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span>0</span>
                             </div>
                             <div style="width:8px; height:120px; background:rgba(255,255,255,0.15); border-radius:4px; border:1px solid rgba(255,255,255,0.2); position:relative; overflow:hidden;">
-                                <div style="height:${silo.fillLevel}%; width:100%; position:absolute; bottom:0; left:0; background:linear-gradient(to top, #06b6d4, #22d3ee); box-shadow:${silo.fillLevel == 0 ? 'none' : '0 0 8px rgba(34,211,238,0.6)'};"></div>
+                                <div style="height:${silo.fillLevel}%; width:100%; position:absolute; bottom:0; left:0; background:linear-gradient(to top, #f59e0b, #fcd34d); box-shadow:${silo.fillLevel == 0 ? 'none' : '0 0 8px rgba(245,158,11,0.6)'};"></div>
                             </div>
                         </div>
-                        <div style="position:absolute;top:10px;right:10px;z-index:10;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);padding:5px 12px;border-radius:20px;font-weight:700;font-size:0.75rem;color:#38bdf8;border:1px solid rgba(56,189,248,0.3);box-shadow:0 2px 10px rgba(0,0,0,0.3),0 0 15px rgba(56,189,248,0.1);letter-spacing:0.5px;">
+                        <div style="position:absolute;top:10px;right:10px;z-index:10;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);padding:5px 12px;border-radius:20px;font-weight:700;font-size:0.75rem;color:#fbbf24;border:1px solid rgba(251,191,36,0.3);box-shadow:0 2px 10px rgba(0,0,0,0.3),0 0 15px rgba(251,191,36,0.1);letter-spacing:0.5px;">
                             <span style="color:rgba(255,255,255,0.6);font-weight:500;">FILL</span> ${silo.fillLevel}%
                         </div>
                         <div style="position:absolute;top:10px;left:10px;z-index:10;background:${silo.fanStatus==='On'?'rgba(34,197,94,0.15)':'rgba(239,68,68,0.15)'};backdrop-filter:blur(8px);padding:5px 10px;border-radius:20px;font-weight:700;font-size:0.7rem;color:${silo.fanStatus==='On'?'#4ade80':'#f87171'};border:1px solid ${silo.fanStatus==='On'?'rgba(34,197,94,0.3)':'rgba(239,68,68,0.3)'};box-shadow:0 2px 8px rgba(0,0,0,0.3);">
@@ -2879,7 +3005,7 @@ document.addEventListener('DOMContentLoaded', () => {
             activeFiveSAuditId = null;
             if (dateInput) {
                 const today = new Date();
-                dateInput.value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+                dateInput.value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
             }
             if (auditorSelect) auditorSelect.selectedIndex = 0;
             if (remarksText) remarksText.value = '';
@@ -2998,7 +3124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const remarksText = document.getElementById('f5-audit-remarks');
 
         const date = (dateInput ? dateInput.value.trim() : '') || 'Today';
-        const auditor = auditorSelect ? auditorSelect.value : 'Zubair';
+        const auditor = auditorSelect ? auditorSelect.value : window.getDefaultOfficer(false);
         const remarks = remarksText ? remarksText.value.trim() : '';
 
         const scores = [];
@@ -3191,7 +3317,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('cleaning-log-modal').classList.add('show');
     };
 
-    window.saveCleaningLog = () => {
+    window.saveCleaningLog = async () => {
         const id = document.getElementById('cl-modal-id').value;
         const area = document.getElementById('cl-area-select').value;
         const year = document.getElementById('cl-year-select').value;
@@ -3221,15 +3347,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('cleaning-log-modal').classList.remove('show');
         window.renderCleaningSchedule();
-        if (typeof saveOfflineStorage === 'function') saveOfflineStorage();
+        await saveCleaningSchedules();
         if (typeof showToast === 'function') showToast('Cleaning Log saved!');
     };
 
-    window.deleteCleaningLog = (id) => {
+    window.deleteCleaningLog = async (id) => {
         if (!confirm('Are you sure you want to delete this cleaning log?')) return;
         window.cleaningSchedules = window.cleaningSchedules.filter(x => x.id != id);
         window.renderCleaningSchedule();
-        if (typeof saveOfflineStorage === 'function') saveOfflineStorage();
+        await saveCleaningSchedules();
+        if (isSbConnected && sbClient) {
+            try { await sbClient.from('cleaning_schedules').delete().eq('id', id); } catch (e) { /* ignore */ }
+        }
         if (typeof showToast === 'function') showToast('Cleaning Log deleted!');
     };
 
@@ -3982,7 +4111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         populateRmMaterialsDropdown();
         document.getElementById('rm-modal-date').value = c.date;
         document.getElementById('rm-modal-shift').value = c.shift;
-        document.getElementById('rm-modal-officer').value = c.officer || 'M. Zubair';
+        document.getElementById('rm-modal-officer').value = c.officer || window.getDefaultOfficer(true);
         
         const sel = document.getElementById('rm-modal-material');
         if (sel) {
@@ -4019,7 +4148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const today = new Date();
         document.getElementById('rm-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
         document.getElementById('rm-modal-shift').value = 'A';
-        document.getElementById('rm-modal-officer').value = 'M. Zubair';
+        document.getElementById('rm-modal-officer').value = window.getDefaultOfficer(true);
         const sel = document.getElementById('rm-modal-material');
         if (sel) sel.value = availableMaterials[0] || 'Winter Maize';
         document.getElementById('rm-modal-vehicle').value = '';
@@ -4110,18 +4239,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let activePerformaId = null;
 
     const performaItems = [
-        { cat: 'AUDITS', name: 'Batching Medicine Audit (Audit & Share In Whatsapp Group)', m:true, e:true, n:true },
+        { cat: 'AUDITS', name: 'Batching Medicine & Oil Audit (Audit & Share In Whatsapp Group)', m:true, e:true, n:true },
         { cat: 'AUDITS', name: 'Medicine Stock & Configuration/Batch Number Closing', m:true, e:false, n:false },
-        { cat: 'AUDITS', name: 'Daily Oil Audit', m:true, e:false, n:false },
         { cat: 'AUDITS', name: 'Daily Molasses checking by Batching Clerk', m:true, e:false, n:false },
         { cat: 'AUDITS', name: 'Premix Stock Audit', m:false, e:false, n:true },
         
-        { cat: 'PROCESS', name: 'Receiving Avg Checking', m:true, e:true, n:true },
         { cat: 'PROCESS', name: "Receiving Clerk's Shift Report", m:true, e:true, n:true },
         { cat: 'PROCESS', name: "Batching Clerk's working Sheet (Medicine Ticking Sheets)", m:true, e:true, n:true },
         { cat: 'PROCESS', name: "Batching Clerk's Shift Report", m:true, e:true, n:true },
         { cat: 'PROCESS', name: "Pellet Mill Operator's Shift Report", m:true, e:true, n:true },
-        { cat: 'PROCESS', name: 'Maize Moisture (after each 30 Batches)', m:true, e:true, n:true },
         { cat: 'PROCESS', name: 'Daily Packing Bardana Checking', m:true, e:true, n:true },
         { cat: 'PROCESS', name: 'On No Change, Bags less/Excess checking', m:true, e:true, n:true },
         { cat: 'PROCESS', name: 'Crumbler Powder checking Via Basement Worker', m:true, e:true, n:true },
@@ -4226,7 +4352,7 @@ document.addEventListener('DOMContentLoaded', () => {
         activePerformaId = null;
         const today = new Date();
         document.getElementById('performa-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
-        document.getElementById('performa-modal-sign').value = '';
+        document.getElementById('performa-modal-sign').value = window.getDefaultOfficer(true);
         document.getElementById('performa-modal-remarks').value = '';
         populatePerformaModalTable({});
         document.getElementById('performa-modal').classList.add('show');
@@ -4285,11 +4411,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const openSrNewModal = () => {
         activeSrId = null;
         const today = new Date();
-        const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' });
+        const d = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
         const set = (elId, val) => { const e = document.getElementById(elId); if (e) e.value = val || ''; };
         set('sr-modal-date', currentSrFilterDate || d);
         set('sr-modal-shift', 'A');
-        set('sr-modal-officer', 'Zubair');
+        set('sr-modal-officer', window.getDefaultOfficer(false));
         set('sr-modal-feed', '');
         set('sr-modal-batches', '');
         set('sr-modal-bags', '');
@@ -4602,6 +4728,27 @@ document.addEventListener('DOMContentLoaded', () => {
             camera.updateProjectionMatrix();
         });
     }
+
+    // ── Global Enter Key Navigation ───────────────────────────────────────────
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const target = e.target;
+            if (target.tagName === 'INPUT' || target.tagName === 'SELECT') {
+                e.preventDefault();
+                const focusable = Array.from(document.querySelectorAll('input:not([type="hidden"]):not([disabled]):not([readonly]), select:not([disabled]), textarea:not([disabled]):not([readonly])'))
+                    .filter(el => el.offsetParent !== null);
+                
+                const index = focusable.indexOf(target);
+                if (index > -1 && index + 1 < focusable.length) {
+                    focusable[index + 1].focus();
+                    if (typeof focusable[index + 1].select === 'function') {
+                        focusable[index + 1].select();
+                    }
+                }
+            }
+        }
+    });
+
 } catch (err) {
     if (window.showRuntimeError) {
         window.showRuntimeError('script.js', err);

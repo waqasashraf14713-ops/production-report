@@ -104,3 +104,21 @@ ALTER TABLE batching_scale_calibration DISABLE ROW LEVEL SECURITY;
 ALTER TABLE pellet_efficiency DISABLE ROW LEVEL SECURITY;
 ALTER TABLE dryer_side_report DISABLE ROW LEVEL SECURITY;
 ALTER TABLE silo_logs DISABLE ROW LEVEL SECURITY;
+
+CREATE TABLE cleaning_schedules (
+    id BIGINT PRIMARY KEY,
+    area VARCHAR(100),
+    year VARCHAR(10),
+    month VARCHAR(20),
+    week VARCHAR(20),
+    schedule_date DATE,
+    mirrors BOOLEAN,
+    walls BOOLEAN,
+    roof BOOLEAN,
+    electrical_panel BOOLEAN,
+    area_incharge VARCHAR(100),
+    site_incharge VARCHAR(100),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE cleaning_schedules DISABLE ROW LEVEL SECURITY;

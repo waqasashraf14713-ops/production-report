@@ -21,6 +21,7 @@ const pParams = [
 
 const inp = (id, w = '100%') => `<input type="text" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;">`;
 const num = (id, w = '100%') => `<input type="number" step="any" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;">`;
+const timeInp = (id, w = '100%') => `<input type="time" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;font-family:inherit;">`;
 const chk = (id) => `<input type="checkbox" id="${id}" style="transform:scale(1.2);cursor:pointer;">`;
 
 const offSel = (id) => `<select id="${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;background:var(--card-bg);color:var(--text-primary);"><option value="">Select Officer</option><option value="M. Zubair">M. Zubair</option><option value="M. Tahir">M. Tahir</option><option value="M. Shoaib">M. Shoaib</option></select>`;
@@ -61,9 +62,11 @@ const build5SUI = () => {
     if (recEl) recEl.innerHTML = rec;
 };
 
+const grinderSel = (id) => `<select id="${id}" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;background:var(--card-bg);color:var(--text-primary);"><option value="">Select Grinder</option><option value="A Hammer">A Hammer</option><option value="B Hammer">B Hammer</option><option value="106">106</option></select>`;
+
 const buildQCGrindingUI = () => {
     let qc = `<tr>
-        <td>${inp('pr-qc-time', '80px')}</td>
+        <td>${timeInp('pr-qc-time', '110px')}</td>
         <td>${num('pr-qc-moist')}</td>
         <td>${inp('pr-qc-micro')}</td>
         <td>${num('pr-qc-bag')}</td>
@@ -75,8 +78,8 @@ const buildQCGrindingUI = () => {
     let grd = '';
     for (let i = 0; i < 3; i++) {
         grd += `<tr>
-            <td>${inp(`pr-grd-grinder-${i}`, '80px')}</td>
-            <td>${inp(`pr-grd-time-${i}`, '80px')}</td>
+            <td>${grinderSel(`pr-grd-grinder-${i}`)}</td>
+            <td>${timeInp(`pr-grd-time-${i}`, '110px')}</td>
             <td>${inp(`pr-grd-mat-${i}`)}</td>
             <td>${num(`pr-grd-hz-${i}`)}</td>
             <td style="display:flex;gap:0.25rem;">${num(`pr-grd-amp-act-${i}`, '50%')} ${num(`pr-grd-amp-max-${i}`, '50%')}</td>
@@ -102,7 +105,7 @@ const buildPelletingUI = () => {
     for (let i = 0; i < 4; i++) {
         p += `<tr>
             <td>${pmSel(`pr-pel-mill-${i}`)}</td>
-            <td>${inp(`pr-pel-time-${i}`, '80px')}</td>
+            <td>${timeInp(`pr-pel-time-${i}`, '110px')}</td>
             <td>${inp(`pr-pel-feed-${i}`, '80px')}</td>
             <td>${num(`pr-pel-hz-${i}`, '70px')}</td>
             <td style="display:flex;gap:0.25rem;min-width:110px;">${num(`pr-pel-amp-act-${i}`, '50%')} ${num(`pr-pel-amp-max-${i}`, '50%')}</td>
@@ -144,7 +147,7 @@ const clearPlantReportForm = () => {
     document.getElementById('pr-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
     document.getElementById('pr-shift-select').value = 'Morning';
     updateShiftTimes();
-    document.querySelectorAll('#plant-report-modal input[type="text"], #plant-report-modal input[type="number"], #plant-report-modal select').forEach(el => {
+    document.querySelectorAll('#plant-report-modal input[type="text"], #plant-report-modal input[type="number"], #plant-report-modal input[type="time"], #plant-report-modal select').forEach(el => {
         if(el.id !== 'pr-shift-select' && el.id !== 'pr-date') el.value = '';
     });
     document.querySelectorAll('#plant-report-modal input[type="checkbox"]').forEach(el => el.checked = false);

@@ -66,30 +66,6 @@
             </div>
         `;
 
-        // 0. Main Shift Reports
-        html += `<div class="pdf-section"><h3>Production Officer Shift Reports</h3>`;
-        if (shiftReportsData.length > 0) {
-            html += `<table class="pdf-table"><thead><tr>
-                <th>Shift</th><th>Officer</th><th>Batches</th><th>Bags</th><th>Feed Produced</th><th>RM Used</th><th>Machine Issues</th><th>Quality Remarks</th><th>General Remarks</th>
-            </tr></thead><tbody>`;
-            shiftReportsData.forEach(r => {
-                html += `<tr>
-                    <td><strong>${r.shift || '-'}</strong></td>
-                    <td>${r.officerName || '-'}</td>
-                    <td>${r.batches || '0'}</td>
-                    <td>${(r.productionBags || 0).toLocaleString()}</td>
-                    <td>${r.feedProduced || '-'}</td>
-                    <td>${r.rawMaterialUsed || '-'}</td>
-                    <td>${r.machineIssues || '-'}</td>
-                    <td>${r.qualityRemarks || '-'}</td>
-                    <td>${r.generalRemarks || '-'}</td>
-                </tr>`;
-            });
-            html += `</tbody></table>`;
-        } else {
-            html += `<p style="font-style:italic;color:#666;">No main shift reports for this date.</p>`;
-        }
-        html += `</div>`;
 
         // 1. Raw Material
         html += `<div class="pdf-section"><h3>1. Raw Material Checks (Combined)</h3>`;
@@ -401,7 +377,7 @@
         html += `<div class="pdf-section"><h3>6. Silo Moisture (Combined)</h3>`;
         if (siloMoistData.length > 0 && siloMoistData.some(r => r.rows && r.rows.length > 0)) {
             html += `<table class="pdf-table"><thead><tr>
-                <th>Shift</th><th>Officer</th><th>Silo No</th><th>Material</th><th>Lab Ungrind %</th><th>Lab Grind %</th><th>Remarks</th>
+                <th>Shift</th><th>Officer</th><th>Silo No</th><th>Material</th><th>Control Room %</th><th>Lab Ungrind %</th><th>Lab Grind %</th><th>Remarks</th>
             </tr></thead><tbody>`;
             
             let sum = 0, count = 0;
@@ -418,11 +394,12 @@
                         <td>${r.officerName || '-'}</td>
                         <td>${row.silo || '-'}</td>
                         <td>${row.material || '-'}</td>
+                        <td>${row.ctrlMoisture ? row.ctrlMoisture + '%' : '-'}</td>
                         <td>${valUngrind}</td>
                         <td>${valGrind}</td>
                         <td>${row.remarks || '-'}</td>
                     </tr>`;
-                    const m = parseFloat(valUngrind);
+                    const m = parseFloat(row.ctrlMoisture);
                     if (!isNaN(m)) { sum += m; count++; }
                 });
             });
@@ -454,27 +431,6 @@
                     html += `Formula Moisture: Not Entered<br>`;
                 }
                 html += `</div>`;
-            }
-
-            // Control Room moisture per shift
-            const ctrlRows = siloMoistData.filter(r => r.ctrlMoisture);
-            if (ctrlRows.length > 0) {
-                html += `<div style="margin-top:10px; padding:10px; border:1px solid #000; background:#eef6ff;">
-                    <strong>Control Room Moisture Results:</strong><br>
-                    <table style="width:100%; border-collapse:collapse; margin-top:6px; font-size:0.85em;">
-                        <thead><tr style="background:#dbeafe;">
-                            <th style="border:1px solid #999; padding:4px;">Shift</th>
-                            <th style="border:1px solid #999; padding:4px;">Officer</th>
-                            <th style="border:1px solid #999; padding:4px;">Control Room Moisture (%)</th>
-                        </tr></thead><tbody>`;
-                ctrlRows.forEach(r => {
-                    html += `<tr>
-                        <td style="border:1px solid #999; padding:4px; text-align:center;">${r.shift || '-'}</td>
-                        <td style="border:1px solid #999; padding:4px; text-align:center;">${r.officerName || '-'}</td>
-                        <td style="border:1px solid #999; padding:4px; text-align:center;">${r.ctrlMoisture ? r.ctrlMoisture + '%' : '-'}</td>
-                    </tr>`;
-                });
-                html += `</tbody></table></div>`;
             }
 
         } else {
@@ -611,20 +567,20 @@
                             <td style="vertical-align:top; width:50%;">
                                 <h4>Silo Status</h4>
                                 <table class="pdf-table" style="width:100%;">
-                                    <thead><tr><th>Silo</th><th>On Time</th><th>Off Time</th></tr></thead>
+                                    <thead><tr><th>Silo</th><th>On Time</th><th>Off Time</th><th>Meter (Hrs)</th></tr></thead>
                                     <tbody>
                                         ${r.silo_status ? `
-                                            <tr><td>Silo 08</td><td>${r.silo_status.silo08 ? r.silo_status.silo08.onTime : ''}</td><td>${r.silo_status.silo08 ? r.silo_status.silo08.offTime : ''}</td></tr>
-                                            <tr><td>Silo 09</td><td>${r.silo_status.silo09 ? r.silo_status.silo09.onTime : ''}</td><td>${r.silo_status.silo09 ? r.silo_status.silo09.offTime : ''}</td></tr>
-                                            <tr><td>Silo 10</td><td>${r.silo_status.silo10 ? r.silo_status.silo10.onTime : ''}</td><td>${r.silo_status.silo10 ? r.silo_status.silo10.offTime : ''}</td></tr>
-                                            <tr><td>Silo 11</td><td>${r.silo_status.silo11 ? r.silo_status.silo11.onTime : ''}</td><td>${r.silo_status.silo11 ? r.silo_status.silo11.offTime : ''}</td></tr>
-                                            <tr><td>Silo 12</td><td>${r.silo_status.silo12 ? r.silo_status.silo12.onTime : ''}</td><td>${r.silo_status.silo12 ? r.silo_status.silo12.offTime : ''}</td></tr>
-                                            <tr><td>Silo 13</td><td>${r.silo_status.silo13 ? r.silo_status.silo13.onTime : ''}</td><td>${r.silo_status.silo13 ? r.silo_status.silo13.offTime : ''}</td></tr>
-                                            <tr><td>Silo 14</td><td>${r.silo_status.silo14 ? r.silo_status.silo14.onTime : ''}</td><td>${r.silo_status.silo14 ? r.silo_status.silo14.offTime : ''}</td></tr>
-                                            <tr><td>Silo 15</td><td>${r.silo_status.silo15 ? r.silo_status.silo15.onTime : ''}</td><td>${r.silo_status.silo15 ? r.silo_status.silo15.offTime : ''}</td></tr>
-                                            <tr><td>Silo 16</td><td>${r.silo_status.silo16 ? r.silo_status.silo16.onTime : ''}</td><td>${r.silo_status.silo16 ? r.silo_status.silo16.offTime : ''}</td></tr>
-                                            <tr><td>Wet Bin</td><td>${r.silo_status.wetBin ? r.silo_status.wetBin.onTime : ''}</td><td>${r.silo_status.wetBin ? r.silo_status.wetBin.offTime : ''}</td></tr>
-                                            <tr><td>Cooling Bin</td><td>${r.silo_status.coolingBin ? r.silo_status.coolingBin.onTime : ''}</td><td>${r.silo_status.coolingBin ? r.silo_status.coolingBin.offTime : ''}</td></tr>
+                                            <tr><td>Silo 08</td><td>${r.silo_status.silo08 ? r.silo_status.silo08.onTime : ''}</td><td>${r.silo_status.silo08 ? r.silo_status.silo08.offTime : ''}</td><td>${r.silo_status.silo08 ? r.silo_status.silo08.meter : ''}</td></tr>
+                                            <tr><td>Silo 09</td><td>${r.silo_status.silo09 ? r.silo_status.silo09.onTime : ''}</td><td>${r.silo_status.silo09 ? r.silo_status.silo09.offTime : ''}</td><td>${r.silo_status.silo09 ? r.silo_status.silo09.meter : ''}</td></tr>
+                                            <tr><td>Silo 10</td><td>${r.silo_status.silo10 ? r.silo_status.silo10.onTime : ''}</td><td>${r.silo_status.silo10 ? r.silo_status.silo10.offTime : ''}</td><td>${r.silo_status.silo10 ? r.silo_status.silo10.meter : ''}</td></tr>
+                                            <tr><td>Silo 11</td><td>${r.silo_status.silo11 ? r.silo_status.silo11.onTime : ''}</td><td>${r.silo_status.silo11 ? r.silo_status.silo11.offTime : ''}</td><td>${r.silo_status.silo11 ? r.silo_status.silo11.meter : ''}</td></tr>
+                                            <tr><td>Silo 12</td><td>${r.silo_status.silo12 ? r.silo_status.silo12.onTime : ''}</td><td>${r.silo_status.silo12 ? r.silo_status.silo12.offTime : ''}</td><td>${r.silo_status.silo12 ? r.silo_status.silo12.meter : ''}</td></tr>
+                                            <tr><td>Silo 13</td><td>${r.silo_status.silo13 ? r.silo_status.silo13.onTime : ''}</td><td>${r.silo_status.silo13 ? r.silo_status.silo13.offTime : ''}</td><td>${r.silo_status.silo13 ? r.silo_status.silo13.meter : ''}</td></tr>
+                                            <tr><td>Silo 14</td><td>${r.silo_status.silo14 ? r.silo_status.silo14.onTime : ''}</td><td>${r.silo_status.silo14 ? r.silo_status.silo14.offTime : ''}</td><td>${r.silo_status.silo14 ? r.silo_status.silo14.meter : ''}</td></tr>
+                                            <tr><td>Silo 15</td><td>${r.silo_status.silo15 ? r.silo_status.silo15.onTime : ''}</td><td>${r.silo_status.silo15 ? r.silo_status.silo15.offTime : ''}</td><td>${r.silo_status.silo15 ? r.silo_status.silo15.meter : ''}</td></tr>
+                                            <tr><td>Silo 16</td><td>${r.silo_status.silo16 ? r.silo_status.silo16.onTime : ''}</td><td>${r.silo_status.silo16 ? r.silo_status.silo16.offTime : ''}</td><td>${r.silo_status.silo16 ? r.silo_status.silo16.meter : ''}</td></tr>
+                                            <tr><td>Wet Bin</td><td>${r.silo_status.wetBin ? r.silo_status.wetBin.onTime : ''}</td><td>${r.silo_status.wetBin ? r.silo_status.wetBin.offTime : ''}</td><td>${r.silo_status.wetBin ? r.silo_status.wetBin.meter : ''}</td></tr>
+                                            <tr><td>Cooling Bin</td><td>${r.silo_status.coolingBin ? r.silo_status.coolingBin.onTime : ''}</td><td>${r.silo_status.coolingBin ? r.silo_status.coolingBin.offTime : ''}</td><td>${r.silo_status.coolingBin ? r.silo_status.coolingBin.meter : ''}</td></tr>
                                         ` : ''}
                                     </tbody>
                                 </table>
@@ -634,6 +590,8 @@
 
                     <p style="font-size:0.8rem; margin:5px 0;"><strong>Faults & Causes:</strong> ${r.faults_and_causes || '-'}</p>
                     <p style="font-size:0.8rem; margin:5px 0;"><strong>General:</strong> ${r.general || '-'}</p>
+                    ${r.summary ? `<p style="font-size:0.8rem; margin:5px 0;"><strong>Summary:</strong> ${r.summary}</p>` : ''}
+                    ${r.supervisor_approval ? `<p style="font-size:0.85rem; margin:10px 0 5px 0; background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 6px 10px; border-radius: 4px; font-weight: bold; display: inline-block;">🟢 Approved by Supervisor: ${r.supervisor_approval}</p>` : ''}
                 </div>
                 `;
             });

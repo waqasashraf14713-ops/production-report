@@ -8,7 +8,7 @@ let dryerReportData = {
     materialDumping: [],
     materialDischarge: [],
     silosDischargeGates: [],
-    siloStatus: { silo08: {on:'', off:''}, silo09: {on:'', off:''}, silo10: {on:'', off:''}, silo11: {on:'', off:''}, silo12: {on:'', off:''}, silo13: {on:'', off:''}, silo14: {on:'', off:''}, silo15: {on:'', off:''}, silo16: {on:'', off:''}, wetBin: {on:'', off:''}, coolingBin: {on:'', off:''} },
+    siloStatus: { silo08: {on:'', off:'', meter:''}, silo09: {on:'', off:'', meter:''}, silo10: {on:'', off:'', meter:''}, silo11: {on:'', off:'', meter:''}, silo12: {on:'', off:'', meter:''}, silo13: {on:'', off:'', meter:''}, silo14: {on:'', off:'', meter:''}, silo15: {on:'', off:'', meter:''}, silo16: {on:'', off:'', meter:''}, wetBin: {on:'', off:'', meter:''}, coolingBin: {on:'', off:'', meter:''} },
     faultsAndCauses: '',
     cleaning: {},
     underProcessWork: '',
@@ -215,17 +215,17 @@ function gatherDryerReportData() {
     
     // Silo Status
     const siloStatus = {
-        silo08: { onTime: getVal('silo08-on'), offTime: getVal('silo08-off') },
-        silo09: { onTime: getVal('silo09-on'), offTime: getVal('silo09-off') },
-        silo10: { onTime: getVal('silo10-on'), offTime: getVal('silo10-off') },
-        silo11: { onTime: getVal('silo11-on'), offTime: getVal('silo11-off') },
-        silo12: { onTime: getVal('silo12-on'), offTime: getVal('silo12-off') },
-        silo13: { onTime: getVal('silo13-on'), offTime: getVal('silo13-off') },
-        silo14: { onTime: getVal('silo14-on'), offTime: getVal('silo14-off') },
-        silo15: { onTime: getVal('silo15-on'), offTime: getVal('silo15-off') },
-        silo16: { onTime: getVal('silo16-on'), offTime: getVal('silo16-off') },
-        wetBin: { onTime: getVal('wetbin-on'), offTime: getVal('wetbin-off') },
-        coolingBin: { onTime: getVal('coolingbin-on'), offTime: getVal('coolingbin-off') }
+        silo08: { onTime: getVal('silo08-on'), offTime: getVal('silo08-off'), meter: getVal('silo08-meter') },
+        silo09: { onTime: getVal('silo09-on'), offTime: getVal('silo09-off'), meter: getVal('silo09-meter') },
+        silo10: { onTime: getVal('silo10-on'), offTime: getVal('silo10-off'), meter: getVal('silo10-meter') },
+        silo11: { onTime: getVal('silo11-on'), offTime: getVal('silo11-off'), meter: getVal('silo11-meter') },
+        silo12: { onTime: getVal('silo12-on'), offTime: getVal('silo12-off'), meter: getVal('silo12-meter') },
+        silo13: { onTime: getVal('silo13-on'), offTime: getVal('silo13-off'), meter: getVal('silo13-meter') },
+        silo14: { onTime: getVal('silo14-on'), offTime: getVal('silo14-off'), meter: getVal('silo14-meter') },
+        silo15: { onTime: getVal('silo15-on'), offTime: getVal('silo15-off'), meter: getVal('silo15-meter') },
+        silo16: { onTime: getVal('silo16-on'), offTime: getVal('silo16-off'), meter: getVal('silo16-meter') },
+        wetBin: { onTime: getVal('wetbin-on'), offTime: getVal('wetbin-off'), meter: getVal('wetbin-meter') },
+        coolingBin: { onTime: getVal('coolingbin-on'), offTime: getVal('coolingbin-off'), meter: getVal('coolingbin-meter') }
     };
     
     const cleaning = {
@@ -364,12 +364,50 @@ function renderDryerReportsTable(reports) {
             <td>${r.faults_and_causes || '-'}</td>
             <td class="no-print">
                 <button class="btn btn-secondary" onclick="viewDryerRecord(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;">View</button>
-                <button class="btn btn-primary" onclick="printDryerRecordPdf(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;background:#8b5cf6;border-color:#8b5cf6;">📄 Print PDF</button>
+                ${r.supervisor_approval ? 
+                    `<span style="display:inline-flex; align-items:center; margin-left:5px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; padding:0.2rem 0.5rem; border-radius:4px; font-weight:bold; font-size:0.75rem;">🟢 Appr: ${r.supervisor_approval}</span>` 
+                    : 
+                    `<button class="btn btn-primary" onclick="approveDryerRecordFromTable(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;background:#10b981;border-color:#10b981;margin-left:5px;">✅ Approve</button>`
+                }
+                <button class="btn btn-primary" onclick="printDryerRecordPdf(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;background:#8b5cf6;border-color:#8b5cf6;margin-left:5px;">📄 Print PDF</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
 }
+
+window.approveDryerRecordFromTable = async function(idx) {
+    const record = window.allDryerReports[idx];
+    if (!record) return;
+    
+    if (record.supervisor_approval) {
+        alert("Already approved by " + record.supervisor_approval);
+        return;
+    }
+
+    const name = prompt("Enter Plant Supervisor Name for Approval:");
+    if (!name || name.trim() === '') return;
+
+    record.supervisor_approval = name.trim();
+
+    // Save to local storage
+    let localReports = JSON.parse(localStorage.getItem('dryer_side_reports') || '[]');
+    let localIdx = localReports.findIndex(r => r.id === record.id || (r.date === record.date && r.shift === record.shift));
+    if (localIdx > -1) {
+        localReports[localIdx].supervisor_approval = record.supervisor_approval;
+        localStorage.setItem('dryer_side_reports', JSON.stringify(localReports));
+    }
+
+    // Save to Supabase
+    if (window.sbClient) {
+        try {
+            await window.sbClient.from('dryer_side_reports').update({ supervisor_approval: record.supervisor_approval }).eq('id', record.id);
+        } catch(e) { console.error(e); }
+    }
+
+    if (typeof showToast === 'function') showToast('✓ Report Approved');
+    renderDryerReportsTable(window.allDryerReports);
+};
 
 function generateDryerReportHtml(record) {
     const styleHtml = `
@@ -399,16 +437,29 @@ function generateDryerReportHtml(record) {
 
     let siloStatusHtml = `
         <table class="pdf-table">
-            <thead><tr><th>Silo</th><th>On Time</th><th>Off Time</th></tr></thead>
+            <thead><tr><th>Silo</th><th>On Time</th><th>Off Time</th><th>Meter (Hrs)</th></tr></thead>
             <tbody>
     `;
     const silos = ['08','09','10','11','12','13','14','15','16','wetbin','coolingbin'];
     silos.forEach(s => {
         let label = s.startsWith('0') || s.startsWith('1') ? 'Silo ' + s : (s === 'wetbin' ? 'Wet Bin' : 'Cooling Bin');
-        let on = record.silo_status && record.silo_status[s + '_on'] ? record.silo_status[s + '_on'] : '-';
-        let off = record.silo_status && record.silo_status[s + '_off'] ? record.silo_status[s + '_off'] : '-';
-        if (on !== '-' || off !== '-') {
-            siloStatusHtml += `<tr><td>${label}</td><td>${on}</td><td>${off}</td></tr>`;
+        let key = s;
+        if (s !== 'wetbin' && s !== 'coolingbin') key = 'silo' + s;
+        if (s === 'wetbin') key = 'wetBin';
+        if (s === 'coolingbin') key = 'coolingBin';
+
+        let obj = record.silo_status ? record.silo_status[key] : null;
+        
+        let on = obj && obj.onTime ? obj.onTime : '-';
+        let off = obj && obj.offTime ? obj.offTime : '-';
+        let meter = obj && obj.meter ? obj.meter : '-';
+
+        // Fallback for old records if they were saved flat (just in case)
+        if (on === '-' && record.silo_status && record.silo_status[s + '_on']) on = record.silo_status[s + '_on'];
+        if (off === '-' && record.silo_status && record.silo_status[s + '_off']) off = record.silo_status[s + '_off'];
+
+        if (on !== '-' || off !== '-' || meter !== '-') {
+            siloStatusHtml += `<tr><td>${label}</td><td>${on}</td><td>${off}</td><td>${meter}</td></tr>`;
         }
     });
     siloStatusHtml += `</tbody></table>`;

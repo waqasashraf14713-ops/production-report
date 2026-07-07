@@ -338,6 +338,197 @@ try {
         </div>`;
     };
 
+    const buildSiloFumigationReportHTML = (log) => {
+        const fum = log.fumigationData || {};
+        const siloNo = log.siloNumber ? log.siloNumber.replace('Silo ', '') : '';
+        const date = log.date || '';
+
+        const renderTick = (val) => val ? '<span style="font-family:Arial,sans-serif;font-size:1.1rem;color:#16a34a;font-weight:bold;">✔</span>' : '<span style="font-family:Arial,sans-serif;font-size:0.9rem;color:#cbd5e1;">-</span>';
+        const renderCross = (val) => (!val) ? '<span style="font-family:Arial,sans-serif;font-size:1.1rem;color:#dc2626;font-weight:bold;">X</span>' : '<span style="font-family:Arial,sans-serif;font-size:0.9rem;color:#cbd5e1;">-</span>';
+
+        return `
+        <div style="font-family:'Arial',sans-serif;direction:ltr;padding:28px 32px;background:#fff;color:#000;max-width:820px;margin:0 auto;height:100%;display:flex;flex-direction:column;">
+            <div style="text-align:center;margin-bottom:20px;position:relative;">
+                <h1 style="font-size:1.6rem;font-weight:bold;margin:10px 0;letter-spacing:1px;display:inline-block;">Silo Fumigation Performa</h1>
+            </div>
+            <div style="display:flex;border:2px solid #000;margin-bottom:15px;font-weight:bold;font-size:1.1rem;">
+                <div style="width:50%;padding:8px 12px;border-right:2px solid #000;">Date: ${date}</div>
+                <div style="width:50%;padding:8px 12px;text-align:center;">Silo# ${siloNo}</div>
+            </div>
+
+            <table style="width:100%;border-collapse:collapse;margin-bottom:15px;border:2px solid #000;">
+                <thead>
+                    <tr style="background:#e2e8f0;font-weight:bold;">
+                        <th style="border:1px solid #000;padding:8px;width:8%;">Sr#</th>
+                        <th style="border:1px solid #000;padding:8px;width:52%;">Check Points</th>
+                        <th style="border:1px solid #000;padding:8px;width:20%;">YES=✓</th>
+                        <th style="border:1px solid #000;padding:8px;width:20%;">NO=X</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;font-weight:bold;">1</td>
+                        <td style="border:1px solid #000;padding:8px;">All Silo Discharge Gates are Seal.</td>
+                        <td style="border:1px solid #000;padding:0;text-align:center;" colspan="2">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.8rem;text-align:center;">
+                                <tr><td style="border:1px solid #000;padding:4px;">G1</td><td style="border:1px solid #000;padding:4px;">G2</td><td style="border:1px solid #000;padding:4px;">G3</td><td style="border:1px solid #000;padding:4px;">G4</td><td style="border:1px solid #000;padding:4px;">G5</td><td style="border:1px solid #000;padding:4px;">G6</td><td style="border:1px solid #000;padding:4px;">G7</td><td style="border:1px solid #000;padding:4px;">G8</td></tr>
+                                <tr>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.g1)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.g2)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.g3)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.g4)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.g5)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.g6)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.g7)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.g8)}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;font-weight:bold;">2</td>
+                        <td style="border:1px solid #000;padding:8px;">Silo's Enterance Windows are Seal.</td>
+                        <td style="border:1px solid #000;padding:0;text-align:center;" colspan="2">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.85rem;text-align:center;">
+                                <tr><td style="border:1px solid #000;padding:4px;">Upper Window</td><td style="border:1px solid #000;padding:4px;">Lower Window</td></tr>
+                                <tr><td style="border:1px solid #000;padding:4px;">${renderTick(fum.uw)}</td><td style="border:1px solid #000;padding:4px;">${renderTick(fum.lw)}</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;font-weight:bold;">3</td>
+                        <td style="border:1px solid #000;padding:8px;">Silo's Fan Air Ducts are Seal.</td>
+                        <td style="border:1px solid #000;padding:0;text-align:center;" colspan="2">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.85rem;text-align:center;">
+                                <tr><td style="border:1px solid #000;padding:4px;">Fan I</td><td style="border:1px solid #000;padding:4px;">Fan II</td></tr>
+                                <tr><td style="border:1px solid #000;padding:4px;">${renderTick(fum.fan1)}</td><td style="border:1px solid #000;padding:4px;">${renderTick(fum.fan2)}</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;font-weight:bold;">4</td>
+                        <td style="border:1px solid #000;padding:8px;">Air Discharge Ducts at Silo Top are Seal.</td>
+                        <td style="border:1px solid #000;padding:0;text-align:center;" colspan="2">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.8rem;text-align:center;">
+                                <tr><td style="border:1px solid #000;padding:4px;">D1</td><td style="border:1px solid #000;padding:4px;">D2</td><td style="border:1px solid #000;padding:4px;">D3</td><td style="border:1px solid #000;padding:4px;">D4</td><td style="border:1px solid #000;padding:4px;">D5</td><td style="border:1px solid #000;padding:4px;">D6</td><td style="border:1px solid #000;padding:4px;">D7</td><td style="border:1px solid #000;padding:4px;">D8</td></tr>
+                                <tr>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.d1)}</td><td style="border:1px solid #000;padding:4px;">${renderTick(fum.d2)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.d3)}</td><td style="border:1px solid #000;padding:4px;">${renderTick(fum.d4)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.d5)}</td><td style="border:1px solid #000;padding:4px;">${renderTick(fum.d6)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.d7)}</td><td style="border:1px solid #000;padding:4px;">${renderTick(fum.d8)}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;font-weight:bold;">5</td>
+                        <td style="border:1px solid #000;padding:8px;">Temperature Cable Inspection Windows are Seal.</td>
+                        <td style="border:1px solid #000;padding:0;text-align:center;" colspan="2">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.8rem;text-align:center;">
+                                <tr><td style="border:1px solid #000;padding:4px;">C1</td><td style="border:1px solid #000;padding:4px;">C2</td><td style="border:1px solid #000;padding:4px;">C3</td><td style="border:1px solid #000;padding:4px;">C4</td><td style="border:1px solid #000;padding:4px;">C5</td><td style="border:1px solid #000;padding:4px;">C6</td><td style="border:1px solid #000;padding:4px;">C7</td><td style="border:1px solid #000;padding:4px;">C8</td></tr>
+                                <tr>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.c1)}</td><td style="border:1px solid #000;padding:4px;">${renderTick(fum.c2)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.c3)}</td><td style="border:1px solid #000;padding:4px;">${renderTick(fum.c4)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.c5)}</td><td style="border:1px solid #000;padding:4px;">${renderTick(fum.c6)}</td>
+                                    <td style="border:1px solid #000;padding:4px;">${renderTick(fum.c7)}</td><td style="border:1px solid #000;padding:4px;">${renderTick(fum.c8)}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;font-weight:bold;">6</td>
+                        <td style="border:1px solid #000;padding:8px;">Silo Filling Chutes(C) & Sampling Windows(W) are Seal.</td>
+                        <td style="border:1px solid #000;padding:0;text-align:center;" colspan="2">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.75rem;text-align:center;">
+                                <tr>
+                                    <td style="border:1px solid #000;padding:2px;">17.2C</td><td style="border:1px solid #000;padding:2px;">17.2W</td><td style="border:1px solid #000;padding:2px;">S#1,3,4,6,7,5,7</td>
+                                    <td style="border:1px solid #000;padding:2px;">17.1C</td><td style="border:1px solid #000;padding:2px;">17.1W</td><td style="border:1px solid #000;padding:2px;">S#2,3,5,6,8</td>
+                                    <td style="border:1px solid #000;padding:2px;">17.3C</td><td style="border:1px solid #000;padding:2px;">17.W</td>
+                                </tr>
+                                <tr>
+                                    <td style="border:1px solid #000;padding:2px;">${renderTick(fum['172c'])}</td><td style="border:1px solid #000;padding:2px;">${renderTick(fum['172w'])}</td><td style="border:1px solid #000;padding:2px;">${renderTick(fum.s1)}</td>
+                                    <td style="border:1px solid #000;padding:2px;">${renderTick(fum['171c'])}</td><td style="border:1px solid #000;padding:2px;">${renderTick(fum['171w'])}</td><td style="border:1px solid #000;padding:2px;">${renderTick(fum.s2)}</td>
+                                    <td style="border:1px solid #000;padding:2px;">${renderTick(fum['173c'])}</td><td style="border:1px solid #000;padding:2px;">${renderTick(fum['17w'])}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;font-weight:bold;">7</td>
+                        <td style="border:1px solid #000;padding:8px;">Silo Top Main Hole is Seal.</td>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;">${renderTick(fum.mainhole)}</td>
+                        <td style="border:1px solid #000;padding:8px;text-align:center;">${renderCross(fum.mainhole)}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="display:flex;align-items:center;margin-bottom:15px;">
+                <div style="width:120px;font-size:0.9rem;text-align:center;">Phosphine<br>(PPM)</div>
+                <div style="flex:1;display:flex;justify-content:space-between;border-bottom:2px solid #000;padding-bottom:5px;">
+                    <div style="text-align:center;width:60px;border:1px solid #000;height:24px;line-height:24px;">${fum.ppm48 || ''}</div>
+                    <div style="text-align:center;width:60px;border:1px solid #000;height:24px;line-height:24px;">${fum.ppm72 || ''}</div>
+                    <div style="text-align:center;width:60px;border:1px solid #000;height:24px;line-height:24px;">${fum.ppm120 || ''}</div>
+                    <div style="text-align:center;width:60px;border:1px solid #000;height:24px;line-height:24px;">${fum.ppm168 || ''}</div>
+                    <div style="text-align:center;width:60px;border:1px solid #000;height:24px;line-height:24px;">${fum.ppm216 || ''}</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;margin-bottom:25px;font-size:0.9rem;">
+                <div style="width:120px;text-align:center;">Time Collapse<br>(Hr)</div>
+                <div style="flex:1;display:flex;justify-content:space-between;">
+                    <div style="text-align:center;width:60px;">48</div>
+                    <div style="text-align:center;width:60px;">72</div>
+                    <div style="text-align:center;width:60px;">120</div>
+                    <div style="text-align:center;width:60px;">168</div>
+                    <div style="text-align:center;width:60px;">216</div>
+                </div>
+            </div>
+
+            <table style="width:100%;border-collapse:collapse;border:2px solid #000;text-align:center;font-weight:bold;font-size:0.95rem;">
+                <thead>
+                    <tr style="background:#e2e8f0;">
+                        <th style="border:1px solid #000;padding:6px;">SiloStatus</th>
+                        <th style="border:1px solid #000;padding:6px;" colspan="2">FULL</th>
+                        <th style="border:1px solid #000;padding:6px;" colspan="2">EMPTY</th>
+                    </tr>
+                    <tr style="background:#e2e8f0;">
+                        <th style="border:1px solid #000;padding:6px;">Dosing Site</th>
+                        <th style="border:1px solid #000;padding:6px;">Stand. Qty</th>
+                        <th style="border:1px solid #000;padding:6px;">Actual Qty</th>
+                        <th style="border:1px solid #000;padding:6px;">Stand. Qty</th>
+                        <th style="border:1px solid #000;padding:6px;">Actual Qty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border:1px solid #000;padding:6px;">Fan I</td>
+                        <td style="border:1px solid #000;padding:6px;">2</td>
+                        <td style="border:1px solid #000;padding:6px;">${fum.qtyFull_fan1 || ''}</td>
+                        <td style="border:1px solid #000;padding:6px;vertical-align:middle;" rowspan="3">8</td>
+                        <td style="border:1px solid #000;padding:6px;">${fum.qtyEmpty_fan1 || ''}</td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #000;padding:6px;">Fan II</td>
+                        <td style="border:1px solid #000;padding:6px;">2</td>
+                        <td style="border:1px solid #000;padding:6px;">${fum.qtyFull_fan2 || ''}</td>
+                        <td style="border:1px solid #000;padding:6px;">${fum.qtyEmpty_fan2 || ''}</td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #000;padding:6px;">Silo Top</td>
+                        <td style="border:1px solid #000;padding:6px;">4</td>
+                        <td style="border:1px solid #000;padding:6px;">${fum.qtyFull_top || ''}</td>
+                        <td style="border:1px solid #000;padding:6px;">${fum.qtyEmpty_top || ''}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="display:flex;justify-content:space-between;margin-top:auto;padding-top:40px;font-size:1.1rem;font-weight:bold;text-align:center;">
+                <div style="width:30%;border-top:1.5px dashed #000;padding-top:8px;">Lab Inspector</div>
+                <div style="width:30%;border-top:1.5px dashed #000;padding-top:8px;">Plant Operator</div>
+                <div style="width:30%;border-top:1.5px dashed #000;padding-top:8px;">Production Officer</div>
+            </div>
+        </div>`;
+    };
+
     const buildSiloDischargeReportHTML = (log) => {
         const disInsp = log.dischargeInspection || {};
         const gates = log.gates || {};
@@ -494,7 +685,14 @@ try {
         const siloNo2 = log2.siloNumber ? log2.siloNumber.replace('Silo ', '') : '';
         const printWindow = window.open('', '_blank', 'width=920,height=1000');
         
-        const reportHTML = log2.operation === 'Discharging' ? buildSiloDischargeReportHTML(log2) : buildSiloReportHTML(log2);
+        let reportHTML = '';
+        if (log2.operation === 'Discharging') {
+            reportHTML = buildSiloDischargeReportHTML(log2);
+        } else if (log2.operation === 'Silo Fumigation') {
+            reportHTML = buildSiloFumigationReportHTML(log2);
+        } else {
+            reportHTML = buildSiloReportHTML(log2);
+        }
 
         printWindow.document.write(`
             <html><head>
@@ -513,6 +711,8 @@ try {
         `);
         printWindow.document.close();
     };
+
+
 
     // Full screen view of the report
     let currentlyViewingLogId = null;
@@ -545,7 +745,13 @@ try {
         const container = document.getElementById('silo-view-report-content');
         if (!container) return;
         
-        container.innerHTML = log.operation === 'Discharging' ? buildSiloDischargeReportHTML(log) : buildSiloReportHTML(log);
+        if (log.operation === 'Discharging') {
+            container.innerHTML = buildSiloDischargeReportHTML(log);
+        } else if (log.operation === 'Silo Fumigation') {
+            container.innerHTML = buildSiloFumigationReportHTML(log);
+        } else {
+            container.innerHTML = buildSiloReportHTML(log);
+        }
 
         document.getElementById('silo-history-modal').classList.remove('show');
         document.getElementById('silo-report-view-modal').classList.add('show');
@@ -562,7 +768,7 @@ try {
         let rows = '';
         [...logsList].reverse().forEach(log => {
             const hasInspection = log.inspection ? '✓ Yes' : '-';
-            const printBtn = (log.operation === 'Filling' || log.operation === 'Discharging') 
+            const printBtn = (log.operation === 'Filling' || log.operation === 'Discharging' || log.operation === 'Silo Fumigation')
                 ? `<button class="btn btn-primary" style="padding:0.2rem 0.4rem; font-size:0.75rem; background:#8b5cf6; border-color:#8b5cf6;" onclick="printSiloInspection(${log.id})">🖨️ Print</button>` 
                 : '';
             rows += `
@@ -623,6 +829,7 @@ try {
                 
                 const fillingsCount = logs.filter(l => l && l.siloNumber === siloName && l.operation === 'Filling').length;
                 const dischargeCount = logs.filter(l => l && l.siloNumber === siloName && l.operation === 'Discharging').length;
+                const fumigationCount = logs.filter(l => l && l.siloNumber === siloName && l.operation === 'Silo Fumigation').length;
 
                 const card = document.createElement('div');
                 card.style.cssText = `
@@ -650,6 +857,10 @@ try {
                             <span>📤 Discharge Performa</span>
                             <span style="background:#ef4444;color:#fff;font-size:0.7rem;padding:0.1rem 0.35rem;border-radius:10px;">${dischargeCount}</span>
                         </button>
+                        <button class="btn btn-secondary" onclick="window.openSiloHistory('Silo ${i}', 'Silo Fumigation')" style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.75rem;font-size:0.8rem;background:#fffbeb;border-color:#fde68a;color:#92400e;font-weight:700;">
+                            <span>💨 Silo Fumigation</span>
+                            <span style="background:#d97706;color:#fff;font-size:0.7rem;padding:0.1rem 0.35rem;border-radius:10px;">${fumigationCount}</span>
+                        </button>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -671,7 +882,7 @@ try {
 
         if (!modal || !titleEl || !tableContainer) return;
 
-        titleEl.textContent = `${siloNum} - ${operationType === 'Filling' ? 'Filling (Stock In)' : 'Discharge (Stock Out)'} Performa History`;
+        titleEl.textContent = `${siloNum} - ${operationType === 'Filling' ? 'Filling (Stock In)' : (operationType === 'Discharging' ? 'Discharge (Stock Out)' : operationType)} Performa History`;
         subtitleEl.textContent = `List of recorded entries for ${siloNum}`;
 
         renderHistoryTable();
@@ -771,7 +982,7 @@ try {
                         <td style="padding:0.5rem;">${log.operator || '-'}</td>  <!-- stores operator name -->
                         <td style="padding:0.5rem;font-weight:700;color:#4f46e5;">${hasInspection}</td>
                         <td style="padding:0.5rem;vertical-align:middle;">${approvalCell}</td>
-                        <td class="no-print" style="padding:0.5rem;display:flex;gap:0.2rem;">
+                        <td class="no-print" style="padding:0.5rem;display:flex;gap:0.2rem;flex-wrap:wrap;">
                             <button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;" onclick="window.editSiloLog(${log.id})">✏️ Edit</button>
                             ${viewBtn}
                             ${printBtn}
@@ -793,6 +1004,9 @@ try {
             `;
 
             [...filteredLogs].reverse().forEach(log => {
+                const viewBtn = `<button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#10b981;border-color:#10b981;color:#fff;" onclick="viewSiloInspection(${log.id})">👁️ View</button>`;
+                const printBtn = `<button class="btn btn-primary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#8b5cf6;border-color:#8b5cf6;" onclick="printSiloInspection(${log.id})">🖨️ Print</button>`;
+
                 rows += `
                     <tr style="border-bottom:1px solid #e2e8f0;">
                         <td style="font-weight:600;padding:0.5rem;">${log.date}</td>
@@ -800,8 +1014,10 @@ try {
                         <td style="padding:0.5rem;font-weight:600;">${log.material}</td>
                         <td style="padding:0.5rem;font-weight:700;color:#2563eb;">${log.netQty || 0}</td>
                         <td style="padding:0.5rem;">${log.operator || '-'}</td>
-                        <td class="no-print" style="padding:0.5rem;display:flex;gap:0.2rem;">
+                        <td class="no-print" style="padding:0.5rem;display:flex;gap:0.2rem;flex-wrap:wrap;">
                             <button class="btn btn-secondary" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;" onclick="window.editSiloLog(${log.id})">✏️ Edit</button>
+                            ${viewBtn}
+                            ${printBtn}
                             <button class="btn btn-danger" style="padding:0.15rem 0.35rem; font-size:0.72rem;width:auto;background:#ef4444;" onclick="window.deleteSiloLog(${log.id})">🗑 Del</button>
                         </td>
                     </tr>
@@ -827,6 +1043,7 @@ try {
         const mechDeptGroup = document.getElementById('fg-mech-dept');
         const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
         const dischargeSection = document.getElementById('sl-modal-discharge-section-direct');
+        const fumigationSection = document.getElementById('sl-modal-fumigation-section');
         const hiddenFieldsWrapper = document.getElementById('sl-modal-hidden-fields');
         const materialInput = document.getElementById('sl-modal-material');
 
@@ -836,6 +1053,7 @@ try {
             if (mechDeptGroup) mechDeptGroup.style.display = 'none';
             if (inspectionSection) inspectionSection.style.display = 'block';
             if (dischargeSection) dischargeSection.style.display = 'none';
+            if (fumigationSection) fumigationSection.style.display = 'none';
             if (materialInput) materialInput.readOnly = false;
         } else if (operation === 'Discharging') {
             if (sealGroup) sealGroup.style.display = 'none';
@@ -843,12 +1061,22 @@ try {
             if (mechDeptGroup) mechDeptGroup.style.display = 'block';
             if (inspectionSection) inspectionSection.style.display = 'none';
             if (dischargeSection) dischargeSection.style.display = 'block';
+            if (fumigationSection) fumigationSection.style.display = 'none';
+            if (materialInput) materialInput.readOnly = true;
+        } else if (operation === 'Silo Fumigation') {
+            if (sealGroup) sealGroup.style.display = 'none';
+            if (officerGroup) officerGroup.style.display = 'none';
+            if (mechDeptGroup) mechDeptGroup.style.display = 'none';
+            if (inspectionSection) inspectionSection.style.display = 'none';
+            if (dischargeSection) dischargeSection.style.display = 'none';
+            if (fumigationSection) fumigationSection.style.display = 'block';
             if (materialInput) materialInput.readOnly = true;
         } else {
             if (sealGroup) sealGroup.style.display = 'none';
             if (officerGroup) officerGroup.style.display = 'none';
             if (inspectionSection) inspectionSection.style.display = 'none';
             if (dischargeSection) dischargeSection.style.display = 'none';
+            if (fumigationSection) fumigationSection.style.display = 'none';
         }
         
         if (hiddenFieldsWrapper) hiddenFieldsWrapper.style.display = 'none';
@@ -869,8 +1097,8 @@ try {
             const sealInput = document.getElementById(`sl-modal-seal-${i}`);
             if (sealInput) sealInput.value = '';
         }
-        document.getElementById('sl-modal-officer').value = 'M. Zubair';
-        document.getElementById('sl-modal-operator').value = 'Zubair';
+        document.getElementById('sl-modal-officer').value = window.getDefaultOfficer(true);
+        document.getElementById('sl-modal-operator').value = window.getDefaultOfficer(false);
 
         // Reset radio buttons to default "no"
         for (let i = 1; i <= 4; i++) {
@@ -946,6 +1174,7 @@ try {
         const officerGroup = document.getElementById('fg-officer');
         const inspectionSection = document.getElementById('sl-modal-inspection-section-direct');
         const dischargeSection = document.getElementById('sl-modal-discharge-section-direct');
+        const fumigationSection = document.getElementById('sl-modal-fumigation-section');
         const hiddenFieldsWrapper = document.getElementById('sl-modal-hidden-fields');
 
         if (modalCard) {
@@ -967,7 +1196,7 @@ try {
             for (let i = 1; i <= 8; i++) {
                 document.getElementById(`sl-modal-seal-${i}`).value = savedSeals[i - 1] || '';
             }
-            document.getElementById('sl-modal-officer').value = log.supervisor || 'M. Zubair';
+            document.getElementById('sl-modal-officer').value = log.supervisor || window.getDefaultOfficer(true);
 
             const insp = log.inspection || {};
             for (let i = 1; i <= 4; i++) {
@@ -1008,7 +1237,7 @@ try {
         document.getElementById('sl-modal-moisture').value = log.moisture !== undefined ? log.moisture : '';
         document.getElementById('sl-modal-net-wt').value = log.netQty !== undefined ? log.netQty : '';
         document.getElementById('sl-modal-temp').value = log.temperature !== undefined ? log.temperature : '';
-        document.getElementById('sl-modal-operator').value = log.operator || 'Zubair';
+        document.getElementById('sl-modal-operator').value = log.operator || window.getDefaultOfficer(false);
         document.getElementById('sl-modal-remarks-prod').value = log.remarksProd || '';
         document.getElementById('sl-modal-remarks-lab').value = log.remarksLab || '';
         document.getElementById('sl-modal-remarks').value = log.remarks || '';
@@ -1162,12 +1391,13 @@ try {
                 let inspection = null;
                 let dischargeInspection = null;
                 let gates = null;
+                let fumigationData = null;
 
                 if (operation === 'Filling') {
                     let allSeals = [];
                     for (let i = 1; i <= 8; i++) {
                         let val = document.getElementById(`sl-modal-seal-${i}`).value.trim();
-                        if(val) allSeals.push(val);
+                        allSeals.push(val);
                     }
                     sealNo = allSeals.join(', ');
                     supervisor = document.getElementById('sl-modal-officer').value; 
@@ -1217,17 +1447,41 @@ try {
                         const sealVal = document.getElementById(`sl-dis-seal-${num}`).value.trim();
                         gates[`seal${num}`] = sealVal;
                         gates[`open${num}`] = document.getElementById(`sl-dis-gate-${num}`).value.trim();
-                        if (sealVal) disSealsArr.push(sealVal);
+                        disSealsArr.push(sealVal);
                     });
 
                     const lastFillingLog = siloLogs.slice().reverse().find(l => l.siloNumber === siloNumber && l.operation === 'Filling');
                     if (lastFillingLog) {
-                        const fillingSeals = lastFillingLog.sealNo || '';
-                        const currentSeals = disSealsArr.join(', ');
-                        if (fillingSeals !== currentSeals && !remarks) {
-                            return alert('Seal numbers do not match the filling records. Please provide remarks.');
+                        const fillingSeals = lastFillingLog.sealNo ? lastFillingLog.sealNo.split(',').map(s => s.trim()) : [];
+                        let mismatch = false;
+                        for (let i = 0; i < 8; i++) {
+                            const fillSeal = fillingSeals[i] || '';
+                            const disSeal = disSealsArr[i] || '';
+                            if (fillSeal !== disSeal) {
+                                mismatch = true;
+                                break;
+                            }
+                        }
+                        if (mismatch && !remarks) {
+                            return alert('Seal numbers on specific gates do not match the filling records. Please provide remarks.');
                         }
                     }
+                } else if (operation === 'Silo Fumigation') {
+                    fumigationData = {};
+                    ['g1','g2','g3','g4','g5','g6','g7','g8'].forEach(id => fumigationData[id] = document.getElementById(`fum-${id}`).checked);
+                    ['uw','lw'].forEach(id => fumigationData[id] = document.getElementById(`fum-${id}`).checked);
+                    ['fan1','fan2'].forEach(id => fumigationData[id] = document.getElementById(`fum-${id}`).checked);
+                    ['d1','d2','d3','d4','d5','d6','d7','d8'].forEach(id => fumigationData[id] = document.getElementById(`fum-${id}`).checked);
+                    ['c1','c2','c3','c4','c5','c6','c7','c8'].forEach(id => fumigationData[id] = document.getElementById(`fum-${id}`).checked);
+                    ['172c','172w','s1','171c','171w','s2','173c','17w'].forEach(id => fumigationData[id] = document.getElementById(`fum-${id}`).checked);
+                    fumigationData.mainhole = document.getElementById('fum-mainhole').checked;
+
+                    ['48','72','120','168','216'].forEach(id => fumigationData[`ppm${id}`] = document.getElementById(`fum-ppm-${id}`).value.trim());
+
+                    ['fan1','fan2','top'].forEach(id => {
+                        fumigationData[`qtyFull_${id}`] = document.getElementById(`fum-qty-full-${id}`).value.trim();
+                        fumigationData[`qtyEmpty_${id}`] = document.getElementById(`fum-qty-empty-${id}`).value.trim();
+                    });
                 }
 
                 if (!inspection) inspection = { remarksProd, remarksLab };
@@ -1236,7 +1490,7 @@ try {
                     id: activeLogId || Date.now(),
                     date, shift, siloNumber, operation, material, moisture,
                     netQty, temperature, operator, remarksProd, remarksLab, remarks,
-                    sealNo, supervisor, inspection, dischargeInspection, gates
+                    sealNo, supervisor, inspection, dischargeInspection, gates, fumigationData
                 };
 
                 if (activeLogId) {
@@ -1270,7 +1524,8 @@ try {
                             inspection: {
                                 ...log.inspection,
                                 dischargeInspection: log.dischargeInspection,
-                                gates: log.gates
+                                gates: log.gates,
+                                fumigationData: log.fumigationData
                             }
                         };
 
