@@ -627,14 +627,22 @@ document.addEventListener('DOMContentLoaded', () => {
         updatedAt: dbRow.updated_at
     });
 
-    const mapCleaningScheduleToDb = (log) => ({
-        id: log.id,
-        area: log.area,
-        year: log.year,
-        month: log.month,
-        week: log.week,
-        schedule_date: log.date,
-        mirrors: log.mirrors,
+    const mapCleaningScheduleToDb = (log) => {
+        let safeDate = log.date;
+        if (safeDate && !/^\d{4}-\d{2}-\d{2}$/.test(safeDate)) {
+            // attempt to fix DD/MM/YYYY
+            const parts = safeDate.split('/');
+            if (parts.length === 3) safeDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            else safeDate = null;
+        }
+        return {
+            id: log.id,
+            area: log.area,
+            year: log.year,
+            month: log.month,
+            week: log.week,
+            schedule_date: safeDate || null,
+            mirrors: log.mirrors,
         walls: log.walls,
         roof: log.roof,
         electrical_panel: log.electricalPanel,
