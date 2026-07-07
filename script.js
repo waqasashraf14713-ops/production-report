@@ -87,12 +87,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        const globalTitle = document.querySelector('header h1');
-        if (globalTitle) {
+        const globalHeader = document.querySelector('header');
+        if (globalHeader) {
             if (activeView === viewExecutiveDashboard) {
-                globalTitle.style.display = 'none';
+                globalHeader.style.display = 'none';
             } else {
-                globalTitle.style.display = 'block';
+                globalHeader.style.display = 'flex'; // It's usually a flex container
             }
         }
     };
