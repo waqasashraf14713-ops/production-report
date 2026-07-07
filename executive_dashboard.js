@@ -427,3 +427,17 @@ window.updateExecutiveDashboard = function() {
     }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr("#exec-filter-date", {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "j F Y",
+            onChange: function(selectedDates, dateStr, instance) {
+                if(typeof updateExecutiveDashboard === 'function') {
+                    updateExecutiveDashboard();
+                }
+            }
+        });
+    }
+});
