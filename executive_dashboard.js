@@ -82,8 +82,8 @@ function initExecutiveGauges() {
     if (execPelletAGaugeChart) execPelletAGaugeChart.destroy();
     if (execPelletBGaugeChart) execPelletBGaugeChart.destroy();
 
-    execPelletAGaugeChart = new Chart(ctxA, gaugeConfig(0, 800));
-    execPelletBGaugeChart = new Chart(ctxB, gaugeConfig(0, 1000)); // B target can be higher
+    execPelletAGaugeChart = new Chart(ctxA, gaugeConfig(0, 110));
+    execPelletBGaugeChart = new Chart(ctxB, gaugeConfig(0, 110));
 }
 
 function updateExecutiveDashboard() {
