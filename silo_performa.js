@@ -544,48 +544,47 @@ try {
             : '<span style="font-family:Arial,sans-serif;font-size:0.9rem;color:#cbd5e1;">-</span>';
 
         return `
-        <div style="font-family:'Arial',sans-serif;direction:ltr;padding:28px 32px;background:#fff;color:#000;max-width:820px;margin:0 auto;height:100%;display:flex;flex-direction:column;">
+        <div class="urdu-text" style="font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu','Urdu Typesetting',serif;direction:rtl;text-align:right;padding:10px 32px 28px 32px;background:#fff;color:#000;max-width:820px;margin:0 auto;line-height:1.8;">
+
             <!-- Header -->
-            <div style="border:2px solid #000;text-align:center;margin-bottom:20px;">
-                <h1 style="font-size:1.6rem;font-weight:bold;margin:10px 0;letter-spacing:1px;text-transform:uppercase;">ASIA POULTRY FEEDS (PVT) LTD. Unit-1</h1>
-                <div style="background:#f1f5f9;border-top:2px solid #000;padding:8px;font-size:1.3rem;font-weight:bold;">
-                    Silo Discharge Performa (Concrete Silo)
-                </div>
+            <div style="border:2px solid #000;text-align:center;margin-bottom:20px;direction:ltr;background:#f8fafc;padding:16px 16px;">
+                <div style="font-size:2.2rem;font-weight:bold;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;margin-bottom:2px;color:#0f172a;">سائلو ڈسچارج پرفارمہ</div>
+                <div style="font-size:1.6rem;font-weight:bold;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;color:#334155;">(کنکریٹ سائلو)</div>
             </div>
 
-            <!-- Metadata row 1 -->
-            <div style="display:flex;justify-content:space-between;margin-bottom:20px;font-size:1.1rem;font-weight:bold;">
-                <div style="flex:1;">Silo No: <span style="border-bottom:1px solid #000;padding:0 40px;display:inline-block;">${siloNo}</span></div>
-                <div style="flex:1;text-align:right;">Date: <span style="border-bottom:1px solid #000;padding:0 40px;display:inline-block;">${date}</span></div>
-            </div>
-
-            <!-- Metadata row 2 -->
-            <div style="display:flex;justify-content:space-between;margin-bottom:20px;font-size:1.1rem;font-weight:bold;">
-                <div style="flex:1;">Discharge Material <span style="border-bottom:1px solid #000;padding:0 40px;display:inline-block;">${material}</span></div>
-            </div>
+            <!-- Metadata Table -->
+            <table style="width:100%;border-collapse:collapse;margin-top:10px;margin-bottom:20px;direction:rtl;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;table-layout:fixed;">
+                <tr style="background:#f1f5f9;">
+                    <td style="border:1px solid #000;padding:10px 14px;font-size:1.3rem;text-align:right;"><strong>سائلو نمبر:</strong> <span style="font-family:Arial,sans-serif;font-weight:bold;margin-right:8px;font-size:1.15rem;">${siloNo}</span></td>
+                    <td style="border:1px solid #000;padding:10px 14px;font-size:1.3rem;text-align:right;"><strong>ڈسچارج میٹریل:</strong> <span style="font-family:Arial,sans-serif;margin-right:8px;font-size:1.15rem;">${material}</span></td>
+                    <td style="border:1px solid #000;padding:10px 14px;font-size:1.3rem;text-align:right;"><strong>تاریخ:</strong> <span style="font-family:Arial,sans-serif;margin-right:8px;direction:ltr;display:inline-block;font-size:1.15rem;font-weight:bold;">${date}</span></td>
+                </tr>
+            </table>
 
 
             <!-- Gates Table -->
-            <div style="margin:0 auto 20px auto;width:100%;">
-                <table style="width:100%;border-collapse:collapse;border:2px solid #000;text-align:center;">
+            <div style="margin:0 auto 20px auto;width:100%; direction:rtl;">
+                <table style="width:100%;border-collapse:collapse;border:2px solid #000;text-align:center; font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif; font-size:1.2rem;">
                     <thead>
                         <tr>
-                            <th colspan="8" style="border:1px solid #000;padding:6px;background:#f1f5f9;font-weight:bold;">Gates number</th>
+                            <th colspan="9" style="border:1px solid #000;padding:6px;background:#f1f5f9;font-weight:bold;">گیٹس نمبر</th>
                         </tr>
                         <tr>
-                            <th style="border:1px solid #000;padding:6px;">🔒 1</th>
-                            <th style="border:1px solid #000;padding:6px;">🔒 2</th>
-                            <th style="border:1px solid #000;padding:6px;">🔒 3</th>
-                            <th style="border:1px solid #000;padding:6px;">🔒 4</th>
-                            <th style="border:1px solid #000;padding:6px;">🔒 5</th>
-                            <th style="border:1px solid #000;padding:6px;">🔒 6</th>
-                            <th style="border:1px solid #000;padding:6px;">🔒 7</th>
-                            <th style="border:1px solid #000;padding:6px;">🔒 8</th>
+                            <th style="border:1px solid #000;padding:6px;width:15%;"></th>
+                            <th style="border:1px solid #000;padding:6px;font-family:Arial;">🔒 1</th>
+                            <th style="border:1px solid #000;padding:6px;font-family:Arial;">🔒 2</th>
+                            <th style="border:1px solid #000;padding:6px;font-family:Arial;">🔒 3</th>
+                            <th style="border:1px solid #000;padding:6px;font-family:Arial;">🔒 4</th>
+                            <th style="border:1px solid #000;padding:6px;font-family:Arial;">🔒 5</th>
+                            <th style="border:1px solid #000;padding:6px;font-family:Arial;">🔒 6</th>
+                            <th style="border:1px solid #000;padding:6px;font-family:Arial;">🔒 7</th>
+                            <th style="border:1px solid #000;padding:6px;font-family:Arial;">🔒 8</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody style="font-family:Arial,sans-serif;">
                         <tr>
-                            <td style="border:1px solid #000;padding:8px;font-weight:bold;position:relative;"><span style="position:absolute;left:-80px;top:8px;">Seal #</span>${gates.seal1 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;font-weight:bold;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">سیل نمبر</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.seal1 || ''}</td>
                             <td style="border:1px solid #000;padding:8px;">${gates.seal2 || ''}</td>
                             <td style="border:1px solid #000;padding:8px;">${gates.seal3 || ''}</td>
                             <td style="border:1px solid #000;padding:8px;">${gates.seal4 || ''}</td>
@@ -595,7 +594,8 @@ try {
                             <td style="border:1px solid #000;padding:8px;">${gates.seal8 || ''}</td>
                         </tr>
                         <tr>
-                            <td style="border:1px solid #000;padding:8px;font-weight:bold;position:relative;"><span style="position:absolute;left:-80px;top:8px;">Gate Open</span>${gates.open1 || ''}</td>
+                            <td style="border:1px solid #000;padding:8px;font-weight:bold;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">گیٹ اوپن</td>
+                            <td style="border:1px solid #000;padding:8px;">${gates.open1 || ''}</td>
                             <td style="border:1px solid #000;padding:8px;">${gates.open2 || ''}</td>
                             <td style="border:1px solid #000;padding:8px;">${gates.open3 || ''}</td>
                             <td style="border:1px solid #000;padding:8px;">${gates.open4 || ''}</td>
@@ -637,22 +637,22 @@ try {
             </table>
 
             <!-- Signatures -->
-            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px;margin-bottom:20px;font-size:0.9rem;font-weight:bold;text-align:center;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px;margin-bottom:20px;font-size:1.2rem;font-weight:bold;text-align:center;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">
                 <div style="flex:1; margin:0 10px;">
-                    <div style="border-bottom:2px solid #000;min-height:30px;padding-bottom:5px;">${operator}</div>
-                    <div style="margin-top:8px;">Plant Operator</div>
+                    <div style="border-bottom:2px solid #000;min-height:30px;padding-bottom:5px;font-family:Arial,sans-serif;font-size:1rem;">${operator}</div>
+                    <div style="margin-top:8px;">پلانٹ آپریٹر</div>
                 </div>
                 <div style="flex:1; margin:0 10px;">
-                    <div style="border-bottom:2px solid #000;min-height:30px;padding-bottom:5px;">${mechDept}</div>
-                    <div style="margin-top:8px;">Mechanical Dept.</div>
-                </div>
-                <div style="flex:1; margin:0 10px;">
-                    <div style="border-bottom:2px solid #000;min-height:30px;padding-bottom:5px;"></div>
-                    <div style="margin-top:8px;">Production Officer</div>
+                    <div style="border-bottom:2px solid #000;min-height:30px;padding-bottom:5px;font-family:Arial,sans-serif;font-size:1rem;">${mechDept}</div>
+                    <div style="margin-top:8px;">مکینیکل ڈیپارٹمنٹ</div>
                 </div>
                 <div style="flex:1; margin:0 10px;">
                     <div style="border-bottom:2px solid #000;min-height:30px;padding-bottom:5px;"></div>
-                    <div style="margin-top:8px;">Production Manager</div>
+                    <div style="margin-top:8px;">پروڈکشن آفیسر</div>
+                </div>
+                <div style="flex:1; margin:0 10px;">
+                    <div style="border-bottom:2px solid #000;min-height:30px;padding-bottom:5px;"></div>
+                    <div style="margin-top:8px;">پروڈکشن مینیجر</div>
                 </div>
             </div>
 

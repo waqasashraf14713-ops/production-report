@@ -16,6 +16,9 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdn.jsdelivr.net/npm/jameel-noori@1.1.2/jameel-noori.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js"></script>
     <!-- Supabase Client JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -117,6 +120,10 @@
                     <span class="nav-icon">💊</span>
                     <span>Batching Audit</span>
                 </a>
+                <a href="#oil-audit" class="nav-item" id="nav-oil-audit">
+                    <span class="nav-icon">🛢️</span>
+                    <span>Oil Audit</span>
+                </a>
                 <a href="#batching-scale" class="nav-item" id="nav-batching-scale">
                     <span class="nav-icon">⚖️</span>
                     <span>Batching Scale</span>
@@ -198,6 +205,11 @@
                     <div class="dash-quick-icon" style="background:linear-gradient(135deg,#ec4899,#f472b6);">💊</div>
                     <div class="dash-quick-label">Batching Audit</div>
                     <div class="dash-quick-desc">Batch audit records</div>
+                </div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-oil-audit').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#f59e0b,#fcd34d);">🛢️</div>
+                    <div class="dash-quick-label">Oil Audit</div>
+                    <div class="dash-quick-desc">Oil audit records</div>
                 </div>
                 <div class="dash-quick-card" onclick="document.getElementById('nav-batching-scale').click()">
                     <div class="dash-quick-icon" style="background:linear-gradient(135deg,#06b6d4,#22d3ee);">⚖️</div>
@@ -487,7 +499,7 @@
                         padding: 0 !important;
                         margin: 0 !important;
                         max-width: 100% !important;
-                        zoom: 0.95; /* Helps fit on one page */
+                        zoom: 0.85; transform: scale(0.85); transform-origin: top center; /* Helps fit on one page */
                     }
                     .btn { display: none !important; }
                     .sidebar { display: none !important; }
@@ -497,7 +509,7 @@
 
             <div class="premix-report-container" style="background:#fff; padding: 20px; max-width: 1100px; margin: 0 auto; color:#000;">
                 <div class="premix-header-container">
-                    <div style="font-weight:bold; padding-top:15px; font-size:12px;">Date: <input type="date" id="premix-main-date" style="border:none; border-bottom:1px solid #000; font-family:inherit; width:auto; font-weight:normal;"></div>
+                    <div style="font-weight:bold; padding-top:15px; font-size:12px;">Date: <input type="text" id="premix-main-date" class="flatpickr-date" placeholder="DD-MM-YYYY" style="border:none; border-bottom:1px solid #000; font-family:inherit; width:auto; font-weight:normal;"></div>
                     <div class="premix-title-center">
                         <h1>ASIA-POULTRY-FEEDS-(PVT)-LTD.-UNIT-1</h1>
                         <h2>Premix Stock Report</h2>
@@ -508,7 +520,7 @@
                 <table class="premix-report-table">
                     <thead>
                         <tr>
-                            <th style="width:16%;">Feed No</th>
+                            <th style="width:11%;">Feed No</th>
                             <th style="width:9%;">Mixing Date</th>
                             <th style="width:7%;">Opening<br>Balance</th>
                             <th style="width:7%;">Today<br>Production</th>
@@ -518,14 +530,14 @@
                             <th style="width:7%;">Running<br>Batches In<br>Shift C</th>
                             <th style="width:7%;">Closing<br>Balance</th>
                             <th style="width:7%;">Physical<br>Balance</th>
-                            <th style="width:19%;">Remarks</th>
+                            <th style="width:24%;">Remarks</th>
                         </tr>
                     </thead>
                     <tbody id="premix-tbody">
                         <!-- Row 1 Group -->
                         <tr>
                             <td rowspan="3" style="font-weight:bold; font-size:12px;">11/321,322,323,31A</td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r1"></td>
                             <td><input type="number" class="calc-tp pr-r1"></td>
                             <td rowspan="3" class="calc-total pr-r1-t" style="font-weight:bold; font-size:13px;"></td>
@@ -537,7 +549,7 @@
                             <td><input type="text" value="55Kg/Batch (Fura+Flavo+Madura+VT +Ethox Liq 100%)"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r1"></td>
                             <td><input type="number" class="calc-tp pr-r1"></td>
                             <td><input type="number"></td>
@@ -548,7 +560,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r1"></td>
                             <td><input type="number" class="calc-tp pr-r1"></td>
                             <td><input type="number"></td>
@@ -562,7 +574,7 @@
                         <!-- Row 2 Group -->
                         <tr>
                             <td rowspan="4" style="font-weight:bold; font-size:12px;">13/324,324LC,33A,34A,<br>33Y,35</td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r2"></td>
                             <td><input type="number" class="calc-tp pr-r2"></td>
                             <td rowspan="4" class="calc-total pr-r2-t" style="font-weight:bold; font-size:13px;"></td>
@@ -574,7 +586,7 @@
                             <td><input type="text" value="55Kg/Batch (Fura+Flavo+VT +Ethox Liq 100%)"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r2"></td>
                             <td><input type="number" class="calc-tp pr-r2"></td>
                             <td><input type="number"></td>
@@ -585,7 +597,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r2"></td>
                             <td><input type="number" class="calc-tp pr-r2"></td>
                             <td><input type="number"></td>
@@ -596,7 +608,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r2"></td>
                             <td><input type="number" class="calc-tp pr-r2"></td>
                             <td><input type="number"></td>
@@ -610,7 +622,7 @@
                         <!-- Row 3 Group -->
                         <tr>
                             <td rowspan="2" style="font-weight:bold; font-size:12px;">12/32A,33P<br><span style="font-size:9px; font-weight:normal;">31A (Without Anticoccidial)</span></td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r3"></td>
                             <td><input type="number" class="calc-tp pr-r3"></td>
                             <td rowspan="2" class="calc-total pr-r3-t" style="font-weight:bold; font-size:13px;"></td>
@@ -622,7 +634,7 @@
                             <td><input type="text" value="50Kg/Batch (Fura+Flavo+VT +Ethox Liq 100%)"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r3"></td>
                             <td><input type="number" class="calc-tp pr-r3"></td>
                             <td><input type="number"></td>
@@ -636,7 +648,7 @@
                         <!-- Row 4 Group -->
                         <tr>
                             <td rowspan="3" style="font-weight:bold; font-size:12px;">14/421,430,431,432,41A,42A</td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r4"></td>
                             <td><input type="number" class="calc-tp pr-r4"></td>
                             <td rowspan="3" class="calc-total pr-r4-t" style="font-weight:bold; font-size:13px;"></td>
@@ -648,7 +660,7 @@
                             <td><input type="text" value="50Kg/Batch (Madura 1% +Liq Ethoxy 100%)"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r4"></td>
                             <td><input type="number" class="calc-tp pr-r4"></td>
                             <td><input type="number"></td>
@@ -659,7 +671,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r4"></td>
                             <td><input type="number" class="calc-tp pr-r4"></td>
                             <td><input type="number"></td>
@@ -673,7 +685,7 @@
                         <!-- Row 5 Group -->
                         <tr>
                             <td rowspan="3" style="font-weight:bold; font-size:12px;">15/422,433,434,43A,43C<br>,43Z,44A</td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r5"></td>
                             <td><input type="number" class="calc-tp pr-r5"></td>
                             <td rowspan="3" class="calc-total pr-r5-t" style="font-weight:bold; font-size:13px;"></td>
@@ -685,7 +697,7 @@
                             <td><input type="text" value="50Kg/Batch (Madura 1% +Liq Ethoxy 100%)"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r5"></td>
                             <td><input type="number" class="calc-tp pr-r5"></td>
                             <td><input type="number"></td>
@@ -696,7 +708,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r5"></td>
                             <td><input type="number" class="calc-tp pr-r5"></td>
                             <td><input type="number"></td>
@@ -710,7 +722,7 @@
                         <!-- Row 6 Group -->
                         <tr>
                             <td rowspan="3" style="font-weight:bold; font-size:14px;">743<br><span style="font-size:9px; font-weight:normal;">All Wanda Premix</span></td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r6"></td>
                             <td><input type="number" class="calc-tp pr-r6"></td>
                             <td rowspan="3" class="calc-total pr-r6-t" style="font-weight:bold; font-size:13px;"></td>
@@ -722,7 +734,7 @@
                             <td><input type="text" value="08Kg/Batch (Premix recipi 67%)"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r6"></td>
                             <td><input type="number" class="calc-tp pr-r6"></td>
                             <td><input type="number"></td>
@@ -733,7 +745,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r6"></td>
                             <td><input type="number" class="calc-tp pr-r6"></td>
                             <td><input type="number"></td>
@@ -747,7 +759,7 @@
                         <!-- Single Rows -->
                         <tr>
                             <td style="font-weight:bold; font-size:11px;">430,431,41A</td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r7"></td>
                             <td><input type="number" class="calc-tp pr-r7"></td>
                             <td class="calc-total pr-r7-t" style="font-weight:bold; font-size:13px;"></td>
@@ -760,7 +772,7 @@
                         </tr>
                         <tr>
                             <td style="font-weight:bold; font-size:11px;">430 (live Stock)</td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r8"></td>
                             <td><input type="number" class="calc-tp pr-r8"></td>
                             <td class="calc-total pr-r8-t" style="font-weight:bold; font-size:13px;"></td>
@@ -773,7 +785,7 @@
                         </tr>
                         <tr>
                             <td style="font-weight:bold; font-size:11px;">324 (live Stock)</td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r9"></td>
                             <td><input type="number" class="calc-tp pr-r9"></td>
                             <td class="calc-total pr-r9-t" style="font-weight:bold; font-size:13px;"></td>
@@ -788,7 +800,7 @@
                         <!-- Row 10 Group -->
                         <tr>
                             <td rowspan="2" style="font-weight:bold; font-size:12px;">521</td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r10"></td>
                             <td><input type="number" class="calc-tp pr-r10"></td>
                             <td rowspan="2" class="calc-total pr-r10-t" style="font-weight:bold; font-size:13px;"></td>
@@ -800,7 +812,7 @@
                             <td><input type="text" value="50Kg/Batch"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob pr-r10"></td>
                             <td><input type="number" class="calc-tp pr-r10"></td>
                             <td><input type="number"></td>
@@ -828,7 +840,7 @@
                         <!-- Phytase Row 1 -->
                         <tr>
                             <td rowspan="4" style="font-weight:bold; font-size:16px;">13/<br><span style="font-size:9px; font-weight:normal;">324,521,324LC,325,321,322,323,31A,32A,33P,33Y,35,33A,34A.</span></td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r1"></td>
                             <td><input type="number" class="calc-tp ph-r1"></td>
                             <td rowspan="4" class="calc-total ph-r1-t" style="font-weight:bold; font-size:13px;"></td>
@@ -840,7 +852,7 @@
                             <td><input type="text" value="25.00Kg/Batch(Microtech = 0.500kg/Batch)"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r1"></td>
                             <td><input type="number" class="calc-tp ph-r1"></td>
                             <td><input type="number"></td>
@@ -851,7 +863,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r1"></td>
                             <td><input type="number" class="calc-tp ph-r1"></td>
                             <td><input type="number"></td>
@@ -862,7 +874,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r1"></td>
                             <td><input type="number" class="calc-tp ph-r1"></td>
                             <td><input type="number"></td>
@@ -876,7 +888,7 @@
                         <!-- Phytase Row 2 -->
                         <tr>
                             <td rowspan="4" style="font-weight:bold; font-size:16px;">14,15/<br><span style="font-size:9px; font-weight:normal;">421,430,431,432,41A,42A,422,433,434,43A,43Z,43C,44A<br>5200,5211,5221,5222</span></td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r2"></td>
                             <td><input type="number" class="calc-tp ph-r2"></td>
                             <td rowspan="4" class="calc-total ph-r2-t" style="font-weight:bold; font-size:13px;"></td>
@@ -888,7 +900,7 @@
                             <td><input type="text" value="25.00Kg/Batch(Microtech = 0.750kg/Batch)"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r2"></td>
                             <td><input type="number" class="calc-tp ph-r2"></td>
                             <td><input type="number"></td>
@@ -899,7 +911,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r2"></td>
                             <td><input type="number" class="calc-tp ph-r2"></td>
                             <td><input type="number"></td>
@@ -910,7 +922,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r2"></td>
                             <td><input type="number" class="calc-tp ph-r2"></td>
                             <td><input type="number"></td>
@@ -924,7 +936,7 @@
                         <!-- Phytase Row 3 -->
                         <tr>
                             <td rowspan="4" style="font-weight:bold; font-size:16px;">15/<br><span style="font-size:9px; font-weight:normal;">422,433,434,43A,43Z,43C,44A</span></td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r3"></td>
                             <td><input type="number" class="calc-tp ph-r3"></td>
                             <td rowspan="4" class="calc-total ph-r3-t" style="font-weight:bold; font-size:13px;"></td>
@@ -936,7 +948,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r3"></td>
                             <td><input type="number" class="calc-tp ph-r3"></td>
                             <td><input type="number"></td>
@@ -947,7 +959,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r3"></td>
                             <td><input type="number" class="calc-tp ph-r3"></td>
                             <td><input type="number"></td>
@@ -958,7 +970,7 @@
                             <td><input type="text"></td>
                         </tr>
                         <tr>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r3"></td>
                             <td><input type="number" class="calc-tp ph-r3"></td>
                             <td><input type="number"></td>
@@ -972,7 +984,7 @@
                         <!-- Phytase Row 4 -->
                         <tr>
                             <td style="font-weight:bold; font-size:12px;">12/33P,32A</td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r4"></td>
                             <td><input type="number" class="calc-tp ph-r4"></td>
                             <td class="calc-total ph-r4-t" style="font-weight:bold; font-size:13px;"></td>
@@ -987,7 +999,7 @@
                         <!-- Phytase Row 5 -->
                         <tr>
                             <td style="font-weight:bold; font-size:12px;">521</td>
-                            <td><input type="date"></td>
+                            <td><input type="text" class="flatpickr-date" style="width:100%; border:none; text-align:center; font-size:11px;" placeholder="DD-MM-YYYY"></td>
                             <td><input type="number" class="calc-ob ph-r5"></td>
                             <td><input type="number" class="calc-tp ph-r5"></td>
                             <td class="calc-total ph-r5-t" style="font-weight:bold; font-size:13px;"></td>
@@ -1521,6 +1533,38 @@
 
                 <!-- Audit cards container -->
                 <div id="ba-cards-container" style="display:flex;flex-direction:column;gap:1.5rem;margin-top:1.5rem;">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Oil Audit Report -->
+        <div id="view-oil-audit" class="view-section" style="display: none;">
+            <section class="table-container">
+                
+                <!-- 3D Oil Tanks Visualization -->
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:1.5rem;display:flex;flex-direction:column;">
+                    <h3 style="margin-bottom:1rem;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;margin-top:0;">🛢️ Oil SCADA 3D Network</h3>
+                    <div id="oil-tanks-3d" style="width:100%;height:80vh;min-height:600px;position:relative;background:#0f172a;border-radius:8px;overflow:hidden;border:1px solid #334155; box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);">
+                        <button id="btn-anim-toggle" style="position:absolute; top:15px; right:135px; z-index:10; background:rgba(234,179,8,0.8); color:#000; border:1px solid rgba(255,255,255,0.4); padding:8px 12px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:bold; backdrop-filter:blur(4px); transition:0.2s;">⏸ Pause Oil Flow</button>
+                        <button id="btn-fullscreen-3d" style="position:absolute; top:15px; right:15px; z-index:10; background:rgba(0,0,0,0.6); color:#fff; border:1px solid rgba(255,255,255,0.2); padding:8px 12px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:bold; backdrop-filter:blur(4px); transition:0.2s;">⛶ Fullscreen</button>
+                    </div>
+                </div>
+
+                <div class="table-header">
+                    <h2>🛢️ Oil Audit</h2>
+                    <div class="header-actions" style="display:flex;gap:1rem;align-items:center;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <!-- No date filter needed based on oil_audit.js -->
+                        </div>
+                        <button class="btn btn-secondary" id="btn-manage-recipes-oa" style="background:#4f46e5;color:#fff;">⚙️ Manage Recipes</button>
+                        <button class="btn btn-secondary" id="btn-add-oil-audit">➕ New Audit</button>
+                        <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+                    </div>
+                </div>
+
+                <!-- Audit cards container -->
+                <div id="oa-cards-container" style="display:flex;flex-direction:column;gap:1.5rem;margin-top:1.5rem;">
                     <!-- Populated by JS -->
                 </div>
             </section>
@@ -2418,6 +2462,131 @@ order by
             </div>
         </div>
     </div>
+
+    <!-- Oil Audit Modal -->
+    <div id="oil-audit-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width:98vw;width:98vw;height:98vh;max-height:98vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;">
+            <div class="modal-header" style="background:#4f46e5;color:#fff;border-bottom:none;padding:0.75rem 1.5rem;flex-shrink:0;">
+                <h2 id="oa-modal-title" style="color:#fff;margin:0;font-size:1.25rem;">🛢️ Oil Daily Audit</h2>
+                <button id="oa-modal-close" class="modal-close-btn" style="color:#fff;font-size:1.5rem;background:none;border:none;cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:0.75rem 1.5rem;flex-grow:1;display:flex;flex-direction:column;overflow:hidden;background:#f1f5f9;">
+                <!-- Header Fields & Formulations Group Sums -->
+                <div style="display:grid;grid-template-columns:1fr 2fr;gap:0.75rem;margin-bottom:0.5rem;flex-shrink:0;">
+                    <!-- Basic details -->
+                    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;background:#ffffff;padding:0.5rem 0.75rem;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:0;">
+                        <div class="form-group" style="margin:0;">
+                            <label for="oa-modal-date" style="font-weight:700;font-size:0.8rem;margin-bottom:0.15rem;display:block;">Date</label>
+                            <input type="text" id="oa-modal-date" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.2rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="oa-modal-shift" style="font-weight:700;font-size:0.8rem;margin-bottom:0.15rem;display:block;">Shift</label>
+                            <input type="text" id="oa-modal-shift" value="ABC" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.2rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="oa-modal-limit" style="font-weight:700;font-size:0.8rem;margin-bottom:0.15rem;display:block;">Acceptable %age</label>
+                            <input type="number" step="any" id="oa-modal-limit" value="0.4" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.2rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="oa-modal-total-batches" style="font-weight:700;font-size:0.8rem;margin-bottom:0.15rem;display:block;color:#3b82f6;">Total Batches</label>
+                            <input type="number" step="any" id="oa-modal-total-batches" value="113" readonly style="width:100%;border-radius:4px;border:1px solid #3b82f6;padding:0.2rem;background:#eff6ff;color:#1e3a8a;font-size:0.8rem;font-weight:700;text-align:center;" />
+                        </div>
+                    </div>
+                    <!-- Formulations Group Sums (Read-only summary) -->
+                    <div style="background:#ffffff;padding:0.5rem 0.75rem;border-radius:8px;border:1px solid #cbd5e1;display:flex;flex-direction:column;justify-content:center;">
+                        <div style="font-weight:700;font-size:0.82rem;color:#4f46e5;margin-bottom:0.3rem;display:flex;align-items:center;gap:0.25rem;">📊 Formulation Group Sums <span style="font-size:0.75rem;font-weight:normal;color:#64748b;">(Read-only sums of detailed recipes)</span></div>
+                        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;">
+                            <div class="form-group" style="margin:0;">
+                                <label style="font-size:0.75rem;color:#475569;display:block;margin-bottom:0.15rem;white-space:nowrap;">Asia-Chenab Sum</label>
+                                <input type="text" id="oa-form-chenab" readonly value="56" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.2rem;font-size:0.8rem;text-align:center;background:#f8fafc;font-weight:600;" />
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label style="font-size:0.75rem;color:#475569;display:block;margin-bottom:0.15rem;white-space:nowrap;">Delta Sum</label>
+                                <input type="text" id="oa-form-delta" readonly value="0" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.2rem;font-size:0.8rem;text-align:center;background:#f8fafc;font-weight:600;" />
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label style="font-size:0.75rem;color:#475569;display:block;margin-bottom:0.15rem;white-space:nowrap;">Wanda Sum</label>
+                                <input type="text" id="oa-form-wanda" readonly value="57" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.2rem;font-size:0.8rem;text-align:center;background:#f8fafc;font-weight:600;" />
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label style="font-size:0.75rem;color:#475569;display:block;margin-bottom:0.15rem;white-space:nowrap;">Breeder Sum</label>
+                                <input type="text" id="oa-form-breeder" readonly value="0" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.2rem;font-size:0.8rem;text-align:center;background:#f8fafc;font-weight:600;" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulation Recipes Detailed Entries -->
+                <div style="background:#ffffff;padding:0.5rem 0.75rem;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:0.75rem;flex-shrink:0;display:flex;flex-direction:column;max-height:150px;overflow-y:auto;box-shadow:inset 0 1px 3px rgba(0,0,0,0.05);">
+                    <div style="font-weight:700;font-size:0.82rem;color:#4f46e5;margin-bottom:0.4rem;display:flex;justify-content:space-between;align-items:center;">
+                        <span>📋 Enter Batches for Recipe Codes (Automatically calculates Issuance per Ingredient)</span>
+                        <button class="btn btn-secondary" id="btn-clear-recipes-oa" style="padding:0.1rem 0.5rem;font-size:0.7rem;width:auto;height:auto;">Clear All Batches</button>
+                    </div>
+                    <!-- 4 columns for recipe groups -->
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;font-size:0.75rem;">
+                        <!-- Asia-Chenab -->
+                        <div style="border-right:1px solid #cbd5e1;padding-right:0.5rem;">
+                            <div style="font-weight:700;font-size:0.75rem;color:#3b82f6;border-bottom:1px solid #cbd5e1;padding-bottom:0.15rem;margin-bottom:0.25rem;">Asia-Chenab Recipes</div>
+                            <div style="display:flex;flex-direction:column;gap:0.25rem;" id="oa-recipes-chenab"></div>
+                        </div>
+                        <!-- Delta -->
+                        <div style="border-right:1px solid #cbd5e1;padding-right:0.5rem;">
+                            <div style="font-weight:700;font-size:0.75rem;color:#10b981;border-bottom:1px solid #cbd5e1;padding-bottom:0.15rem;margin-bottom:0.25rem;">Delta Recipes</div>
+                            <div style="display:flex;flex-direction:column;gap:0.25rem;" id="oa-recipes-delta"></div>
+                        </div>
+                        <!-- Wanda -->
+                        <div style="border-right:1px solid #cbd5e1;padding-right:0.5rem;">
+                            <div style="font-weight:700;font-size:0.75rem;color:#f59e0b;border-bottom:1px solid #cbd5e1;padding-bottom:0.15rem;margin-bottom:0.25rem;">Wanda Recipes</div>
+                            <div style="display:flex;flex-direction:column;gap:0.25rem;" id="oa-recipes-wanda"></div>
+                        </div>
+                        <!-- Breeder -->
+                        <div>
+                            <div style="font-weight:700;font-size:0.75rem;color:#ec4899;border-bottom:1px solid #cbd5e1;padding-bottom:0.15rem;margin-bottom:0.25rem;">Breeder Recipes</div>
+                            <div style="display:flex;flex-direction:column;gap:0.25rem;" id="oa-recipes-breeder"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Excel-style Table Grid -->
+                <div class="table-responsive" style="flex-grow:1;overflow-y:auto;border:1px solid #cbd5e1;border-radius:8px;background:#ffffff;box-shadow:inset 0 2px 4px rgba(0,0,0,0.06);">
+                    <table class="report-table" id="oa-modal-table" style="font-size:0.75rem;width:100%;border-collapse:collapse;min-width:1800px;background:#ffffff;">
+                        <thead>
+                            <tr style="background:#e2e8f0;color:#0f172a;font-weight:700;position:sticky;top:0;z-index:3;box-shadow:0 1px 2px rgba(0,0,0,0.1);">
+                                <th style="position:sticky;left:0;background:#e2e8f0;z-index:4;box-shadow:2px 0 5px -2px rgba(0,0,0,0.1);text-align:left;min-width:160px;padding:0.4rem;">Item Name</th>
+                                <th style="padding:0.4rem;">Config</th>
+                                <th style="padding:0.4rem;">Stand Wt</th>
+                                <th style="background:#eff6ff;padding:0.4rem;">Open Loose</th>
+                                <th style="background:#eff6ff;padding:0.4rem;">Open Bags</th>
+                                <th style="background:#eff6ff;padding:0.4rem;">Open Tub</th>
+                                <th style="background:#ecfdf5;padding:0.4rem;">Received</th>
+                                <th style="background:#e0f2fe;font-weight:bold;padding:0.4rem;">Net Open</th>
+                                <th style="background:#fef2f2;padding:0.4rem;">Close Loose</th>
+                                <th style="background:#fef2f2;padding:0.4rem;">Close Bags</th>
+                                <th style="background:#fee2e2;font-weight:bold;padding:0.4rem;">Net Close</th>
+                                <th style="background:#faf5ff;padding:0.4rem;">Bags Used</th>
+                                <th style="background:#faf5ff;padding:0.4rem;">Avg +/-</th>
+                                <th style="background:#faf5ff;padding:0.4rem;">Bags +/-</th>
+                                <th style="background:#e0f2fe;font-weight:bold;padding:0.4rem;">Actual Used</th>
+                                <th style="background:#fef3c7;font-weight:bold;padding:0.4rem;">Issuance</th>
+                                <th style="background:#fef3c7;font-weight:bold;padding:0.4rem;">Diff</th>
+                                <th style="background:#fef3c7;padding:0.4rem;">Diff/Batch</th>
+                                <th style="background:#fef3c7;padding:0.4rem;">% Excess</th>
+                            </tr>
+                        </thead>
+                        <tbody id="oa-rows-tbody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="modal-actions" style="margin-top:1.5rem;display:flex;justify-content:flex-end;gap:1rem;">
+                    <button class="btn btn-secondary" id="btn-cancel-oa-modal" style="width:auto;padding:0.5rem 1.5rem;">Cancel</button>
+                    <button class="btn btn-primary" id="btn-save-oa-modal" style="background:#4f46e5;border-color:#4f46e5;width:auto;padding:0.5rem 2rem;">💾 Save Audit Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Manage Formulation Recipes Modal -->
     <div id="manage-recipes-modal" class="modal-overlay">
@@ -4120,6 +4289,8 @@ order by
     <script src="silo_moisture.js?v=4"></script>
     <script src="pellet_efficiency.js?v=5"></script>
     <script src="batching_audit.js?v=1"></script>
+    <script src="oil_scada_3d.js?v=1"></script>
+    <script src="oil_audit.js?v=1"></script>
     <script src="silo_performa.js?v=5"></script>
     <script src="dryer_report.js?v=5"></script>
     <script src="script.js?v=5"></script>
@@ -4745,6 +4916,7 @@ order by
     </div>
 </body>
 </html>
+
 
 
 

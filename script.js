@@ -58,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewShiftReport = document.getElementById('view-shift-report');
     const navBatchingAudit = document.getElementById('nav-batching-audit');
     const viewBatchingAudit = document.getElementById('view-batching-audit');
+    const navOilAudit = document.getElementById('nav-oil-audit');
+    const viewOilAudit = document.getElementById('view-oil-audit');
     const navBatchingScale = document.getElementById('nav-batching-scale');
     const viewBatchingScale = document.getElementById('view-batching-scale');
     const navPelletEfficiency = document.getElementById('nav-pellet-efficiency');
@@ -72,10 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewControlCenter = document.getElementById('view-control-center');
 
     const switchView = (activeNav, activeView, pushHistory = true) => {
-        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navPremixArea, navFiveS, navShiftReport, navBatchingAudit, navBatchingScale, navPelletEfficiency, navDryerRecords, navSiloPerforma, navExecutiveDashboard, navControlCenter].forEach(nav => {
+        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navPremixArea, navFiveS, navShiftReport, navBatchingAudit, navOilAudit, navBatchingScale, navPelletEfficiency, navDryerRecords, navSiloPerforma, navExecutiveDashboard, navControlCenter].forEach(nav => {
             if (nav) nav.classList.remove('active');
         });
-        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewPremixArea, viewFiveS, viewShiftReport, viewBatchingAudit, viewBatchingScale, viewPelletEfficiency, viewDryerRecords, viewSiloPerforma, viewExecutiveDashboard, viewControlCenter].forEach(view => {
+        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewPremixArea, viewFiveS, viewShiftReport, viewBatchingAudit, viewOilAudit, viewBatchingScale, viewPelletEfficiency, viewDryerRecords, viewSiloPerforma, viewExecutiveDashboard, viewControlCenter].forEach(view => {
             if (view) view.style.display = 'none';
         });
 
@@ -97,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const globalHeader = document.querySelector('header');
         if (globalHeader) {
-            if (activeView === viewExecutiveDashboard) {
+            if (activeView === viewExecutiveDashboard || activeView === viewPremixArea) {
                 globalHeader.style.display = 'none';
             } else {
                 globalHeader.style.display = 'flex'; // It's usually a flex container
@@ -252,6 +254,13 @@ document.addEventListener('DOMContentLoaded', () => {
         navBatchingAudit.addEventListener('click', (e) => {
             e.preventDefault();
             switchView(navBatchingAudit, viewBatchingAudit);
+        });
+    }
+
+    if (navOilAudit) {
+        navOilAudit.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(navOilAudit, viewOilAudit);
         });
     }
 
@@ -5298,3 +5307,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
+// Initialize Flatpickr for date inputs to show DD-MM-YYYY
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr('.flatpickr-date', { dateFormat: 'd-m-Y', allowInput: true });
+    }
+});
