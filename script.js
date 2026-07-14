@@ -49,6 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewMaizeMoisture = document.getElementById('view-maize-moisture');
     const navDailyLessExcess = document.getElementById('nav-daily-less-excess');
     const viewDailyLessExcess = document.getElementById('view-daily-less-excess');
+    const navPremixArea = document.getElementById('nav-premix-area');
+    const viewPremixArea = document.getElementById('view-premix-area');
     const navFiveS = document.getElementById('nav-five-s');
     const viewFiveS = document.getElementById('view-five-s');
     // navDailyChecklist and viewDailyChecklist are now part of view-five-s tabs
@@ -66,17 +68,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewSiloPerforma = document.getElementById('view-silo-performa');
     const navExecutiveDashboard = document.getElementById('nav-executive-dashboard');
     const viewExecutiveDashboard = document.getElementById('view-executive-dashboard');
+    const navControlCenter = document.getElementById('nav-control-center');
+    const viewControlCenter = document.getElementById('view-control-center');
 
-    const switchView = (activeNav, activeView) => {
-        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navFiveS, navShiftReport, navBatchingAudit, navBatchingScale, navPelletEfficiency, navDryerRecords, navSiloPerforma, navExecutiveDashboard].forEach(nav => {
+    const switchView = (activeNav, activeView, pushHistory = true) => {
+        [navDashboard, navSiloStatus, navDailyReport, navMaizeMoisture, navDailyLessExcess, navPremixArea, navFiveS, navShiftReport, navBatchingAudit, navBatchingScale, navPelletEfficiency, navDryerRecords, navSiloPerforma, navExecutiveDashboard, navControlCenter].forEach(nav => {
             if (nav) nav.classList.remove('active');
         });
-        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewFiveS, viewShiftReport, viewBatchingAudit, viewBatchingScale, viewPelletEfficiency, viewDryerRecords, viewSiloPerforma, viewExecutiveDashboard].forEach(view => {
+        [viewDashboard, viewSiloStatus, viewDailyReport, viewMaizeMoisture, viewDailyLessExcess, viewPremixArea, viewFiveS, viewShiftReport, viewBatchingAudit, viewBatchingScale, viewPelletEfficiency, viewDryerRecords, viewSiloPerforma, viewExecutiveDashboard, viewControlCenter].forEach(view => {
             if (view) view.style.display = 'none';
         });
 
         if (activeNav) activeNav.classList.add('active');
         if (activeView) activeView.style.display = 'block';
+
+        if (pushHistory && activeNav && activeNav.getAttribute('href')) {
+            window.history.pushState(null, null, activeNav.getAttribute('href'));
+        }
 
         const actionsDiv = document.querySelector('.actions');
         if (actionsDiv) {
@@ -97,10 +105,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Handle Browser Back/Forward buttons
+    window.addEventListener('popstate', () => {
+        const hash = window.location.hash || '#dashboard';
+        const navId = 'nav-' + hash.substring(1);
+        const viewId = 'view-' + hash.substring(1);
+        
+        const navEl = document.getElementById(navId);
+        const viewEl = document.getElementById(viewId);
+        
+        if (navEl && viewEl) {
+            switchView(navEl, viewEl, false);
+            // Trigger any specific refresh logic if needed
+            if (navId === 'nav-executive-dashboard' && window.updateExecutiveDashboard) window.updateExecutiveDashboard();
+            if (navId === 'nav-dryer-records' && window.fetchDryerReports) window.fetchDryerReports();
+            if (navId === 'nav-silo-performa' && window.renderSiloPerformaDashboard) window.renderSiloPerformaDashboard();
+        }
+    });
+
     if (navDashboard) {
         navDashboard.addEventListener('click', (e) => {
             e.preventDefault();
             switchView(navDashboard, viewDashboard);
+        });
+    }
+
+    if (navControlCenter) {
+        navControlCenter.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(navControlCenter, viewControlCenter);
         });
     }
 
@@ -186,6 +219,13 @@ document.addEventListener('DOMContentLoaded', () => {
         navDailyLessExcess.addEventListener('click', (e) => {
             e.preventDefault();
             switchView(navDailyLessExcess, viewDailyLessExcess);
+        });
+    }
+
+    if (navPremixArea) {
+        navPremixArea.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(navPremixArea, viewPremixArea);
         });
     }
 
@@ -649,7 +689,8 @@ document.addEventListener('DOMContentLoaded', () => {
         area_incharge: log.areaIncharge || '',
         site_incharge: log.siteIncharge || '',
         updated_at: log.updatedAt
-    });
+    };
+};
 
     const mapDailyChecklistFromDb = (dbRow) => ({
         id: dbRow.id,
@@ -1082,6 +1123,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const saveLessExcessLogs = async () => {
         localStorage.setItem(LS_LESS_EXCESS_LOGS, JSON.stringify(lessExcessLogs));
+        if (typeof window.updateExecutiveDashboard === 'function') {
+            window.updateExecutiveDashboard();
+        }
         if (isSbConnected && sbClient) {
             try {
                 const { error } = await sbClient
@@ -1232,6 +1276,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const btnResetEl = document.getElementById('btn-reset');
     if (btnResetEl) btnResetEl.addEventListener('click', resetData);
+
+    const btnResetDevice = document.getElementById('btn-reset-device');
+    if (btnResetDevice) {
+        btnResetDevice.addEventListener('click', () => {
+            if (confirm("Are you sure you want to unlink this PC? You will need to enter a valid Device ID again to see the menus.")) {
+                localStorage.removeItem('fm_device_id');
+                window.location.reload();
+            }
+        });
+    }
 
     const btnAddMaizeLogEl = document.getElementById('btn-add-maize-log');
     if (btnAddMaizeLogEl) {
@@ -1915,7 +1969,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <select class="status-select" data-id="${silo.id}"
                         style="background:rgba(0,0,0,0.3);color:var(--text-primary);border:1px solid var(--card-border);
                                padding:0.2rem 0.5rem;border-radius:0.25rem;font-family:inherit;font-size:0.85rem;outline:none;">
-                        ${['Empty','Filling','Discharging','Filling & Discharging','Active','Running','Stopped','Aeration','Recirculation','Under Fumigation','Maintenance'].map(s => `<option value="${s}" ${s===silo.status?'selected':''} style="background:var(--bg-color);">${s}</option>`).join('')}
+                        ${['Empty','Filling','Discharging','Emptying','Filling & Discharging','Active','Running','Stopped','Aeration','Recirculation','Under Fumigation','Maintenance'].map(s => `<option value="${s}" ${s===silo.status?'selected':''} style="background:var(--bg-color);">${s}</option>`).join('')}
                     </select>
                 </td>
                 <td>
@@ -2464,7 +2518,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const mc  = getMoistureColor(silo.currentMoisture);
                 const mPct = Math.min((silo.currentMoisture / 20) * 100, 100);
                 const isFillingActive = silo.status === 'Filling' || silo.status === 'Filling & Discharging';
-                const isDischargingActive = silo.status === 'Discharging' || silo.status === 'Filling & Discharging';
+                const isDischargingActive = silo.status === 'Discharging' || silo.status === 'Filling & Discharging' || silo.status === 'Emptying';
 
                 const card = document.createElement('div');
                 card.className = 'silo-card' + (isFillingActive ? ' filling-active' : '') + (isDischargingActive ? ' discharging-active' : '');
@@ -2526,13 +2580,26 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <div class="fumigation-smog pos-4"></div>
                             </div>
                             ` : ''}
+                            ${silo.status === 'Emptying' ? `
+                            <div class="sweeper-conveyor-container">
+                                <div class="sweeper-conveyor"></div>
+                            </div>
+                            ` : ''}
                         </div>
                         <div class="glass-silo-legs-container">
                             <div class="glass-silo-leg left"></div>
                             <div class="glass-silo-leg right"></div>
                             <!-- Discharging Animation Elements -->
                             <div class="silo-discharge-pipe"></div>
-                            <div class="silo-discharge-stream"></div>
+                            <div class="silo-discharge-stream">
+                                ${isDischargingActive ? `
+                                <span class="silo-falling-grain" style="left:20%;width:4px;height:5px;animation:grainFall1 0.4s ease-in infinite 0s;"></span>
+                                <span class="silo-falling-grain" style="left:60%;width:3px;height:4px;animation:grainFall2 0.5s ease-in infinite 0.1s;"></span>
+                                <span class="silo-falling-grain" style="left:40%;width:5px;height:6px;animation:grainFall3 0.3s ease-in infinite 0.2s;"></span>
+                                <span class="silo-falling-grain" style="left:70%;width:4px;height:5px;animation:grainFall4 0.45s ease-in infinite 0.3s;"></span>
+                                ` : ''}
+                            </div>
+                            
                             <div class="glass-silo-fan">
                                 <div class="fan-blades ${silo.fanStatus === 'On' ? 'spin' : 'fan-off'}">
                                     <div class="fan-blade h"></div>
@@ -4774,4 +4841,460 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 }
 });
+
+// ─── DEVICE PERMISSION ENFORCEMENT & CONTROL CENTER ──────────────────────────────────────
+(function() {
+    const LS_DEVICE_ID = 'fm_device_id';
+
+    const allNavIds = [
+        'nav-dashboard', 'nav-executive-dashboard', 'nav-silo-status', 
+        'nav-silo-performa', 'nav-daily-report', 'nav-maize-moisture', 
+        'nav-daily-less-excess', 'nav-five-s', 'nav-shift-report', 
+        'nav-batching-audit', 'nav-batching-scale', 'nav-pellet-efficiency', 
+        'nav-dryer-records', 'nav-plant-animation', 'nav-control-center'
+    ];
+
+    async function enforceDevicePermissions() {
+        let deviceId = localStorage.getItem(LS_DEVICE_ID);
+        
+        if (!deviceId) {
+            deviceId = prompt("🔒 Please enter the Device ID for this system (e.g., PC-1):");
+            if (deviceId) {
+                localStorage.setItem(LS_DEVICE_ID, deviceId.trim());
+            } else {
+                return;
+            }
+        }
+
+        if (!window.env || !window.env.SUPABASE_URL) return; 
+        
+        try {
+            const tempSbClient = window.supabase.createClient(window.env.SUPABASE_URL, window.env.SUPABASE_KEY);
+            const { data, error } = await tempSbClient
+                .from('system_permissions')
+                .select('allowed_sections')
+                .eq('device_id', deviceId)
+                .single();
+
+            if (error && error.code !== 'PGRST116') {
+                console.warn("Could not fetch device permissions. Using default access.");
+                return;
+            }
+
+            let allowed = (data && data.allowed_sections) ? data.allowed_sections : [...allNavIds];
+            
+            // Always allow Control Center to be visible in sidebar
+            if (!allowed.includes('nav-plant-animation')) allowed.push('nav-plant-animation');
+            if (!allowed.includes('nav-control-center')) {
+                allowed.push('nav-control-center');
+            }
+
+            // Hide sidebar links
+            document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => {
+                if (allowed.includes(el.id)) {
+                    el.style.display = 'flex';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+
+            const hash = window.location.hash || '#dashboard';
+            const currentNavId = 'nav-' + hash.substring(1);
+            
+            if (!allowed.includes(currentNavId) && allowed.length > 0) {
+                window.location.hash = allowed[0].replace('nav-', '');
+            }
+
+            window.addEventListener('hashchange', function() {
+                const newHash = window.location.hash || '#dashboard';
+                const newNavId = 'nav-' + newHash.substring(1);
+                if (!allowed.includes(newNavId) && allowed.length > 0) {
+                    window.location.hash = allowed[0].replace('nav-', '');
+                }
+            });
+
+        } catch (err) {
+            console.error("Device permission error:", err);
+        }
+    }
+
+    // --- Control Center Logic ---
+    let allDevices = [];
+    let currentEditingId = null;
+    let ccSbClient = null;
+
+    async function initControlCenter() {
+        if (!window.env || !window.env.SUPABASE_URL) return;
+        ccSbClient = window.supabase.createClient(window.env.SUPABASE_URL, window.env.SUPABASE_KEY);
+        
+        try {
+            const { data, error } = await ccSbClient.from('system_permissions').select('*');
+            if (error) throw error;
+            allDevices = data || [];
+            
+            const select = document.getElementById('cc-device-select');
+            select.innerHTML = '<option value="" disabled selected>Select an existing Device ID</option>';
+            allDevices.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.device_id;
+                opt.textContent = d.device_id;
+                select.appendChild(opt);
+            });
+        } catch (err) {
+            console.error("Error fetching devices:", err);
+        }
+    }
+
+    function renderCheckboxes() {
+        const container = document.getElementById('cc-permissions-container');
+        container.innerHTML = '';
+        allNavIds.forEach(id => {
+            if (id === 'nav-control-center') return; // Don't allow editing control center visibility
+            const label = document.createElement('label');
+            label.style.display = 'flex';
+            label.style.alignItems = 'center';
+            label.style.gap = '0.5rem';
+            label.style.cursor = 'pointer';
+
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.value = id;
+            cb.className = 'cc-perm-cb';
+            
+            label.appendChild(cb);
+            label.appendChild(document.createTextNode(id.replace('nav-', '').replace(/-/g, ' ')));
+            container.appendChild(label);
+        });
+    }
+
+    function loadDeviceIntoForm(deviceId) {
+        currentEditingId = deviceId;
+        const device = allDevices.find(d => d.device_id === deviceId);
+        const allowed = device ? (device.allowed_sections || []) : [];
+        
+        document.getElementById('cc-permissions-container').style.opacity = '1';
+        document.getElementById('cc-permissions-container').style.pointerEvents = 'auto';
+        document.getElementById('cc-editing-title').textContent = `Editing Permissions for: ${deviceId}`;
+
+        document.querySelectorAll('.cc-perm-cb').forEach(cb => {
+            cb.checked = allowed.includes(cb.value);
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(enforceDevicePermissions, 500);
+
+        // Bind Control Center UI
+        const btnLogin = document.getElementById('btn-cc-login');
+        if (btnLogin) {
+            btnLogin.addEventListener('click', function() {
+                const pwd = document.getElementById('cc-password').value;
+                if (pwd === 'admin123') {
+                    document.getElementById('control-center-auth').style.display = 'none';
+                    document.getElementById('control-center-content').style.display = 'flex';
+                    renderCheckboxes();
+                    initControlCenter();
+                } else {
+                    alert('Incorrect password');
+                }
+            });
+        }
+
+        const devSelect = document.getElementById('cc-device-select');
+        if (devSelect) {
+            devSelect.addEventListener('change', (e) => {
+                document.getElementById('cc-new-device').value = '';
+                loadDeviceIntoForm(e.target.value);
+            });
+        }
+
+        const devNew = document.getElementById('cc-new-device');
+        if (devNew) {
+            devNew.addEventListener('input', (e) => {
+                const val = e.target.value.trim();
+                if (val) {
+                    if (devSelect) devSelect.value = '';
+                    loadDeviceIntoForm(val);
+                } else {
+                    document.getElementById('cc-permissions-container').style.opacity = '0.5';
+                    document.getElementById('cc-permissions-container').style.pointerEvents = 'none';
+                    document.getElementById('cc-editing-title').textContent = `Select or create a Device ID above`;
+                }
+            });
+        }
+
+        const btnSave = document.getElementById('btn-cc-save');
+        if (btnSave) {
+            btnSave.addEventListener('click', async () => {
+                if (!currentEditingId || !ccSbClient) return;
+                const allowed = Array.from(document.querySelectorAll('.cc-perm-cb:checked')).map(cb => cb.value);
+                allowed.push('nav-control-center'); // Always include
+                
+                try {
+                    const { error } = await ccSbClient.from('system_permissions').upsert({
+                        device_id: currentEditingId,
+                        allowed_sections: allowed
+                    }, { onConflict: 'device_id' });
+
+                    if (error) throw error;
+                    alert('Permissions saved successfully! Refresh operator PCs to apply.');
+                    await initControlCenter();
+                    if (allDevices.find(d => d.device_id === currentEditingId)) {
+                        devSelect.value = currentEditingId;
+                    }
+                } catch (err) {
+                    console.error("Save error:", err);
+                    alert("Error saving permissions: " + (err.message || err.error_description || JSON.stringify(err)));
+                }
+            });
+        }
+    });
+})();
+document.addEventListener('DOMContentLoaded', () => {
+    const navPlantAnimation = document.getElementById('nav-plant-animation');
+    const viewPlantAnimation = document.getElementById('view-plant-animation');
+    const btnStartSequence = document.getElementById('btn-start-sequence');
+    const btnResetSequence = document.getElementById('btn-reset-sequence');
+
+    if (navPlantAnimation && viewPlantAnimation) {
+        navPlantAnimation.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Assuming switchView is available globally, otherwise we hide all other views.
+            // Since switchView might be scoped, we manually implement view switching here for this new tab
+            const views = document.querySelectorAll('.view-section');
+            views.forEach(v => v.style.display = 'none');
+            const navs = document.querySelectorAll('.nav-item');
+            navs.forEach(n => n.classList.remove('active'));
+            
+            viewPlantAnimation.style.display = 'block';
+            navPlantAnimation.classList.add('active');
+            window.location.hash = '#plant-animation';
+        });
+    }
+
+    const sequenceElements = ['flow-A10', 'flow-A11', 'flow-A12', 'flow-A13', 'flow-A14', 'flow-A15', 'flow-A17', 'flow-A18', 'flow-CB1'];
+
+    let sequenceInterval;
+
+    if (btnStartSequence) {
+        btnStartSequence.addEventListener('click', () => {
+            // Reset first
+            resetSequence();
+            
+            let currentIndex = 0;
+            btnStartSequence.disabled = true;
+            btnStartSequence.style.opacity = '0.5';
+
+            sequenceInterval = setInterval(() => {
+                if (currentIndex >= sequenceElements.length) {
+                    clearInterval(sequenceInterval);
+                    btnStartSequence.disabled = false;
+                    btnStartSequence.style.opacity = '1';
+                    return;
+                }
+
+                const elId = sequenceElements[currentIndex];
+                const el = document.getElementById(elId);
+                if (el) {
+                    if (elId.startsWith('route')) {
+                        el.classList.add('scada-active-route');
+                    } else {
+                        el.classList.add('scada-active-flow');
+                    }
+                }
+                currentIndex++;
+            }, 500); // 500ms delay between each element
+        });
+    }
+
+    function resetSequence() {
+        clearInterval(sequenceInterval);
+        sequenceElements.forEach(elId => {
+            const el = document.getElementById(elId);
+            if (el) {
+                el.classList.remove('scada-active-route', 'scada-active-node', 'scada-active-flow');
+            }
+        });
+        if (btnStartSequence) {
+            btnStartSequence.disabled = false;
+            btnStartSequence.style.opacity = '1';
+        }
+    }
+
+    if (btnResetSequence) {
+        btnResetSequence.addEventListener('click', resetSequence);
+    }
+
+    // ─── Premix Stock Report Calculations ────────────────────────────────────
+    const viewPremixArea = document.getElementById('view-premix-area');
+    const premixMainDate = document.getElementById('premix-main-date');
+    if (viewPremixArea) {
+        viewPremixArea.addEventListener('input', function(e) {
+            if (e.target.tagName.toLowerCase() === 'input' && e.target.type === 'number') {
+                calculatePremixTotals();
+            }
+            if (e.target.id !== 'premix-main-date' && (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea')) {
+                savePremixData();
+            }
+        });
+        
+        if (premixMainDate) {
+            premixMainDate.addEventListener('change', loadPremixData);
+        }
+    }
+
+    function savePremixData() {
+        if (!premixMainDate || !premixMainDate.value) return;
+        const date = premixMainDate.value;
+        const table = document.querySelector('.premix-report-table');
+        if (!table) return;
+        
+        const inputs = table.querySelectorAll('input, select, textarea');
+        const values = Array.from(inputs).map(inp => {
+            if (inp.type === 'checkbox' || inp.type === 'radio') return inp.checked;
+            return inp.value;
+        });
+        
+        let premixData = JSON.parse(localStorage.getItem('fm_premix_data')) || {};
+        premixData[date] = values;
+        localStorage.setItem('fm_premix_data', JSON.stringify(premixData));
+    }
+
+    function loadPremixData() {
+        if (!premixMainDate || !premixMainDate.value) return;
+        const date = premixMainDate.value;
+        let premixData = JSON.parse(localStorage.getItem('fm_premix_data')) || {};
+        const values = premixData[date];
+        
+        const table = document.querySelector('.premix-report-table');
+        if (!table) return;
+        const inputs = table.querySelectorAll('input, select, textarea');
+        
+        if (values && values.length === inputs.length) {
+            inputs.forEach((inp, i) => {
+                if (inp.type === 'checkbox' || inp.type === 'radio') {
+                    inp.checked = values[i];
+                } else {
+                    inp.value = values[i];
+                }
+            });
+        } else {
+            inputs.forEach(inp => {
+                if (inp.type === 'checkbox' || inp.type === 'radio') {
+                    inp.checked = inp.defaultChecked;
+                } else {
+                    inp.value = inp.defaultValue;
+                }
+            });
+        }
+        calculatePremixTotals();
+    }
+
+    function calculatePremixTotals() {
+        let premixGTotalOB = 0;
+        let premixGTotalTP = 0;
+        let premixGTotalTB = 0;
+
+        // Groups 1 to 10 for Premix
+        for(let i=1; i<=10; i++) {
+            let obInputs = document.querySelectorAll('.pr-r' + i + '.calc-ob');
+            let tpInputs = document.querySelectorAll('.pr-r' + i + '.calc-tp');
+            
+            let rowOB = 0;
+            let rowTP = 0;
+            
+            obInputs.forEach(inp => rowOB += parseFloat(inp.value) || 0);
+            tpInputs.forEach(inp => rowTP += parseFloat(inp.value) || 0);
+            
+            let rowTB = rowOB + rowTP;
+            
+            const totalCell = document.querySelector('.pr-r' + i + '-t');
+            if(totalCell) totalCell.textContent = rowTB > 0 ? rowTB.toFixed(1) : '';
+            
+            premixGTotalOB += rowOB;
+            premixGTotalTP += rowTP;
+            premixGTotalTB += rowTB;
+        }
+        
+        const preOB = document.getElementById('premix-gtotal-ob');
+        if(preOB) preOB.textContent = premixGTotalOB > 0 ? premixGTotalOB.toFixed(1) : '';
+        const preTP = document.getElementById('premix-gtotal-tp');
+        if(preTP) preTP.textContent = premixGTotalTP > 0 ? premixGTotalTP.toFixed(1) : '';
+        const preTB = document.getElementById('premix-gtotal-tb');
+        if(preTB) preTB.textContent = premixGTotalTB > 0 ? premixGTotalTB.toFixed(1) : '';
+
+        let phytaseGTotalOB = 0;
+        let phytaseGTotalTP = 0;
+        let phytaseGTotalTB = 0;
+
+        // Groups 1 to 5 for Phytase
+        for(let i=1; i<=5; i++) {
+            let obInputs = document.querySelectorAll('.ph-r' + i + '.calc-ob');
+            let tpInputs = document.querySelectorAll('.ph-r' + i + '.calc-tp');
+            
+            let rowOB = 0;
+            let rowTP = 0;
+            
+            obInputs.forEach(inp => rowOB += parseFloat(inp.value) || 0);
+            tpInputs.forEach(inp => rowTP += parseFloat(inp.value) || 0);
+            
+            let rowTB = rowOB + rowTP;
+            
+            const totalCell = document.querySelector('.ph-r' + i + '-t');
+            if(totalCell) totalCell.textContent = rowTB > 0 ? rowTB.toFixed(1) : '';
+            
+            phytaseGTotalOB += rowOB;
+            phytaseGTotalTP += rowTP;
+            phytaseGTotalTB += rowTB;
+        }
+        
+        const phyOB = document.getElementById('phytase-gtotal-ob');
+        if(phyOB) phyOB.textContent = phytaseGTotalOB > 0 ? phytaseGTotalOB.toFixed(1) : '';
+        const phyTP = document.getElementById('phytase-gtotal-tp');
+        if(phyTP) phyTP.textContent = phytaseGTotalTP > 0 ? phytaseGTotalTP.toFixed(1) : '';
+        const phyTB = document.getElementById('phytase-gtotal-tb');
+        if(phyTB) phyTB.textContent = phytaseGTotalTB > 0 ? phytaseGTotalTB.toFixed(1) : '';
+
+        // Calculate per-row Closing Balance
+        const premixTable = document.querySelector('.premix-report-table');
+        if (premixTable) {
+            const rows = premixTable.querySelectorAll('tbody tr');
+            rows.forEach(tr => {
+                const inputs = tr.querySelectorAll('input[type="number"]');
+                if (inputs.length >= 7) {
+                    let ob = parseFloat(inputs[0].value) || 0;
+                    let tp = parseFloat(inputs[1].value) || 0;
+                    let sa = parseFloat(inputs[2].value) || 0;
+                    let sb = parseFloat(inputs[3].value) || 0;
+                    let sc = parseFloat(inputs[4].value) || 0;
+                    
+                    if (inputs[0].value || inputs[1].value || inputs[2].value || inputs[3].value || inputs[4].value) {
+                        let cb = (ob + tp) - (sa + sb + sc);
+                        inputs[5].value = cb;
+                    } else {
+                        inputs[5].value = '';
+                    }
+                    
+                    let cbVal = inputs[5].value;
+                    let pbVal = inputs[6].value;
+                    
+                    if (cbVal !== '' && pbVal !== '') {
+                        if (parseFloat(cbVal) === parseFloat(pbVal)) {
+                            tr.style.backgroundColor = '#d4edda';
+                        } else {
+                            tr.style.backgroundColor = '#f8d7da';
+                        }
+                    } else {
+                        tr.style.backgroundColor = '';
+                    }
+                }
+            });
+        }
+    }
+});
+
+
+
+
+
 

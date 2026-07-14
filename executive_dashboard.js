@@ -10,38 +10,92 @@ const gaugeNeedlePlugin = {
         const { ctx, data, chartArea: { top, bottom, left, right, width, height } } = chart;
         ctx.save();
         
-        const needleValue = data.datasets[0].needleValue || 0;
+        const needleValue = data.datasets[0].needleValue;
+        const needleValues = Array.isArray(data.datasets[0].needleValues) ? data.datasets[0].needleValues : (needleValue !== undefined ? [{value: needleValue, color: '#0f172a'}] : []);
         const maxVal = data.datasets[0].data.reduce((a, b) => a + b, 0);
         
-        // Calculate angle (between Math.PI and 2 * Math.PI)
-        // needleValue = 0 -> PI, needleValue = maxVal -> 2PI
-        let clampedValue = Math.max(0, Math.min(needleValue, maxVal));
-        let angle = Math.PI + (clampedValue / maxVal * Math.PI);
-
         const cx = width / 2 + left;
         const cy = chart._metasets[0].data[0].y; // Get center Y from doughnut arc
+        
+        const outerRadius = chart._metasets[0].data[0].outerRadius;
+        const innerRadius = chart._metasets[0].data[0].innerRadius;
 
-        // Draw needle
-        ctx.translate(cx, cy);
-        ctx.rotate(angle);
-        ctx.beginPath();
-        ctx.moveTo(0, -5); // Top of needle base
-        ctx.lineTo(height - 30, 0); // Tip of needle
-        ctx.lineTo(0, 5); // Bottom of needle base
-        ctx.fillStyle = '#0f172a';
-        ctx.fill();
+        // Draw scale divisions (text ticks)
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        const tickValues = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110];
+        const textRadius = innerRadius - 16; // Place text inside the arc
+        
+        tickValues.forEach(val => {
+            if (val > maxVal) return;
+            const tickAngle = Math.PI + (val / maxVal * Math.PI);
+            const tx = cx + Math.cos(tickAngle) * textRadius;
+            const ty = cy + Math.sin(tickAngle) * textRadius;
+            ctx.fillText(val, tx, ty);
+        });
+
+        // Draw needles
+        needleValues.forEach((needle, index) => {
+            const val = typeof needle === 'object' ? needle.value : needle;
+            const color = typeof needle === 'object' ? (needle.color || '#0f172a') : '#0f172a';
+            const label = typeof needle === 'object' ? needle.label : '';
+
+            let clampedValue = Math.max(0, Math.min(val, maxVal));
+            let angle = Math.PI + (clampedValue / maxVal * Math.PI);
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle);
+            ctx.beginPath();
+            
+            // Adjust needle shape for multiple needles to make them distinguishable
+            const needleWidth = index === 0 ? 4 : 3;
+            const needleLengthOffset = index === 0 ? 8 : 15;
+
+            ctx.moveTo(0, -needleWidth); 
+            ctx.lineTo(outerRadius - needleLengthOffset, 0); 
+            ctx.lineTo(0, needleWidth); 
+            ctx.fillStyle = color;
+            ctx.fill();
+            
+            // Draw label at tip if provided
+            if (label) {
+                ctx.restore(); // restore to draw text unrotated
+                ctx.save();
+                const tipRadius = outerRadius - needleLengthOffset + 12;
+                const tx = cx + Math.cos(angle) * tipRadius;
+                const ty = cy + Math.sin(angle) * tipRadius;
+                
+                // Draw badge background
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.roundRect(tx - 10, ty - 8, 20, 16, 4);
+                ctx.fill();
+
+                ctx.font = 'bold 10px sans-serif';
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label, tx, ty);
+            } else {
+                ctx.restore();
+            }
+        });
         
         // Draw center dot
-        ctx.translate(-cx, -cy);
+        ctx.save();
+        ctx.translate(cx, cy);
         ctx.beginPath();
-        ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+        ctx.arc(0, 0, 10, 0, Math.PI * 2);
         ctx.fillStyle = '#0f172a';
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+        ctx.arc(0, 0, 4, 0, Math.PI * 2);
         ctx.fillStyle = '#f8fafc';
         ctx.fill();
-        
         ctx.restore();
     }
 };
@@ -78,12 +132,17 @@ function initExecutiveGauges() {
 
     const ctxA = document.getElementById('exec-pellet-a-gauge').getContext('2d');
     const ctxB = document.getElementById('exec-pellet-b-gauge').getContext('2d');
+    const ctxMonthly = document.getElementById('exec-monthly-avg-gauge') ? document.getElementById('exec-monthly-avg-gauge').getContext('2d') : null;
 
     if (execPelletAGaugeChart) execPelletAGaugeChart.destroy();
     if (execPelletBGaugeChart) execPelletBGaugeChart.destroy();
+    if (window.execMonthlyAvgGaugeChart) window.execMonthlyAvgGaugeChart.destroy();
 
     execPelletAGaugeChart = new Chart(ctxA, gaugeConfig(0, 110));
     execPelletBGaugeChart = new Chart(ctxB, gaugeConfig(0, 110));
+    if (ctxMonthly) {
+        window.execMonthlyAvgGaugeChart = new Chart(ctxMonthly, gaugeConfig(0, 110));
+    }
 }
 
 function updateExecutiveDashboard() {
@@ -154,25 +213,47 @@ function updateExecutiveDashboard() {
     if (aAvg > 0) aEff = Math.round((aAvg / 600) * 100);
     if (bAvg > 0) bEff = Math.round((bAvg / 800) * 100);
 
+    let monthlyAEff = '--', monthlyBEff = '--';
     let monthlyAAvg = '--', monthlyBAvg = '--';
-    if (monthlyATime > 0) monthlyAAvg = Math.round(((monthlyAProd / monthlyATime) / 600) * 100) + '%';
-    if (monthlyBTime > 0) monthlyBAvg = Math.round(((monthlyBProd / monthlyBTime) / 800) * 100) + '%';
+    if (monthlyATime > 0) {
+        monthlyAAvg = Math.round(monthlyAProd / monthlyATime);
+        monthlyAEff = Math.round((monthlyAAvg / 600) * 100) + '%';
+    }
+    if (monthlyBTime > 0) {
+        monthlyBAvg = Math.round(monthlyBProd / monthlyBTime);
+        monthlyBEff = Math.round((monthlyBAvg / 800) * 100) + '%';
+    }
 
-    document.getElementById('exec-pellet-a-value').textContent = aEff + '%';
-    document.getElementById('exec-pellet-b-value').textContent = bEff + '%';
+    document.getElementById('exec-pellet-a-value').textContent = aEff > 0 ? (aEff + '%') : '--';
+    document.getElementById('exec-pellet-b-value').textContent = bEff > 0 ? (bEff + '%') : '--';
     
+    // Set Daily Averages
+    const aAvgEl = document.getElementById('exec-pellet-a-avg-val');
+    const bAvgEl = document.getElementById('exec-pellet-b-avg-val');
+    if (aAvgEl) aAvgEl.textContent = aAvg > 0 ? (aAvg + ' Tons/Hr') : '-- Tons/Hr';
+    if (bAvgEl) bAvgEl.textContent = bAvg > 0 ? (bAvg + ' Tons/Hr') : '-- Tons/Hr';
+
+    // Set Monthly Efficiencies
     const monthlyAEl = document.getElementById('exec-pellet-a-monthly');
     const monthlyBEl = document.getElementById('exec-pellet-b-monthly');
-    if (monthlyAEl) monthlyAEl.textContent = monthlyAAvg;
-    if (monthlyBEl) monthlyBEl.textContent = monthlyBAvg;
+    if (monthlyAEl) monthlyAEl.textContent = monthlyAEff;
+    if (monthlyBEl) monthlyBEl.textContent = monthlyBEff;
     
     if (execPelletAGaugeChart) {
-        execPelletAGaugeChart.data.datasets[0].needleValue = aEff;
+        execPelletAGaugeChart.data.datasets[0].needleValue = aEff > 0 ? aEff : 0;
         execPelletAGaugeChart.update();
     }
     if (execPelletBGaugeChart) {
-        execPelletBGaugeChart.data.datasets[0].needleValue = bEff;
+        execPelletBGaugeChart.data.datasets[0].needleValue = bEff > 0 ? bEff : 0;
         execPelletBGaugeChart.update();
+    }
+    
+    if (window.execMonthlyAvgGaugeChart) {
+        window.execMonthlyAvgGaugeChart.data.datasets[0].needleValues = [
+            { value: parseFloat(monthlyAEff) || 0, color: '#3b82f6', label: 'A' },
+            { value: parseFloat(monthlyBEff) || 0, color: '#10b981', label: 'B' }
+        ];
+        window.execMonthlyAvgGaugeChart.update();
     }
 
     // 2. Unit Per Bag
@@ -249,6 +330,34 @@ function updateExecutiveDashboard() {
     
     document.getElementById('exec-moisture-diff').textContent = diffStr;
     document.getElementById('exec-moisture-diff-status').innerHTML = statusStr;
+
+    // 5. Total Batches (From Less/Excess Logs)
+    let totalBatches = '--';
+    let lastUpdatedStr = '';
+    try {
+        const lessExcessLogs = JSON.parse(localStorage.getItem('fmpr_lessExcessLogs') || '[]');
+        const targetReports = lessExcessLogs.filter(r => {
+            return parseDateToISO(r.date) === selectedDateStr || r.date === selectedDateStr;
+        });
+        
+        if (targetReports.length > 0) {
+            totalBatches = targetReports.reduce((sum, r) => sum + (parseFloat(r.batches) || 0), 0);
+            
+            // Try to extract latest time from IDs (which are usually Date.now() timestamps)
+            const validIds = targetReports.map(r => parseInt(r.id)).filter(id => !isNaN(id) && id > 1000000000000);
+            if (validIds.length > 0) {
+                const latestId = Math.max(...validIds);
+                lastUpdatedStr = 'Updated: ' + new Date(latestId).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            } else {
+                lastUpdatedStr = 'Updated: ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+        }
+    } catch(e) {}
+    
+    const batchesEl = document.getElementById('exec-total-batches');
+    const batchesTimeEl = document.getElementById('exec-total-batches-time');
+    if (batchesEl) batchesEl.textContent = totalBatches;
+    if (batchesTimeEl) batchesTimeEl.textContent = lastUpdatedStr;
 }
 
 // Hook into navigation clicks

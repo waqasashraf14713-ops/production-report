@@ -33,7 +33,11 @@
         div.style.fontFamily = 'monospace';
         div.style.whiteSpace = 'pre-wrap';
         div.innerHTML = '<strong>Runtime Error in ' + source + ':</strong><br>' + err.message + '<br><br><strong>Stack:</strong><br>' + err.stack;
-        document.body.appendChild(div);
+        if (document.body) {
+            document.body.appendChild(div);
+        } else {
+            window.addEventListener('DOMContentLoaded', function() { document.body.appendChild(div); });
+        }
     };
 
     window.addEventListener('error', function(e) {
@@ -55,7 +59,11 @@
         div.style.fontFamily = 'monospace';
         div.style.whiteSpace = 'pre-wrap';
         div.innerHTML = '<strong>JavaScript Error:</strong><br>' + e.message + '<br>at ' + e.filename + ':' + e.lineno + ':' + e.colno;
-        document.body.appendChild(div);
+        if (document.body) {
+            document.body.appendChild(div);
+        } else {
+            window.addEventListener('DOMContentLoaded', function() { document.body.appendChild(div); });
+        }
     });
     </script>
     <!-- Flatpickr for date formatting -->
@@ -89,13 +97,13 @@
                     <span class="nav-icon">📋</span>
                     <span>Daily Report</span>
                 </a>
-                <a href="#maize-moisture" class="nav-item" id="nav-maize-moisture">
-                    <span class="nav-icon">🌽</span>
-                    <span>Daily Maize Moisture</span>
-                </a>
                 <a href="#daily-less-excess" class="nav-item" id="nav-daily-less-excess">
                     <span class="nav-icon">⚖️</span>
                     <span>Daily Less/Excess</span>
+                </a>
+                <a href="#premix-area" class="nav-item" id="nav-premix-area">
+                    <span class="nav-icon">🧪</span>
+                    <span>Premix Area</span>
                 </a>
                 <a href="#five-s" class="nav-item" id="nav-five-s">
                     <span class="nav-icon">✅</span>
@@ -120,6 +128,14 @@
                 <a href="#dryer-records" class="nav-item" id="nav-dryer-records">
                     <span class="nav-icon">🔥</span>
                     <span>Dryer Records</span>
+                </a>
+                <a href="#plant-animation" class="nav-item" id="nav-plant-animation">
+                    <span class="nav-icon">▶️</span>
+                    <span>Plant Animation</span>
+                </a>
+                <a href="#control-center" class="nav-item" id="nav-control-center" style="margin-top: auto; border-top: 1px solid #4a5568; padding-top: 15px;">
+                    <span class="nav-icon">🔐</span>
+                    <span>Control Center</span>
                 </a>
             </nav>
         </aside>
@@ -162,6 +178,11 @@
                     <div class="dash-quick-icon" style="background:linear-gradient(135deg,#ef4444,#f87171);">⚖️</div>
                     <div class="dash-quick-label">Less / Excess</div>
                     <div class="dash-quick-desc">Daily less/excess report</div>
+                </div>
+                <div class="dash-quick-card" onclick="document.getElementById('nav-premix-area').click()">
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#10b981,#34d399);">🧪</div>
+                    <div class="dash-quick-label">Premix Area</div>
+                    <div class="dash-quick-desc">Premix area logs</div>
                 </div>
                 <div class="dash-quick-card" onclick="document.getElementById('nav-five-s').click()">
                     <div class="dash-quick-icon" style="background:linear-gradient(135deg,#14b8a6,#5eead4);">✅</div>
@@ -248,41 +269,64 @@
                     </div>
                     <div style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.03; pointer-events: none;">💧</div>
                 </div>
+
+                <!-- Total Batches -->
+                <div style="background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 1rem; position: relative; overflow: hidden;">
+                    <div style="width: 60px; height: 60px; border-radius: 12px; background: linear-gradient(135deg, #f59e0b, #fbbf24); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; box-shadow: 0 4px 10px rgba(245,158,11,0.3);">🏭</div>
+                    <div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Total Batches</div>
+                        <div id="exec-total-batches" style="font-size: 1.8rem; font-weight: 800; color: #0f172a; margin-top: 0.25rem;">--</div>
+                        <div id="exec-total-batches-time" style="font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; font-weight: 600;"></div>
+                    </div>
+                    <div style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.03; pointer-events: none;">🏭</div>
+                </div>
             </div>
 
             <!-- Charts Row -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
-                
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                 <!-- Pellet A Average Needle Graph -->
                 <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);">
-                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">🎯 A Pellet Efficiency</h3>
-                    <div style="position: relative; height: 220px; width: 100%; display: flex; justify-content: center; align-items: center;">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">🎯 A Pellet Daily</h3>
+                    <div style="position: relative; height: 180px; width: 100%; display: flex; justify-content: center; align-items: center;">
                         <canvas id="exec-pellet-a-gauge"></canvas>
-                        <div style="position: absolute; bottom: 10px; text-align: center; width: 100%;">
-                            <div id="exec-pellet-a-value" style="font-size: 2rem; font-weight: 800; color: #0f172a;">--</div>
-                            <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">Daily Efficiency %</div>
+                        <div style="position: absolute; bottom: -15px; text-align: center; width: 100%;">
+                            <div id="exec-pellet-a-value" style="font-size: 1.6rem; font-weight: 800; color: #0f172a;">--</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; line-height: 1;">Daily Efficiency %</div>
+                            <div id="exec-pellet-a-avg-val" style="font-size: 0.85rem; font-weight: 700; color: #3b82f6; margin-top: 4px;">-- Tons/Hr</div>
                         </div>
-                    </div>
-                    <div style="text-align: center; margin-top: 1rem; font-weight: 600; color: #3b82f6;">
-                        Monthly Avg: <span id="exec-pellet-a-monthly">--</span>
                     </div>
                 </div>
 
                 <!-- Pellet B Average Needle Graph -->
                 <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);">
-                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">🎯 B Pellet Efficiency</h3>
-                    <div style="position: relative; height: 220px; width: 100%; display: flex; justify-content: center; align-items: center;">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">🎯 B Pellet Daily</h3>
+                    <div style="position: relative; height: 180px; width: 100%; display: flex; justify-content: center; align-items: center;">
                         <canvas id="exec-pellet-b-gauge"></canvas>
-                        <div style="position: absolute; bottom: 10px; text-align: center; width: 100%;">
-                            <div id="exec-pellet-b-value" style="font-size: 2rem; font-weight: 800; color: #0f172a;">--</div>
-                            <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">Daily Efficiency %</div>
+                        <div style="position: absolute; bottom: -15px; text-align: center; width: 100%;">
+                            <div id="exec-pellet-b-value" style="font-size: 1.6rem; font-weight: 800; color: #0f172a;">--</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; line-height: 1;">Daily Efficiency %</div>
+                            <div id="exec-pellet-b-avg-val" style="font-size: 0.85rem; font-weight: 700; color: #10b981; margin-top: 4px;">-- Tons/Hr</div>
                         </div>
-                    </div>
-                    <div style="text-align: center; margin-top: 1rem; font-weight: 600; color: #10b981;">
-                        Monthly Avg: <span id="exec-pellet-b-monthly">--</span>
                     </div>
                 </div>
 
+                <!-- Monthly Average Needle Graph (2 Needles) -->
+                <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem;">🎯 Monthly Average</h3>
+                    <div style="position: relative; height: 180px; width: 100%; display: flex; justify-content: center; align-items: center;">
+                        <canvas id="exec-monthly-avg-gauge"></canvas>
+                        <div style="position: absolute; bottom: -15px; text-align: center; width: 100%; display: flex; justify-content: space-around;">
+                            <div>
+                                <div id="exec-pellet-a-monthly" style="font-size: 1.4rem; font-weight: 800; color: #3b82f6; line-height: 1;">--</div>
+                                <div style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 600; margin-top: 2px;">A Pellet</div>
+                            </div>
+                            <div>
+                                <div id="exec-pellet-b-monthly" style="font-size: 1.4rem; font-weight: 800; color: #10b981; line-height: 1;">--</div>
+                                <div style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 600; margin-top: 2px;">B Pellet</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Trend Charts Row -->
@@ -361,92 +405,626 @@
             </section>
         </div>
 
-        <div id="view-maize-moisture" class="view-section" style="display: none;">
-            <div style="padding: 1.5rem 1.5rem 0 1.5rem;">
-                <!-- Daily Silo Moisture Summary -->
-                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:2rem;">
-                    <h3 style="margin-bottom: 1rem; color: var(--text-primary); border-bottom: 2px solid var(--card-border); padding-bottom: 0.5rem; font-size:1.1rem;margin-top:0;">📊 Daily Silo Moisture Summary <span style="font-size:0.85rem;color:var(--text-secondary);font-weight:normal;">(Across all shifts for selected date)</span></h3>
-                    <div style="display:flex; flex-wrap:wrap; gap:2rem; align-items:center;">
-                        
-                        <div style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--card-border); min-width: 200px;">
-                            <span style="font-size:0.9rem; color:var(--text-secondary);">Actual Daily Average:</span>
-                            <span id="dsms-actual" style="font-size:1.5rem; font-weight:bold; color:var(--text-primary);">-- %</span>
-                            <span id="dsms-count" style="font-size:0.75rem; color:var(--text-secondary);">Based on 0 readings</span>
-                        </div>
-
-                        <div style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--card-border); min-width: 200px;">
-                            <label for="dsms-formula" style="font-size:0.9rem; color:var(--text-secondary);">Formula Moisture:</label>
-                            <div style="display:flex; gap:0.5rem; align-items:center;">
-                                <input type="number" step="any" id="dsms-formula" placeholder="Enter %" style="width:100px; border-radius:4px; border:1px solid var(--card-border); padding:0.4rem; outline:none; background:var(--card-bg); color:var(--text-primary); font-size:1.1rem; font-weight:bold;">
-                                <button class="btn btn-secondary btn-sm" id="btn-save-dsms-formula" style="padding:0.3rem 0.6rem;">Save</button>
-                            </div>
-                        </div>
-
-                        <div style="display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--card-border); min-width: 200px; flex: 1;">
-                            <span style="font-size:0.9rem; color:var(--text-secondary);">Comparison:</span>
-                            <span id="dsms-comparison" style="font-size:1.1rem; font-weight:bold; color:var(--text-secondary);">No data to compare</span>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Gauge Chart -->
-                <div id="dsms-gauge-card" style="display:none; background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:1.5rem; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom:2rem;">
-                    <h3 style="margin:0 0 0.75rem 0; font-size:1rem; color:var(--text-primary); text-align:center;">🎯 Moisture Difference Gauge</h3>
-                    <div style="display:flex; justify-content:center; align-items:center;">
-                        <canvas id="dsms-gauge-canvas" width="320" height="200" style="max-width:100%;"></canvas>
-                    </div>
-                    <p id="dsms-gauge-label" style="text-align:center; margin:0.5rem 0 0 0; font-size:0.85rem; color:var(--text-secondary);">Waiting for data…</p>
-                </div>
-
-                <!-- Red Alarm Banner -->
-                <div id="dsms-alarm" style="display:none; margin-top:1rem; background:#ef4444; color:#fff; border-radius:8px; padding:0.75rem 1rem; font-weight:700; font-size:1rem; align-items:center; gap:0.75rem; box-shadow: 0 0 18px rgba(239,68,68,0.7);"></div>
-
-                <!-- Trend Chart -->
-                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:2rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
-                        <span style="font-size:0.95rem; font-weight:600; color:var(--text-primary);">&#128200; Moisture Difference Trend <span style="font-size:0.8rem; font-weight:400; color:var(--text-secondary);">(Last 7 days visible &middot; scroll/pinch to zoom &middot; drag to pan)</span></span>
-                        <div style="display:flex; gap:0.5rem;">
-                            <button id="btn-chart-reset" class="btn btn-secondary" style="padding:0.25rem 0.6rem; font-size:0.8rem;">&#8634; Reset Zoom</button>
-                            <button id="btn-chart-fullscreen" class="btn btn-primary" style="padding:0.25rem 0.6rem; font-size:0.8rem;">&#x26F6; Full Screen</button>
-                        </div>
-                    </div>
-                    <div style="position:relative; height:240px;">
-                        <canvas id="silo-moist-trend-chart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Fullscreen Chart Modal -->
-                <div id="chart-fullscreen-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999; padding:1.5rem; box-sizing:border-box;">
-                    <div style="background:var(--card-bg); border-radius:16px; padding:1.5rem; height:100%; display:flex; flex-direction:column; gap:1rem; box-sizing:border-box;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3 style="margin:0; color:var(--text-primary);">&#128200; Silo Moisture Difference Trend &mdash; All Dates (scroll/pinch to zoom)</h3>
-                            <button id="btn-chart-fullscreen-close" class="btn btn-secondary" style="padding:0.35rem 0.8rem;">&#10005; Close</button>
-                        </div>
-                        <div style="position:relative; flex:1; min-height:0;">
-                            <canvas id="silo-moist-trend-chart-full"></canvas>
-                        </div>
-                    </div>
-                </div>
+        <!-- PREMIX AREA SECTION -->
+        <div id="view-premix-area" class="view-section" style="display: none;">
+            <div style="display:flex; justify-content:flex-end; padding:10px; background:#fff; border-bottom:1px solid #e2e8f0; margin-bottom:10px;">
+                <button class="btn btn-primary" onclick="window.print()" style="background:#10b981;border-color:#10b981;">🖨️ Print Report</button>
             </div>
-            <section class="table-container">
-                <div class="table-header">
-                    <h2>Daily Maize Moisture Log</h2>
-                    <div class="header-actions" style="display:flex;gap:1rem;">
-                        <button class="btn" id="btn-share-whatsapp" style="background-color:#25D366;color:white;border:none;border-radius:4px;padding:0.5rem 1rem;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:0.5rem;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c-.003 1.396.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/></svg>
-                            Share (Last 4 Days)
-                        </button>
-                        <button class="btn btn-secondary" id="btn-add-maize-log">➕ Add New Date Log</button>
-                        <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+            <style>
+                .premix-report-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-family: Arial, sans-serif;
+                    font-size: 11px;
+                    color: #000;
+                }
+                .premix-report-table th, .premix-report-table td {
+                    border: 1px solid #000;
+                    text-align: center;
+                    padding: 2px 4px;
+                    vertical-align: middle;
+                }
+                .premix-report-table th {
+                    font-weight: bold;
+                    background: #f1f5f9;
+                }
+                .premix-report-table input {
+                    width: 100%;
+                    border: none;
+                    text-align: center;
+                    background: transparent;
+                    font-size: 11px;
+                    padding: 2px;
+                    box-sizing: border-box;
+                    color: #000;
+                }
+                .premix-report-table input:focus {
+                    outline: 1px solid #2563eb;
+                    background: #f0f9ff;
+                }
+                .premix-header-container {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 10px;
+                    font-family: Arial, sans-serif;
+                    color: #000;
+                }
+                .premix-title-center {
+                    text-align: center;
+                }
+                .premix-title-center h1 {
+                    font-size: 16px;
+                    margin: 0 0 5px 0;
+                    letter-spacing: 1px;
+                    color: #000;
+                }
+                .premix-title-center h2 {
+                    font-size: 14px;
+                    margin: 0;
+                    font-weight: bold;
+                    color: #000;
+                }
+                @media print {
+                    @page {
+                        size: A4 landscape;
+                        margin: 10mm;
+                    }
+                    body * {
+                        visibility: hidden;
+                    }
+                    #view-premix-area, #view-premix-area * {
+                        visibility: visible;
+                    }
+                    #view-premix-area {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                        background: #fff !important;
+                    }
+                    .premix-report-container {
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        max-width: 100% !important;
+                        zoom: 0.95; /* Helps fit on one page */
+                    }
+                    .btn { display: none !important; }
+                    .sidebar { display: none !important; }
+                    .header { display: none !important; }
+                }
+            </style>
+
+            <div class="premix-report-container" style="background:#fff; padding: 20px; max-width: 1100px; margin: 0 auto; color:#000;">
+                <div class="premix-header-container">
+                    <div style="font-weight:bold; padding-top:15px; font-size:12px;">Date: <input type="date" id="premix-main-date" style="border:none; border-bottom:1px solid #000; font-family:inherit; width:auto; font-weight:normal;"></div>
+                    <div class="premix-title-center">
+                        <h1>ASIA-POULTRY-FEEDS-(PVT)-LTD.-UNIT-1</h1>
+                        <h2>Premix Stock Report</h2>
+                    </div>
+                    <div style="padding-top:15px; font-weight:bold; font-size:12px;">P/PRE/01(EX)-2022/</div>
+                </div>
+
+                <table class="premix-report-table">
+                    <thead>
+                        <tr>
+                            <th style="width:16%;">Feed No</th>
+                            <th style="width:9%;">Mixing Date</th>
+                            <th style="width:7%;">Opening<br>Balance</th>
+                            <th style="width:7%;">Today<br>Production</th>
+                            <th style="width:7%;">Total Batches</th>
+                            <th style="width:7%;">Running<br>Batches In<br>Shift A</th>
+                            <th style="width:7%;">Running<br>Batches In<br>Shift B</th>
+                            <th style="width:7%;">Running<br>Batches In<br>Shift C</th>
+                            <th style="width:7%;">Closing<br>Balance</th>
+                            <th style="width:7%;">Physical<br>Balance</th>
+                            <th style="width:19%;">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="premix-tbody">
+                        <!-- Row 1 Group -->
+                        <tr>
+                            <td rowspan="3" style="font-weight:bold; font-size:12px;">11/321,322,323,31A</td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r1"></td>
+                            <td><input type="number" class="calc-tp pr-r1"></td>
+                            <td rowspan="3" class="calc-total pr-r1-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text" value="55Kg/Batch (Fura+Flavo+Madura+VT +Ethox Liq 100%)"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r1"></td>
+                            <td><input type="number" class="calc-tp pr-r1"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r1"></td>
+                            <td><input type="number" class="calc-tp pr-r1"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+
+                        <!-- Row 2 Group -->
+                        <tr>
+                            <td rowspan="4" style="font-weight:bold; font-size:12px;">13/324,324LC,33A,34A,<br>33Y,35</td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r2"></td>
+                            <td><input type="number" class="calc-tp pr-r2"></td>
+                            <td rowspan="4" class="calc-total pr-r2-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text" value="55Kg/Batch (Fura+Flavo+VT +Ethox Liq 100%)"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r2"></td>
+                            <td><input type="number" class="calc-tp pr-r2"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r2"></td>
+                            <td><input type="number" class="calc-tp pr-r2"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r2"></td>
+                            <td><input type="number" class="calc-tp pr-r2"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+
+                        <!-- Row 3 Group -->
+                        <tr>
+                            <td rowspan="2" style="font-weight:bold; font-size:12px;">12/32A,33P<br><span style="font-size:9px; font-weight:normal;">31A (Without Anticoccidial)</span></td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r3"></td>
+                            <td><input type="number" class="calc-tp pr-r3"></td>
+                            <td rowspan="2" class="calc-total pr-r3-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text" value="50Kg/Batch (Fura+Flavo+VT +Ethox Liq 100%)"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r3"></td>
+                            <td><input type="number" class="calc-tp pr-r3"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+
+                        <!-- Row 4 Group -->
+                        <tr>
+                            <td rowspan="3" style="font-weight:bold; font-size:12px;">14/421,430,431,432,41A,42A</td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r4"></td>
+                            <td><input type="number" class="calc-tp pr-r4"></td>
+                            <td rowspan="3" class="calc-total pr-r4-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text" value="50Kg/Batch (Madura 1% +Liq Ethoxy 100%)"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r4"></td>
+                            <td><input type="number" class="calc-tp pr-r4"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r4"></td>
+                            <td><input type="number" class="calc-tp pr-r4"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+
+                        <!-- Row 5 Group -->
+                        <tr>
+                            <td rowspan="3" style="font-weight:bold; font-size:12px;">15/422,433,434,43A,43C<br>,43Z,44A</td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r5"></td>
+                            <td><input type="number" class="calc-tp pr-r5"></td>
+                            <td rowspan="3" class="calc-total pr-r5-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text" value="50Kg/Batch (Madura 1% +Liq Ethoxy 100%)"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r5"></td>
+                            <td><input type="number" class="calc-tp pr-r5"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r5"></td>
+                            <td><input type="number" class="calc-tp pr-r5"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+
+                        <!-- Row 6 Group -->
+                        <tr>
+                            <td rowspan="3" style="font-weight:bold; font-size:14px;">743<br><span style="font-size:9px; font-weight:normal;">All Wanda Premix</span></td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r6"></td>
+                            <td><input type="number" class="calc-tp pr-r6"></td>
+                            <td rowspan="3" class="calc-total pr-r6-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text" value="08Kg/Batch (Premix recipi 67%)"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r6"></td>
+                            <td><input type="number" class="calc-tp pr-r6"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r6"></td>
+                            <td><input type="number" class="calc-tp pr-r6"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+
+                        <!-- Single Rows -->
+                        <tr>
+                            <td style="font-weight:bold; font-size:11px;">430,431,41A</td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r7"></td>
+                            <td><input type="number" class="calc-tp pr-r7"></td>
+                            <td class="calc-total pr-r7-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text" value="V.L.Nest B"></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold; font-size:11px;">430 (live Stock)</td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r8"></td>
+                            <td><input type="number" class="calc-tp pr-r8"></td>
+                            <td class="calc-total pr-r8-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold; font-size:11px;">324 (live Stock)</td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r9"></td>
+                            <td><input type="number" class="calc-tp pr-r9"></td>
+                            <td class="calc-total pr-r9-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        
+                        <!-- Row 10 Group -->
+                        <tr>
+                            <td rowspan="2" style="font-weight:bold; font-size:12px;">521</td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r10"></td>
+                            <td><input type="number" class="calc-tp pr-r10"></td>
+                            <td rowspan="2" class="calc-total pr-r10-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text" value="50Kg/Batch"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob pr-r10"></td>
+                            <td><input type="number" class="calc-tp pr-r10"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        
+                        <!-- Premix Total -->
+                        <tr style="background:#f1f5f9; font-weight:bold; font-size:13px;">
+                            <td colspan="2" style="text-align:right; padding-right:10px;">G.Total Premix Stock</td>
+                            <td id="premix-gtotal-ob"></td>
+                            <td id="premix-gtotal-tp"></td>
+                            <td id="premix-gtotal-tb"></td>
+                            <td colspan="6"></td>
+                        </tr>
+
+                        <!-- PHYTASE STOCK HEADER -->
+                        <tr style="background:#e2e8f0; font-weight:bold; font-style:italic; font-size:13px;">
+                            <td colspan="11">Phytase Stock</td>
+                        </tr>
+
+                        <!-- Phytase Row 1 -->
+                        <tr>
+                            <td rowspan="4" style="font-weight:bold; font-size:16px;">13/<br><span style="font-size:9px; font-weight:normal;">324,521,324LC,325,321,322,323,31A,32A,33P,33Y,35,33A,34A.</span></td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r1"></td>
+                            <td><input type="number" class="calc-tp ph-r1"></td>
+                            <td rowspan="4" class="calc-total ph-r1-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text" value="25.00Kg/Batch(Microtech = 0.500kg/Batch)"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r1"></td>
+                            <td><input type="number" class="calc-tp ph-r1"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r1"></td>
+                            <td><input type="number" class="calc-tp ph-r1"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r1"></td>
+                            <td><input type="number" class="calc-tp ph-r1"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+
+                        <!-- Phytase Row 2 -->
+                        <tr>
+                            <td rowspan="4" style="font-weight:bold; font-size:16px;">14,15/<br><span style="font-size:9px; font-weight:normal;">421,430,431,432,41A,42A,422,433,434,43A,43Z,43C,44A<br>5200,5211,5221,5222</span></td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r2"></td>
+                            <td><input type="number" class="calc-tp ph-r2"></td>
+                            <td rowspan="4" class="calc-total ph-r2-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text" value="25.00Kg/Batch(Microtech = 0.750kg/Batch)"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r2"></td>
+                            <td><input type="number" class="calc-tp ph-r2"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r2"></td>
+                            <td><input type="number" class="calc-tp ph-r2"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r2"></td>
+                            <td><input type="number" class="calc-tp ph-r2"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+
+                        <!-- Phytase Row 3 -->
+                        <tr>
+                            <td rowspan="4" style="font-weight:bold; font-size:16px;">15/<br><span style="font-size:9px; font-weight:normal;">422,433,434,43A,43Z,43C,44A</span></td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r3"></td>
+                            <td><input type="number" class="calc-tp ph-r3"></td>
+                            <td rowspan="4" class="calc-total ph-r3-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r3"></td>
+                            <td><input type="number" class="calc-tp ph-r3"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r3"></td>
+                            <td><input type="number" class="calc-tp ph-r3"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r3"></td>
+                            <td><input type="number" class="calc-tp ph-r3"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+
+                        <!-- Phytase Row 4 -->
+                        <tr>
+                            <td style="font-weight:bold; font-size:12px;">12/33P,32A</td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r4"></td>
+                            <td><input type="number" class="calc-tp ph-r4"></td>
+                            <td class="calc-total ph-r4-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text"></td>
+                        </tr>
+
+                        <!-- Phytase Row 5 -->
+                        <tr>
+                            <td style="font-weight:bold; font-size:12px;">521</td>
+                            <td><input type="date"></td>
+                            <td><input type="number" class="calc-ob ph-r5"></td>
+                            <td><input type="number" class="calc-tp ph-r5"></td>
+                            <td class="calc-total ph-r5-t" style="font-weight:bold; font-size:13px;"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="number"></td>
+                            <td><input type="text" value="25Kg/Batch"></td>
+                        </tr>
+
+                        <!-- Phytase Total -->
+                        <tr style="background:#f1f5f9; font-weight:bold; font-size:13px;">
+                            <td colspan="2" style="text-align:right; padding-right:10px;">G.Total Phytase Stock</td>
+                            <td id="phytase-gtotal-ob"></td>
+                            <td id="phytase-gtotal-tp"></td>
+                            <td id="phytase-gtotal-tb"></td>
+                            <td colspan="6"></td>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+                <!-- Footer Signatures -->
+                <div style="display:flex; justify-content:space-between; margin-top:50px; font-weight:bold; font-family:Arial,sans-serif; font-size:12px;">
+                    <div style="text-align:center; width:200px;">
+                        <div style="border-bottom:1px solid #000; margin-bottom:5px; height:30px;"></div>
+                        <div>Premix Incharge/<br>Supervisor</div>
+                    </div>
+                    <div style="text-align:center; width:200px;">
+                        <div style="border-bottom:1px solid #000; margin-bottom:5px; height:30px;"></div>
+                        <div>Batching Clrek</div>
                     </div>
                 </div>
-                <div class="table-responsive">
-                    <table class="report-table maize-log-table" id="maize-moisture-table">
-                        <!-- The entire table content (headers and body) will be generated by JavaScript since it is dynamically wide -->
-                    </table>
-                </div>
-            </section>
+
+
+            </div>
         </div>
 
         <div id="view-daily-less-excess" class="view-section" style="display: none;">
@@ -1053,9 +1631,79 @@
             </section>
         </div>
 
+        <div id="view-plant-animation" class="view-section" style="display: none;">
+            <div class="scada-container">
+                <div class="scada-header">
+                    <h2>Plant Sequence Animation</h2>
+                    <div class="scada-controls">
+                        <button id="btn-start-sequence" class="btn-primary" style="background: var(--success-color); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: background 0.2s;">Start Sequence</button>
+                        <button id="btn-reset-sequence" class="btn-secondary" style="background: #4a5568; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: background 0.2s; margin-left: 10px;">Reset</button>
+                    </div>
+                </div>
+                <div class="scada-diagram" id="scada-diagram">
+                    <!-- SVG-based SCADA path for background overlay -->
+                    <svg width="100%" height="100%" viewBox="0 0 1920 1080" style="position: absolute; top: 0; left: 0;">
+                        <!-- Flow Paths (Hidden until active) -->
+                        <path id="flow-A10" class="scada-flow" d="M 280 820 L 440 820" />
+                        <path id="flow-A11" class="scada-flow" d="M 440 870 L 250 870" />
+                        <path id="flow-A12" class="scada-flow" d="M 425 900 L 425 380" />
+                        <path id="flow-A13" class="scada-flow" d="M 425 380 L 570 380" />
+                        <path id="flow-A14" class="scada-flow" d="M 520 460 L 520 840" />
+                        <path id="flow-A15" class="scada-flow" d="M 520 865 L 560 865" />
+                        <path id="flow-A17" class="scada-flow" d="M 595 865 L 595 380" />
+                        <path id="flow-A18" class="scada-flow" d="M 595 380 L 740 380" />
+                        <path id="flow-CB1" class="scada-flow" d="M 680 500 L 680 800" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-control-center" class="view-section" style="display: none;">
+            <section class="table-container">
+                <div style="display: flex; background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);flex-direction:column;">
+                    <div class="table-header" style="margin-bottom: 1rem;flex-wrap:wrap;display:flex;justify-content:space-between;align-items:center;width:100%;">
+                        <h2 style="display:flex;align-items:center;gap:0.75rem;margin:0;">🔐 System Device Permissions</h2>
+                    </div>
+                    
+                    <div id="control-center-auth" style="text-align: center; padding: 2rem;">
+                        <p style="color: #64748b; margin-bottom: 1rem;">This section is protected. Please enter the admin password.</p>
+                        <input type="password" id="cc-password" placeholder="Password" style="padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; width: 200px; text-align: center;">
+                        <button class="btn btn-primary" id="btn-cc-login" style="margin-left: 0.5rem;">Unlock</button>
+                    </div>
+
+                    <div id="control-center-content" style="display: none; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 200px; max-width: 300px;">
+                                <label for="cc-device-select">Select Existing Device ID</label>
+                                <select id="cc-device-select" class="form-control" style="width: 100%;">
+                                    <option value="" disabled selected>Loading...</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 250px; max-width: 300px;">
+                                <label for="cc-new-device">Or Create New Device ID</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" id="cc-new-device" class="form-control" placeholder="e.g. PC-Production" style="flex: 1;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 id="cc-editing-title" style="margin-top: 1rem; color: #64748b;">Select or create a Device ID above</h3>
+                        <div id="cc-permissions-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; background: #f8fafc; padding: 1.5rem; border-radius: 8px; border: 1px solid #e2e8f0; color: #1e293b; opacity: 0.5; pointer-events: none;">
+                            <!-- Checkboxes injected by JS -->
+                        </div>
+                        
+                        <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                            <button class="btn btn-primary" id="btn-cc-save" style="background: #10b981; border-color: #10b981;">Save Permissions</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
         <div class="actions">
             <button class="btn btn-primary" onclick="window.print()">Export / Print Report</button>
             <button class="btn btn-danger" id="btn-reset">Reset to Defaults</button>
+            <button class="btn btn-danger" id="btn-reset-device" style="background: #f59e0b; border-color: #f59e0b;">Reset Device ID</button>
         </div>
     </div>
         </main>
@@ -1940,6 +2588,7 @@ order by
                     <select id="sl-modal-operation">
                         <option value="Filling">Filling</option>
                         <option value="Discharging">Discharging</option>
+                        <option value="Emptying">Emptying</option>
                         <option value="Silo Fumigation">Silo Fumigation</option>
                     </select>
                 </div>
@@ -1947,12 +2596,24 @@ order by
                 <!-- 1. Metadata Block (Header Info) -->
                 <div style="background:#ffffff;padding:1.5rem;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.02);display:flex;flex-direction:column;gap:1.25rem;">
                     
-                    <!-- Row 1: Date, Material, Shift, Seal Number (and hidden fields for Filling) -->
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:1.25rem;align-items:end;">
+                    <!-- Row 1: Professional Header (Date, Officer, Operator) -->
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:1.25rem;align-items:end;border-bottom:2px dashed #e2e8f0;padding-bottom:1.25rem;margin-bottom:0.5rem;">
                         <div class="form-group" id="fg-date">
                             <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Date (تاریخ)</label>
-                            <input type="text" id="sl-modal-date" placeholder="e.g. 01-Jul-2026" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;outline:none;" />
+                            <input type="date" id="sl-modal-date" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#f8fafc;color:#000;font-weight:600;outline:none;font-family:inherit;" />
                         </div>
+                        <div class="form-group" id="fg-officer">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Officer Name</label>
+                            <input type="text" id="sl-modal-officer" placeholder="Enter Officer Name" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#f8fafc;color:#000;font-weight:600;outline:none;" />
+                        </div>
+                        <div class="form-group" id="fg-operator">
+                            <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Operator</label>
+                            <input type="text" id="sl-modal-operator" placeholder="Enter Operator Name" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#f8fafc;color:#000;font-weight:600;outline:none;" />
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Material & Shift -->
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:1.25rem;align-items:end;">
                         <div class="form-group" id="fg-material">
                             <label style="font-weight:700;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;display:block;">Material (مٹیریل)</label>
                             <input type="text" id="sl-modal-material" placeholder="e.g. Maize" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.5rem;background:#fff;color:#000;outline:none;" />
@@ -2031,7 +2692,7 @@ order by
                     <h3 id="sl-modal-inspection-title" class="urdu-text" style="color:#2563eb;font-size:1.4rem;border-bottom:2px solid #e2e8f0;padding-bottom:0.5rem;margin-bottom:1rem;font-weight:bold;">سائلو انسپکشن رپورٹ (Steel Silo) - فلنگ سے پہلے</h3>
                     
                     <div class="table-responsive">
-                        <table class="report-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+                        <table class="report-table" style="width:100%;border-collapse:collapse;font-size:0.95rem;direction:rtl;">
                             <thead>
                                 <tr style="background:#f1f5f9;color:#334155;font-weight:700;">
                                     <th style="width:10%;text-align:center;">حصہ</th>
@@ -3142,6 +3803,7 @@ order by
                             <option value="Empty">Empty</option>
                             <option value="Filling">Filling</option>
                             <option value="Discharging">Discharging</option>
+                            <option value="Emptying">Emptying</option>
                             <option value="Filling & Discharging">Filling & Discharging</option>
                             <option value="Active">Active</option>
                             <option value="Running">Running</option>
@@ -3460,10 +4122,10 @@ order by
     <script src="batching_audit.js?v=1"></script>
     <script src="silo_performa.js?v=5"></script>
     <script src="dryer_report.js?v=5"></script>
-    <script src="script.js?v=4"></script>
+    <script src="script.js?v=5"></script>
     <script src="shift_report_pdf.js?v=4"></script>
     <script src="less_excess_pdf.js?v=4"></script>
-    <script src="executive_dashboard.js?v=1"></script>
+    <script src="executive_dashboard.js?v=3"></script>
 
     <!-- Batching Scale inline script (avoids external file cache issues) -->
     <script>
@@ -4083,6 +4745,10 @@ order by
     </div>
 </body>
 </html>
+
+
+
+
 
 
 

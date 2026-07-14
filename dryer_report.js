@@ -365,9 +365,9 @@ function renderDryerReportsTable(reports) {
             <td class="no-print">
                 <button class="btn btn-secondary" onclick="viewDryerRecord(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;">View</button>
                 ${r.supervisor_approval ? 
-                    `<span style="display:inline-flex; align-items:center; margin-left:5px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; padding:0.2rem 0.5rem; border-radius:4px; font-weight:bold; font-size:0.75rem;">🟢 Appr: ${r.supervisor_approval}</span>` 
+                    `<button class="btn btn-primary" disabled style="padding:0.25rem 0.5rem;font-size:0.85rem;background:#15803d;border-color:#15803d;color:white;margin-left:5px;cursor:default;">🟢 Approved</button>` 
                     : 
-                    `<button class="btn btn-primary" onclick="approveDryerRecordFromTable(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;background:#10b981;border-color:#10b981;margin-left:5px;">✅ Approve</button>`
+                    `<button class="btn btn-primary" onclick="approveDryerRecordFromTable(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;background:#ef4444;border-color:#ef4444;margin-left:5px;">✅ Approve</button>`
                 }
                 <button class="btn btn-primary" onclick="printDryerRecordPdf(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;background:#8b5cf6;border-color:#8b5cf6;margin-left:5px;">📄 Print PDF</button>
             </td>
@@ -385,10 +385,7 @@ window.approveDryerRecordFromTable = async function(idx) {
         return;
     }
 
-    const name = prompt("Enter Plant Supervisor Name for Approval:");
-    if (!name || name.trim() === '') return;
-
-    record.supervisor_approval = name.trim();
+    record.supervisor_approval = "Plant Supervisor";
 
     // Save to local storage
     let localReports = JSON.parse(localStorage.getItem('dryer_side_reports') || '[]');
@@ -407,6 +404,13 @@ window.approveDryerRecordFromTable = async function(idx) {
 
     if (typeof showToast === 'function') showToast('✓ Report Approved');
     renderDryerReportsTable(window.allDryerReports);
+    
+    // Also update modal if it is currently displaying this record
+    const modal = document.getElementById('dryer-record-view-modal');
+    if (modal && modal.classList.contains('show')) {
+        const content = document.getElementById('dryer-record-view-content');
+        if (content) content.innerHTML = generateDryerReportHtml(record);
+    }
 };
 
 function generateDryerReportHtml(record) {
@@ -533,8 +537,9 @@ function generateDryerReportHtml(record) {
             <p style="margin-bottom:8px; display: flex; align-items: center; gap: 8px;">
                 <strong>Plant Supervisor Approval:</strong> 
                 ${record.supervisor_approval 
-                    ? `<span style="background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 4px;">🟢 Approved by ${record.supervisor_approval}</span>`
-                    : `<span style="background-color: #fef3c7; color: #d97706; border: 1px solid #fde68a; padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 4px;">⚠️ Pending</span>`
+                    ? `<button class="btn btn-primary no-print" disabled style="padding:4px 12px; font-size:0.85rem; border-radius:9999px; background:#15803d; border:none; color:white; cursor:default; font-weight:bold;">🟢 Approved</button>`
+                    : `<span style="background-color: #fef3c7; color: #d97706; border: 1px solid #fde68a; padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 4px;">⚠️ Pending</span>
+                       <button onclick="approveDryerRecordFromTable(${window.allDryerReports ? window.allDryerReports.indexOf(record) : -1})" class="btn btn-primary no-print" style="padding:4px 12px; font-size:0.85rem; border-radius:9999px; background:#ef4444; border:none; margin-left: 10px; cursor: pointer;">✅ Approve Now</button>`
                 }
             </p>
         </div>

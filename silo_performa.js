@@ -218,46 +218,49 @@ try {
         const remarksLab  = log.remarksLab  || '';
         const siloType  = (parseInt(siloNo) >= 1 && parseInt(siloNo) <= 8) ? 'کنکریٹ سائلوز (Concrete Silo)' : 'سٹیل سائلوز (Steel Silo)';
 
-        const tick = (val) => val
-            ? '<span style="font-family:Arial,sans-serif;font-size:1.1rem;color:#16a34a;font-weight:bold;">✔</span>'
-            : '<span style="font-family:Arial,sans-serif;font-size:0.9rem;color:#cbd5e1;">-</span>';
+        const statusIcon = (val) => val
+            ? '<span style="font-family:Arial,sans-serif;font-size:1.4rem;color:#16a34a;font-weight:bold;">✔</span>'
+            : '<span style="font-family:Arial,sans-serif;font-size:1.4rem;color:#dc2626;font-weight:bold;">✘</span>';
 
-        const row = (sr, desc, yesVal, noVal) => `
+        const row = (sr, desc, yesVal, noVal) => {
+            // Determine actual status based on yesVal/noVal logic from original
+            const isPassed = (noVal !== undefined) ? yesVal : yesVal;
+            return `
             <tr class="urdu-text">
-                <td style="text-align:center;border:1px solid #000;padding:5px 3px;font-family:Arial,sans-serif;font-size:0.85rem;">${tick(noVal !== undefined ? !yesVal : false)}</td>
-                <td style="text-align:center;border:1px solid #000;padding:5px 3px;font-family:Arial,sans-serif;font-size:0.85rem;">${tick(yesVal)}</td>
-                <td class="urdu-text" style="border:1px solid #000;padding:6px 10px;text-align:right;font-size:1.2rem;line-height:1.8;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">${desc}</td>
-                <td style="text-align:center;border:1px solid #000;padding:5px 3px;font-family:Arial,sans-serif;font-size:0.8rem;font-weight:bold;">${sr}</td>
+                <td style="text-align:center;border:1px solid #000;padding:5px 3px;font-family:Arial,sans-serif;font-size:1.1rem;font-weight:bold;">${sr}</td>
+                <td class="urdu-text" style="border:1px solid #000;padding:8px 12px;text-align:right;font-size:1.25rem;line-height:1.8;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">${desc}</td>
+                <td style="text-align:center;border:1px solid #000;padding:5px 3px;">${statusIcon(isPassed)}</td>
             </tr>`;
+        };
 
         return `
-        <div class="urdu-text" style="font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu','Urdu Typesetting',serif;direction:rtl;text-align:right;padding:28px 32px;background:#fff;color:#000;max-width:820px;margin:0 auto;line-height:1.8;">
+        <div class="urdu-text" style="font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu','Urdu Typesetting',serif;direction:rtl;text-align:right;padding:10px 32px 28px 32px;background:#fff;color:#000;max-width:820px;margin:0 auto;line-height:1.8;">
 
-            <!-- TOP HEADER: Seal# left, Date right -->
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-                <div style="font-family:Arial,sans-serif;font-size:0.9rem;direction:ltr;text-align:left;">
-                    <div style="font-weight:bold;">Seal #</div>
-                    <div style="font-size:1.1rem;font-weight:bold;">${sealNo || '___________'}</div>
-                </div>
-                <div style="text-align:center;flex:1;">
-                    <div style="font-size:1.65rem;font-weight:bold;border:2px solid #000;padding:8px 16px;display:inline-block;border-radius:4px;">
-                        سائلو انسپکشن رپورٹ - ${siloType}
-                    </div>
-                    <div style="font-size:1.25rem;margin-top:4px;">(فلنگ سے پہلے)</div>
-                </div>
-                <div style="font-family:Arial,sans-serif;font-size:0.9rem;direction:ltr;text-align:right;">
-                    <div style="font-weight:bold;">تاریخ: <span style="border-bottom:1px solid #000;padding:0 8px;">${date}</span></div>
-                </div>
+            <!-- Header -->
+            <div style="border:2px solid #000;text-align:center;margin-bottom:20px;direction:ltr;background:#f8fafc;padding:16px 16px;">
+                <div style="font-size:2.2rem;font-weight:bold;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;margin-bottom:2px;color:#0f172a;">سائلو انسپکشن رپورٹ</div>
+                <div style="font-size:1.6rem;font-weight:bold;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;color:#334155;">(فلنگ سے پہلے)</div>
             </div>
 
             <!-- META INFO TABLE -->
-            <table style="width:100%;border-collapse:collapse;margin-top:10px;margin-bottom:12px;">
-                <tr style="background:#f8fafc;">
-                    <td style="border:1px solid #000;padding:8px 10px;font-size:1.1rem;text-align:right;"><strong>سائلو نمبر:</strong> <span style="font-family:Arial,sans-serif;font-size:1rem;font-weight:bold;margin-right:6px;">${siloNo}</span></td>
-                    <td style="border:1px solid #000;padding:8px 10px;font-size:1.1rem;text-align:right;"><strong>شفٹ:</strong> <span style="font-family:Arial,sans-serif;margin-right:6px;">${shift}</span></td>
-                    <td style="border:1px solid #000;padding:8px 10px;font-size:1.1rem;text-align:right;"><strong>میٹریل:</strong> <span style="margin-right:6px;">${material}</span></td>
-                    <td style="border:1px solid #000;padding:8px 10px;font-size:1.1rem;text-align:right;"><strong>آفیسر کا نام:</strong> <span style="margin-right:6px;">${officer}</span></td>
-                    <td style="border:1px solid #000;padding:8px 10px;font-size:1.1rem;text-align:right;"><strong>آپریٹر کا نام:</strong> <span style="margin-right:6px;">${operator}</span></td>
+            <table style="width:100%;border-collapse:collapse;margin-top:10px;margin-bottom:0;direction:rtl;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;table-layout:fixed;">
+                <tr style="background:#f1f5f9;">
+                    <td style="border:1px solid #000;padding:10px 14px;font-size:1.3rem;text-align:right;width:33.33%;"><strong>تاریخ:</strong> <span style="font-family:Arial,sans-serif;margin-right:8px;direction:ltr;display:inline-block;font-size:1.15rem;font-weight:bold;">${date}</span></td>
+                    <td style="border:1px solid #000;padding:10px 14px;font-size:1.3rem;text-align:right;width:33.33%;"><strong>آفیسر کا نام:</strong> <span style="margin-right:8px;font-size:1.2rem;">${officer}</span></td>
+                    <td style="border:1px solid #000;padding:10px 14px;font-size:1.3rem;text-align:right;width:33.33%;"><strong>آپریٹر کا نام:</strong> <span style="margin-right:8px;font-size:1.2rem;">${operator}</span></td>
+                </tr>
+            </table>
+            <table style="width:100%;border-collapse:collapse;margin-top:0;margin-bottom:20px;direction:rtl;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;table-layout:fixed;">
+                <tr style="background:#f1f5f9;">
+                    <td style="border:1px solid #000;border-top:none;padding:10px 14px;font-size:1.3rem;text-align:right;width:25%;"><strong>سائلو نمبر:</strong> <span style="font-family:Arial,sans-serif;font-weight:bold;margin-right:8px;font-size:1.15rem;">${siloNo}</span></td>
+                    <td style="border:1px solid #000;border-top:none;padding:10px 14px;font-size:1.3rem;text-align:right;width:25%;"><strong>شفٹ:</strong> <span style="font-family:Arial,sans-serif;font-weight:bold;margin-right:8px;font-size:1.15rem;">${shift}</span></td>
+                    <td style="border:1px solid #000;border-top:none;padding:10px 14px;font-size:1.3rem;text-align:right;width:25%;"><strong>میٹریل:</strong> <span style="margin-right:8px;font-size:1.2rem;">${material}</span></td>
+                    <td style="border:1px solid #000;border-top:none;padding:10px 14px;font-size:1.3rem;text-align:right;width:25%;direction:ltr;text-align:left;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <strong style="font-family:Arial,sans-serif;font-size:1.1rem;">Seal #:</strong>
+                            <span style="font-family:Arial,sans-serif;font-size:1.15rem;font-weight:bold;">${(sealNo || '').toString().split(',').map(s=>s.trim()).filter(s => s !== '').join(', ') || '-'}</span>
+                        </div>
+                    </td>
                 </tr>
             </table>
 
@@ -265,22 +268,23 @@ try {
             <table style="width:100%;border-collapse:collapse;margin-bottom:0;">
                 <thead>
                     <tr style="background:#e2e8f0;font-weight:bold;">
-                        <th style="border:1px solid #000;padding:7px 4px;text-align:center;width:7%;font-family:Arial,sans-serif;font-size:0.8rem;">نہیں</th>
-                        <th style="border:1px solid #000;padding:7px 4px;text-align:center;width:7%;font-family:Arial,sans-serif;font-size:0.8rem;">ہاں</th>
-                        <th style="border:1px solid #000;padding:7px 10px;text-align:center;font-size:1.1rem;">مضمون (وجہ چیک لسٹ کی اہمیت اور ہدایت)</th>
-                        <th style="border:1px solid #000;padding:7px 4px;text-align:center;width:7%;font-size:1.05rem;">نمبر</th>
+                        <th style="border:1px solid #000;padding:10px 4px;text-align:center;width:10%;font-size:1.15rem;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">نمبر</th>
+                        <th style="border:1px solid #000;padding:10px 10px;text-align:center;font-size:1.25rem;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">مضمون (وجہ چیک لسٹ کی اہمیت اور ہدایت)</th>
+                        <th style="border:1px solid #000;padding:10px 4px;text-align:center;width:15%;font-size:1.15rem;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">سٹیٹس</th>
                     </tr>
                 </thead>
                 <tbody>
                     <!-- ── SILO TOP (4 rows) ── -->
+                    <!-- section label row for Silo Top -->
+                    <tr><td colspan="3" style="background:#dbeafe;border:1px solid #000;padding:6px 10px;text-align:center;font-size:1.2rem;font-weight:bold;color:#1e40af;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">▼ سائلو ٹاپ (Silo Top) — نیچے والے 4 نکات</td></tr>
                     ${row(1, 'سائلو ٹاپ کی ایکسٹرا ڈسٹ کو صاف کیا گیا ہے اور کھلی (Open) ہے۔', insp.top1, !insp.top1)}
                     ${row(2, 'لیڈر (سیڑھی) کے قریب کسی قسم کی کوئی لوز جالی تو نہیں ہے۔', insp.top2, !insp.top2)}
                     ${row(3, 'تمام ٹاپ کورز کے اندر کی سائیڈ، ڈسچارج اور ایلیویٹر کے شُوٹ والی جگہوں کو صاف کیا گیا ہے، تاکہ پرانا میٹریل اس میں موجود نہ ہو۔', insp.top3, !insp.top3)}
                     ${row(4, 'فلنگ (Filling) سے پہلے ٹاپ کے سنٹر والے گیٹ کو آپریٹ کر کے چیک کیا ہے۔', insp.top4, !insp.top4)}
-                    <!-- section label row for Silo Top -->
-                    <tr><td colspan="4" style="background:#dbeafe;border:1px solid #000;padding:4px 10px;text-align:center;font-size:1.05rem;font-weight:bold;color:#1e40af;">▲ سائلو ٹاپ (Silo Top) — اوپر والے 4 نکات</td></tr>
 
                     <!-- ── SILO BOTTOM (12 rows) ── -->
+                    <!-- section label row for Silo Bottom -->
+                    <tr><td colspan="3" style="background:#dcfce7;border:1px solid #000;padding:6px 10px;text-align:center;font-size:1.2rem;font-weight:bold;color:#14532d;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">▼ سائلو باٹم (Silo Bottom) — نیچے والے 12 نکات</td></tr>
                     ${row(5,  'سائلو میں کوئی پرانا میٹریل ایکسٹرا موجود نہیں ہے۔', insp.bot1, !insp.bot1)}
                     ${row(6,  'سائلو فین کی (Aeration Ducts) ڈکٹس اور ڈسچارج کیسٹس کو صاف کیا گیا ہے۔', insp.bot2, !insp.bot2)}
                     ${row(7,  'سائلو کے اندر موجود تمام (Ventilation Trunches) کو صاف کیا گیا ہے۔', insp.bot3, !insp.bot3)}
@@ -293,8 +297,6 @@ try {
                     ${row(14, 'سائلو کی مین (Entrance) ونڈو کو اچھی طرح سے بند کیا گیا ہے۔', insp.bot10, !insp.bot10)}
                     ${row(15, 'سردیوں میں گرین کا موئسچر 16% سے زیادہ سائلو میں نہیں ڈالنا ہے۔', insp.bot11, !insp.bot11)}
                     ${row(16, 'گرمیوں میں گرین کا موئسچر 14% سے زیادہ سائلو میں نہیں ڈالنا ہے۔', insp.bot12, !insp.bot12)}
-                    <!-- section label row for Silo Bottom -->
-                    <tr><td colspan="4" style="background:#dcfce7;border:1px solid #000;padding:4px 10px;text-align:center;font-size:1.05rem;font-weight:bold;color:#14532d;">▼ سائلو باٹم (Silo Bottom) — نیچے والے 12 نکات</td></tr>
                 </tbody>
             </table>
 
@@ -310,10 +312,9 @@ try {
                 <table style="width:100%;border-collapse:collapse;">
                     <thead>
                         <tr style="background:#fef2f2;font-weight:bold;">
-                            <th style="border:1px solid #000;padding:6px 4px;text-align:center;width:7%;font-family:Arial,sans-serif;font-size:0.8rem;">نہیں</th>
-                            <th style="border:1px solid #000;padding:6px 4px;text-align:center;width:7%;font-family:Arial,sans-serif;font-size:0.8rem;">ہاں</th>
-                            <th style="border:1px solid #000;padding:6px 10px;text-align:center;font-size:1.05rem;">ٹیسٹ کی تفصیل</th>
-                            <th style="border:1px solid #000;padding:6px 4px;text-align:center;width:7%;font-size:0.95rem;">نمبر</th>
+                            <th style="border:1px solid #000;padding:10px 4px;text-align:center;width:10%;font-size:1.15rem;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">نمبر</th>
+                            <th style="border:1px solid #000;padding:10px 10px;text-align:center;font-size:1.25rem;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">ٹیسٹ کی تفصیل</th>
+                            <th style="border:1px solid #000;padding:10px 4px;text-align:center;width:15%;font-size:1.15rem;font-family:'Jameel Noori Nastaleeq','Noto Nastaliq Urdu',serif;">سٹیٹس</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -534,7 +535,7 @@ try {
         const gates = log.gates || {};
         const siloNo = log.siloNumber ? log.siloNumber.replace('Silo ', '') : '';
         const date = log.date || '';
-        const material = log.material || '';
+        const material = log.material || 'Maize';
         const mechDept = disInsp.mechDept || '';
         const operator = log.operator || '';
 
@@ -728,7 +729,7 @@ try {
         const insp = log.inspection || {};
         const sealNo = log.sealNo || '';
         const date = log.date || '';
-        const material = log.material || '';
+        const material = log.material || 'Maize';
         const officer = log.supervisor || ''; // officer name (mapped to supervisor field)
         const operator = log.operator || '';  // operator name
         const shift = log.shift || 'A';
@@ -1667,3 +1668,4 @@ try {
     }
 }
 })();
+
