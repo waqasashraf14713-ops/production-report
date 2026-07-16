@@ -135,6 +135,9 @@ const saveQs = () => {
     }
     
     localStorage.setItem(LS_QS, JSON.stringify(qsData));
+    if (window.isSbConnected && window.sbClient) {
+        try { window.sbClient.from('qs_reports').upsert([window.mapGenericToDb(data)]).then(); } catch(e){}
+    }
     renderQsTable();
     document.getElementById('qs-modal').classList.remove('show');
     if (window.updateAllSubreportBadges) window.updateAllSubreportBadges();
@@ -161,6 +164,9 @@ window.deleteQs = (id) => {
     if (!confirm('Delete this check list?')) return;
     qsData = qsData.filter(x => x.id !== id);
     localStorage.setItem(LS_QS, JSON.stringify(qsData));
+    if (window.isSbConnected && window.sbClient) {
+        try { window.sbClient.from('qs_reports').delete().eq('id', id).then(); } catch(e){}
+    }
     renderQsTable();
 };
 

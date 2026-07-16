@@ -168,20 +168,9 @@ const saveSd = () => {
     
     localStorage.setItem(LS_SD, JSON.stringify(sdData));
     
-    if (!sdSbClient) initSdSb();
-    if (sdSbClient) {
-        const dbData = {
-            id: data.id,
-            report_date: data.date,
-            shift: data.shift,
-            officer: data.officer,
-            apm_signature: data.apm || '',
-            remarks: data.remarks || '',
-            rows_data: data.rows
-        };
-        sdSbClient.from('silo_dump_reports').upsert([dbData]).then(({error}) => {
+    if (window.isSbConnected && window.sbClient) {
+        window.sbClient.from('silo_dump_reports').upsert([window.mapGenericToDb(data)]).then(({error}) => {
             if (error) console.error("Silo Dump Supabase save error:", error);
-            else if (window.showToast) window.showToast('✓ Silo Dump saved to Supabase');
         });
     }
 
@@ -228,6 +217,9 @@ window.deleteSd = (id) => {
     if (!confirm('Delete this report?')) return;
     sdData = sdData.filter(x => x.id !== id);
     localStorage.setItem(LS_SD, JSON.stringify(sdData));
+    if (window.isSbConnected && window.sbClient) {
+        try { window.sbClient.from('silo_dump_reports').delete().eq('id', id).then(); } catch(e){}
+    }
     renderSdTable();
 };
 

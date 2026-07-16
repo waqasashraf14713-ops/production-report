@@ -785,6 +785,17 @@ document.addEventListener('DOMContentLoaded', () => {
         auditor_name: a.auditorName || ''
     });
 
+    const mapGenericToDb = (item) => ({
+        id: item.id,
+        date: item.date,
+        shift: item.shift || null,
+        data: item
+    });
+
+    const mapGenericFromDb = (row) => (row.data);
+    window.mapGenericToDb = mapGenericToDb;
+    window.mapGenericFromDb = mapGenericFromDb;
+
     // ─── Supabase Status UI ────────────────────────────────────────────────────
     const updateSbStatusUI = () => {
         const dot = document.getElementById('supabase-status-dot');
@@ -1081,6 +1092,43 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 localStorage.setItem(LS_CLEANING_SCHEDULES, JSON.stringify(window.cleaningSchedules));
+                // Sync new dynamic sub-reports
+                const syncGenericTable = async (tableName, lsKey) => {
+                    const { data: dbData, error } = await sbClient.from(tableName).select('*').order('id', { ascending: true });
+                    if (error) throw error;
+                    if (dbData && dbData.length > 0) {
+                        const parsed = dbData.map(mapGenericFromDb);
+                        localStorage.setItem(lsKey, JSON.stringify(parsed));
+                    } else {
+                        const localData = JSON.parse(localStorage.getItem(lsKey)) || [];
+                        if (localData.length > 0) {
+                            await sbClient.from(tableName).insert(localData.map(mapGenericToDb));
+                        }
+                    }
+                };
+
+                await syncGenericTable('raw_material_checks', 'fm_standalone_rm_checks');
+                await syncGenericTable('performas_reports', 'fm_performas');
+                await syncGenericTable('plant_reports', 'fm_plant_report');
+                await syncGenericTable('qs_reports', 'fm_qs_report');
+                await syncGenericTable('silo_dump_reports', 'fm_silo_dump');
+                await syncGenericTable('silo_moisture_records', 'fm_silo_moisture');
+
+                // For daily_formula_moisture
+                const { data: dbFormulas, error: formErr } = await sbClient.from('daily_formula_moisture').select('*');
+                if (formErr) throw formErr;
+                if (dbFormulas && dbFormulas.length > 0) {
+                    const formulasObj = {};
+                    dbFormulas.forEach(r => formulasObj[r.date] = r.formula_value);
+                    localStorage.setItem('fm_daily_formula_moisture', JSON.stringify(formulasObj));
+                } else {
+                    const localFormulas = JSON.parse(localStorage.getItem('fm_daily_formula_moisture') || '{}');
+                    const keys = Object.keys(localFormulas);
+                    if (keys.length > 0) {
+                        const dbRows = keys.map(k => ({ date: k, formula_value: localFormulas[k] }));
+                        await sbClient.from('daily_formula_moisture').insert(dbRows);
+                    }
+                }
             } catch (err) {
                 console.error('Supabase fetch failed, fallback to local storage:', err);
                 loadFromLocalStorage();
@@ -4155,9 +4203,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let standaloneRmChecks = JSON.parse(localStorage.getItem(LS_STANDALONE_RM_CHECKS) || '[]');
     let activeStandaloneRmId = null;
 
-    const saveStandaloneRmChecks = () => {
+    const saveStandaloneRmChecks = async () => {
         localStorage.setItem(LS_STANDALONE_RM_CHECKS, JSON.stringify(standaloneRmChecks));
-        // We could also sync to Supabase if a table exists
+        if (isSbConnected && sbClient) {
+            try {
+                await sbClient.from('raw_material_checks').upsert(standaloneRmChecks.map(mapGenericToDb));
+            } catch (e) { console.error('Error syncing RM checks to Supabase:', e); }
+        }
     };
 
     const populateRmMaterialsDropdown = () => {
@@ -4240,9 +4292,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.deleteStandaloneRm = (id) => {
-        if (!confirm('Delete this unloading check?')) return;
+        if (!confirm('Delete this check?')) return;
         standaloneRmChecks = standaloneRmChecks.filter(x => x.id !== id);
         saveStandaloneRmChecks();
+        if (isSbConnected && sbClient) {
+            try { sbClient.from('raw_material_checks').delete().eq('id', id).then(); } catch(e){}
+        }
         renderStandaloneRmChecks();
     };
 
@@ -4379,8 +4434,13 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     window.PERFORMA_ITEMS = performaItems;
 
-    const savePerformas = () => {
+    const savePerformas = async () => {
         localStorage.setItem(LS_PERFORMAS, JSON.stringify(performasData));
+        if (isSbConnected && sbClient) {
+            try {
+                await sbClient.from('performas_reports').upsert(performasData.map(mapGenericToDb));
+            } catch (e) { console.error('Error syncing performas to Supabase:', e); }
+        }
     };
 
     const renderPerformaTable = () => {
@@ -4459,6 +4519,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm('Delete this checklist?')) return;
         performasData = performasData.filter(x => x.id !== id);
         savePerformas();
+        if (isSbConnected && sbClient) {
+            try { sbClient.from('performas_reports').delete().eq('id', id).then(); } catch(e){}
+        }
         renderPerformaTable();
     };
 

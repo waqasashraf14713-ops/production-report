@@ -51,6 +51,9 @@ try {
 
     const saveSiloMoistData = () => {
         localStorage.setItem(LS_SILO_MOISTURE, JSON.stringify(siloMoistData));
+        if (window.isSbConnected && window.sbClient) {
+            try { window.sbClient.from('silo_moisture_records').upsert(siloMoistData.map(window.mapGenericToDb)).then(); } catch(e){}
+        }
     };
 
     const renderSiloMoistTable = () => {
@@ -116,6 +119,9 @@ try {
         if (!confirm('Delete this Silo Moisture report?')) return;
         siloMoistData = siloMoistData.filter(x => x.id !== id);
         saveSiloMoistData();
+        if (window.isSbConnected && window.sbClient) {
+            try { window.sbClient.from('silo_moisture_records').delete().eq('id', id).then(); } catch(e){}
+        }
         renderSiloMoistTable();
     };
 
@@ -195,6 +201,9 @@ try {
             formulas[date] = parseFloat(formulaVal);
             localStorage.setItem('fm_daily_formula_moisture', JSON.stringify(formulas));
             localStorage.setItem('fm_global_formula_moisture', formulaVal);
+            if (window.isSbConnected && window.sbClient) {
+                try { window.sbClient.from('daily_formula_moisture').upsert([{ date: date, formula_value: parseFloat(formulaVal) }]).then(); } catch(e){}
+            }
         }
 
         const rows = [];
@@ -229,20 +238,9 @@ try {
 
         saveSiloMoistData();
         
-        if (!smSbClient) initSmSb();
-        if (smSbClient) {
-            const dbData = {
-                id: report.id,
-                report_date: report.date,
-                shift: report.shift,
-                officer: report.officerName || '',
-                shift_incharge: '',
-                remarks: '',
-                rows_data: report.rows
-            };
-            smSbClient.from('silo_moisture_reports').upsert([dbData]).then(({error}) => {
+        if (window.isSbConnected && window.sbClient) {
+            window.sbClient.from('silo_moisture_records').upsert([window.mapGenericToDb(report)]).then(({error}) => {
                 if (error) console.error("Silo Moisture Supabase save error:", error);
-                else if (window.showToast) window.showToast('✓ Moisture Report saved to Supabase');
             });
         }
         

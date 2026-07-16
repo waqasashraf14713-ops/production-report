@@ -216,6 +216,9 @@ const savePlantReport = () => {
     }
     
     localStorage.setItem(LS_PLANT_REPORT, JSON.stringify(plantReportsData));
+    if (window.isSbConnected && window.sbClient) {
+        try { window.sbClient.from('plant_reports').upsert([window.mapGenericToDb(data)]).then(); } catch(e){}
+    }
     window.renderPlantReportTable();
     document.getElementById('plant-report-modal').classList.remove('show');
     if (window.updateAllSubreportBadges) window.updateAllSubreportBadges();
@@ -368,6 +371,9 @@ window.deletePlantReport = (id) => {
     if (!confirm('Delete this plant report?')) return;
     plantReportsData = plantReportsData.filter(x => x.id !== id);
     localStorage.setItem(LS_PLANT_REPORT, JSON.stringify(plantReportsData));
+    if (window.isSbConnected && window.sbClient) {
+        try { window.sbClient.from('plant_reports').delete().eq('id', id).then(); } catch(e){}
+    }
     window.renderPlantReportTable();
 };
 
