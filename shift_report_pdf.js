@@ -66,9 +66,62 @@
             </div>
         `;
 
+        // NEW COMPARISON SUMMARY
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>Summary: Shift A vs B vs C</h3>`;
+        html += `<table class="pdf-table" style="margin-bottom: 1.5rem; width: 100%; border: 2px solid #1e293b; text-align: center;">
+            <thead style="background-color: #e2e8f0; font-weight: bold;">
+                <tr>
+                    <th style="width: 25%; text-align:left; border-bottom: 2px solid #1e293b;">Metrics</th>
+                    <th style="width: 25%; border-bottom: 2px solid #1e293b;">Shift A</th>
+                    <th style="width: 25%; border-bottom: 2px solid #1e293b;">Shift B</th>
+                    <th style="width: 25%; border-bottom: 2px solid #1e293b;">Shift C</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        const getShiftData = (arr, shiftCode) => arr.find(x => x.shift === shiftCode) || {};
+
+        const sra = getShiftData(shiftReportsData, 'A');
+        const srb = getShiftData(shiftReportsData, 'B');
+        const src = getShiftData(shiftReportsData, 'C');
+
+        html += `
+            <tr>
+                <td style="text-align:left; font-weight:bold; background:#f8fafc;">Officer Name</td>
+                <td>${sra.officerName || '-'}</td>
+                <td>${srb.officerName || '-'}</td>
+                <td>${src.officerName || '-'}</td>
+            </tr>
+            <tr>
+                <td style="text-align:left; font-weight:bold; background:#f8fafc;">Batches Produced</td>
+                <td>${sra.batches || '-'}</td>
+                <td>${srb.batches || '-'}</td>
+                <td>${src.batches || '-'}</td>
+            </tr>
+            <tr>
+                <td style="text-align:left; font-weight:bold; background:#f8fafc;">Production Bags</td>
+                <td>${sra.productionBags || '-'}</td>
+                <td>${srb.productionBags || '-'}</td>
+                <td>${src.productionBags || '-'}</td>
+            </tr>
+            <tr>
+                <td style="text-align:left; font-weight:bold; background:#f8fafc;">Machine Issues</td>
+                <td style="text-align:left; font-size:0.8rem; white-space:pre-wrap;">${sra.machineIssues || '-'}</td>
+                <td style="text-align:left; font-size:0.8rem; white-space:pre-wrap;">${srb.machineIssues || '-'}</td>
+                <td style="text-align:left; font-size:0.8rem; white-space:pre-wrap;">${src.machineIssues || '-'}</td>
+            </tr>
+            <tr>
+                <td style="text-align:left; font-weight:bold; background:#f8fafc;">Quality Remarks</td>
+                <td style="text-align:left; font-size:0.8rem; white-space:pre-wrap;">${sra.qualityRemarks || '-'}</td>
+                <td style="text-align:left; font-size:0.8rem; white-space:pre-wrap;">${srb.qualityRemarks || '-'}</td>
+                <td style="text-align:left; font-size:0.8rem; white-space:pre-wrap;">${src.qualityRemarks || '-'}</td>
+            </tr>
+        `;
+        html += `</tbody></table></div>`;
+
 
         // 1. Raw Material
-        html += `<div class="pdf-section"><h3>1. Raw Material Checks (Combined)</h3>`;
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>1. Raw Material Checks (Combined)</h3>`;
         if (rmData.length > 0) {
             html += `<table class="pdf-table"><thead><tr>
                 <th>Shift</th><th>Vehicle No</th><th>Location</th><th>Moisture %</th><th>Quality</th><th>Remarks</th>
@@ -84,31 +137,67 @@
                 </tr>`;
             });
             html += `</tbody></table>`;
-        } else {
-            html += `<p style="font-style:italic;color:#666;">No raw material data for this date.</p>`;
         }
         html += `</div>`;
 
         // 2. Performas
-        html += `<div class="pdf-section"><h3>2. Performas (Combined)</h3>`;
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>2. Performas (Combined)</h3>`;
         if (performaData.length > 0) {
-            html += `<table class="pdf-table"><thead><tr>
-                <th>Signature</th><th>Remarks</th>
-            </tr></thead><tbody>`;
             performaData.forEach(row => {
-                html += `<tr>
-                    <td>${row.sign || '-'}</td>
-                    <td>${row.remarks || '-'}</td>
-                </tr>`;
+                html += `<div style="border: 1px solid #000; padding: 1rem; margin-bottom: 1rem; page-break-inside: avoid; background: #fff;">
+                    ${row.remarks ? `<p style="margin: 0 0 10px 0;"><strong>Remarks:</strong> ${row.remarks}</p>` : ''}
+                    <table class="pdf-table">
+                        <thead>
+                            <tr>
+                                <th style="vertical-align:bottom;">Performa Name/Category</th>
+                                <th style="width: 100px; text-align: center;">
+                                    <div style="font-size:0.75rem; color:#555; font-weight:normal; margin-bottom:2px;">Officer Name:<br><strong style="color:#000;">${row.signM || row.sign || '-'}</strong></div>
+                                    Morning
+                                </th>
+                                <th style="width: 100px; text-align: center;">
+                                    <div style="font-size:0.75rem; color:#555; font-weight:normal; margin-bottom:2px;">Officer Name:<br><strong style="color:#000;">${row.signE || row.sign || '-'}</strong></div>
+                                    Evening
+                                </th>
+                                <th style="width: 100px; text-align: center;">
+                                    <div style="font-size:0.75rem; color:#555; font-weight:normal; margin-bottom:2px;">Officer Name:<br><strong style="color:#000;">${row.signN || row.sign || '-'}</strong></div>
+                                    Night
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                
+                const performaItems = window.PERFORMA_ITEMS || [];
+                let hasItems = false;
+                
+                const renderCell = (val, isApplicable) => {
+                    if (!isApplicable) return `<td style="background:#f1f5f9;"></td>`;
+                    if (val === 'Y' || val === true) return `<td style="text-align:center; font-weight:bold; color: green; font-size:1.1rem;">✔</td>`;
+                    if (val === 'N') return `<td style="text-align:center; font-weight:bold; color: red; font-size:1.1rem;">❌</td>`;
+                    return `<td style="text-align:center; color: #9ca3af; font-size:0.75rem; font-weight:bold;">NOT FILLED</td>`;
+                };
+
+                performaItems.forEach((item, idx) => {
+                    hasItems = true;
+                    const check = (row.checks && row.checks[idx]) ? row.checks[idx] : {};
+                    html += `<tr>
+                        <td>${item.name}</td>
+                        ${renderCell(check.m, item.m)}
+                        ${renderCell(check.e, item.e)}
+                        ${renderCell(check.n, item.n)}
+                    </tr>`;
+                });
+                
+                if (!hasItems) {
+                    html += `<tr><td colspan="4" style="text-align:center; color:#666; font-style:italic;">No performa items found.</td></tr>`;
+                }
+
+                html += `</tbody></table></div>`;
             });
-            html += `</tbody></table>`;
-        } else {
-            html += `<p style="font-style:italic;color:#666;">No performa data for this date.</p>`;
         }
         html += `</div>`;
 
         // 3. Plant Report
-        html += `<div class="pdf-section"><h3>3. Plant Report (Combined)</h3>`;
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>3. Plant Report (Combined)</h3>`;
         if (plantReportData.length > 0) {
             plantReportData.forEach(row => {
                 html += `<div style="margin-top: 1rem; border: 2px solid #000; padding: 1rem; background: #fff; page-break-inside: avoid; margin-bottom: 1.5rem;">
@@ -327,54 +416,169 @@
                     </table>
                 </div>`;
             });
-        } else {
-            html += `<p style="font-style:italic;color:#666;">No plant report data for this date.</p>`;
         }
         html += `</div>`;
 
         // 4. Quality Standards
-        html += `<div class="pdf-section"><h3>4. Quality Standards (Combined)</h3>`;
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>4. Quality Standards (Combined)</h3>`;
         if (qsReportData.length > 0) {
-            html += `<table class="pdf-table"><thead><tr>
-                <th>Shift</th><th>Officer</th>
-            </tr></thead><tbody>`;
-            qsReportData.forEach(row => {
-                html += `<tr>
-                    <td><strong>${row.shift || '-'}</strong></td>
-                    <td>${row.officer || '-'}</td>
-                </tr>`;
-            });
-            html += `</tbody></table>`;
+            const qsM = qsReportData.find(r => r.shift === 'Morning') || {};
+            const qsE = qsReportData.find(r => r.shift === 'Evening') || {};
+            const qsN = qsReportData.find(r => r.shift === 'Night') || {};
+            
+            html += `<div style="border: 1px solid #000; padding: 1rem; page-break-inside: avoid; background: #fff;">
+                <table class="pdf-table">
+                    <thead>
+                        <tr>
+                            <th style="vertical-align:bottom;">Standard / Checklist Item</th>
+                            <th style="width: 100px; text-align: center;">
+                                <div style="font-size:0.75rem; color:#555; font-weight:normal; margin-bottom:2px;">Officer Name:<br><strong style="color:#000;">${qsM.officer || '-'}</strong></div>
+                                Morning
+                            </th>
+                            <th style="width: 100px; text-align: center;">
+                                <div style="font-size:0.75rem; color:#555; font-weight:normal; margin-bottom:2px;">Officer Name:<br><strong style="color:#000;">${qsE.officer || '-'}</strong></div>
+                                Evening
+                            </th>
+                            <th style="width: 100px; text-align: center;">
+                                <div style="font-size:0.75rem; color:#555; font-weight:normal; margin-bottom:2px;">Officer Name:<br><strong style="color:#000;">${qsN.officer || '-'}</strong></div>
+                                Night
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            
+            const renderQsCell = (shiftData, idx, type) => {
+                if (!shiftData.shift) return `<td style="background:#f1f5f9; text-align:center; color:#9ca3af; font-size:0.75rem;">N/A</td>`;
+                const vals = type === 'B' ? shiftData.bVals : shiftData.pVals;
+                const checked = vals && vals[idx] ? true : false;
+                return `<td style="text-align:center; font-weight:bold; color: ${checked ? 'green' : 'red'}; font-size:1.1rem;">${checked ? '✔' : '❌'}</td>`;
+            };
+
+            const bItems = window.QS_BATCHING_ITEMS || [];
+            if (bItems.length > 0) {
+                html += `<tr><td colspan="4" style="background:#f8fafc; font-weight:bold;">Batching Standards</td></tr>`;
+                bItems.forEach((item, idx) => {
+                    html += `<tr>
+                        <td class="urdu-text" style="direction: rtl; font-family: 'Jameel Noori Nastaleeq', Arial, sans-serif; text-align: right;">${item}</td>
+                        ${renderQsCell(qsM, idx, 'B')}
+                        ${renderQsCell(qsE, idx, 'B')}
+                        ${renderQsCell(qsN, idx, 'B')}
+                    </tr>`;
+                });
+            }
+
+            const pItems = window.QS_PELLET_ITEMS || [];
+            if (pItems.length > 0) {
+                html += `<tr><td colspan="4" style="background:#f8fafc; font-weight:bold;">Pellet Standards</td></tr>`;
+                pItems.forEach((item, idx) => {
+                    html += `<tr>
+                        <td class="urdu-text" style="direction: rtl; font-family: 'Jameel Noori Nastaleeq', Arial, sans-serif; text-align: right;">${item}</td>
+                        ${renderQsCell(qsM, idx, 'P')}
+                        ${renderQsCell(qsE, idx, 'P')}
+                        ${renderQsCell(qsN, idx, 'P')}
+                    </tr>`;
+                });
+            }
+
+            html += `</tbody></table></div>`;
         } else {
             html += `<p style="font-style:italic;color:#666;">No quality standards data for this date.</p>`;
         }
         html += `</div>`;
 
         // 5. Silo Dumping
-        html += `<div class="pdf-section"><h3>5. Silo Dumping (Combined)</h3>`;
-        if (siloDumpData.length > 0 && siloDumpData.some(r => r.rows && r.rows.length > 0)) {
-            html += `<table class="pdf-table"><thead><tr>
-                <th>Shift</th><th>Officer</th><th>Silo</th><th>Material</th><th>Remarks</th>
-            </tr></thead><tbody>`;
-            siloDumpData.forEach(r => {
-                (r.rows || []).forEach(row => {
-                    html += `<tr>
-                        <td><strong>${r.shift || '-'}</strong></td>
-                        <td>${r.officer || '-'}</td>
-                        <td>${row.silo || '-'}</td>
-                        <td>${row.material || '-'}</td>
-                        <td>${row.remarks || '-'}</td>
-                    </tr>`;
-                });
-            });
-            html += `</tbody></table>`;
-        } else {
-            html += `<p style="font-style:italic;color:#666;">No silo dumping data for this date.</p>`;
-        }
-        html += `</div>`;
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>5. Silo Dumping Moisture (24-Hour Combined)</h3>`;
+        if (siloDumpData.length > 0) {
+            const times = [];
+            for (let i = 0; i < 48; i++) {
+                let totalMinutes = i * 30;
+                let h = Math.floor(totalMinutes / 60);
+                let m = totalMinutes % 60;
+                times.push(`${h < 10 ? '0'+h : h}:${m === 0 ? '00' : '30'}`);
+            }
 
+            let rowsHtml = '';
+            let hasData = false;
+
+            times.forEach((timeStr, i) => {
+                // Find if any shift has data for this timeslot index 'i'
+                let filledRow = null;
+                let filledShift = '';
+                let filledOfficer = '';
+
+                siloDumpData.forEach(r => {
+                    if (r.rows && r.rows[i]) {
+                        const row = r.rows[i];
+                        const hasA = row.amois || row.acr || row.acond || row.asilo;
+                        const hasB = row.bmois || row.bcr || row.bcond || row.bsilo;
+                        // ONLY consider the row filled if it has A Line or B Line data
+                        // Ignore the material default value "Winter Maize"
+                        if (hasA || hasB) {
+                            filledRow = row;
+                            filledShift = r.shift || '-';
+                            filledOfficer = r.officer || '-';
+                        }
+                    }
+                });
+
+                if (filledRow) {
+                    hasData = true;
+                    rowsHtml += `<tr>
+                        <td style="font-weight:bold;">${timeStr}</td>
+                        <td style="font-weight:bold; color:var(--primary);">${filledShift}</td>
+                        <td>${filledOfficer}</td>
+                        <td>${filledRow.mat || '-'}</td>
+                        <td style="border-left: 2px solid #000;">${filledRow.amois || '-'}</td>
+                        <td>${filledRow.acr || '-'}</td>
+                        <td>${filledRow.acond || '-'}</td>
+                        <td style="border-right: 2px solid #000;">${filledRow.asilo || '-'}</td>
+                        
+                        <td>${filledRow.bmois || '-'}</td>
+                        <td>${filledRow.bcr || '-'}</td>
+                        <td>${filledRow.bcond || '-'}</td>
+                        <td>${filledRow.bsilo || '-'}</td>
+                    </tr>`;
+                }
+            });
+
+            if (hasData) {
+                html += `<div style="border: 1px solid #000; padding: 1rem; margin-bottom: 1.5rem; background: #fff; page-break-inside: avoid;">
+                    <table class="pdf-table" style="font-size:0.8rem; text-align:center;">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="vertical-align:middle; width: 60px;">Time</th>
+                                <th rowspan="2" style="vertical-align:middle;">Shift</th>
+                                <th rowspan="2" style="vertical-align:middle;">Officer</th>
+                                <th rowspan="2" style="vertical-align:middle;">Material</th>
+                                <th colspan="4" style="border-left: 2px solid #000; border-right: 2px solid #000;">A Line</th>
+                                <th colspan="4">B Line</th>
+                            </tr>
+                            <tr>
+                                <th style="border-left: 2px solid #000;">Moisture</th>
+                                <th>C.R</th>
+                                <th>Condition</th>
+                                <th style="border-right: 2px solid #000;">Silo</th>
+                                
+                                <th>Moisture</th>
+                                <th>C.R</th>
+                                <th>Condition</th>
+                                <th>Silo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                </div>`;
+            } else {
+                html += `<p style="font-style: italic; color: #666;">No valid readings filled across shifts.</p>`;
+            }
+        } else {
+            html += `<p style="font-style: italic; color: #666;">No Silo Dumping records filled yet.</p>`;
+        }
+        
+        html += `</div>`;
         // 6. Silo Moisture
-        html += `<div class="pdf-section"><h3>6. Silo Moisture (Combined)</h3>`;
         if (siloMoistData.length > 0 && siloMoistData.some(r => r.rows && r.rows.length > 0)) {
             html += `<table class="pdf-table"><thead><tr>
                 <th>Shift</th><th>Officer</th><th>Silo No</th><th>Material</th><th>Control Room %</th><th>Lab Ungrind %</th><th>Lab Grind %</th><th>Remarks</th>
@@ -433,13 +637,11 @@
                 html += `</div>`;
             }
 
-        } else {
-            html += `<p style="font-style:italic;color:#666;">No silo moisture data for this date.</p>`;
         }
         html += `</div>`;
 
         // 7. Department Daily Checklists
-        html += `<div class="pdf-section"><h3>7. Department Daily Checklists (Combined)</h3>`;
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>7. Department Daily Checklists (Combined)</h3>`;
         if (dailyChecklistData.length > 0) {
             const localChecklistQuestions = window.DAILY_CHECKLIST_QUESTIONS || {
                 'Old Godown': [
@@ -507,27 +709,36 @@
                         </thead>
                         <tbody>`;
                 const questions = localChecklistQuestions[dc.departmentName] || [];
+                let hasCheckedItems = false;
                 questions.forEach((q, idx) => {
                     const isChecked = dc.checkedItems ? !!dc.checkedItems[idx] : false;
-                    html += `<tr>
-                        <td>${q}</td>
-                        <td style="text-align: center; font-weight: bold; color: ${isChecked ? 'green' : 'red'};">${isChecked ? '✅ Yes' : '❌ No'}</td>
-                    </tr>`;
+                    if (isChecked) {
+                        hasCheckedItems = true;
+                        html += `<tr>
+                            <td>${q}</td>
+                            <td style="text-align: center; font-weight: bold; color: green;">✅ Yes</td>
+                        </tr>`;
+                    }
                 });
+                
+                if (!hasCheckedItems) {
+                    html += `<tr>
+                        <td colspan="2" style="text-align: center; font-style: italic; color: #666;">No items were checked for this department.</td>
+                    </tr>`;
+                }
+
                 html += `</tbody></table>`;
                 if (dc.remarks) {
                     html += `<div style="font-size: 0.9rem; color: #555; margin-top: 0.5rem;"><strong>Remarks:</strong> ${dc.remarks}</div>`;
                 }
                 html += `</div>`;
             });
-        } else {
-            html += `<p style="font-style:italic;color:#666;">No daily checklist data for this date.</p>`;
         }
         html += `</div>`;
 
         // Dryer Side Reports
         if (dryerReportData && dryerReportData.length > 0) {
-            html += `<div class="pdf-section"><h3>Dryer Side Shift Reports</h3>`;
+            html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>Dryer Side Shift Reports</h3>`;
             dryerReportData.forEach(r => {
                 html += `
                 <div style="border:1px solid #000; padding:10px; margin-bottom:15px; page-break-inside: avoid;">
@@ -537,7 +748,7 @@
                     <table class="pdf-table" style="width:100%; font-size:0.8rem; margin-bottom:5px;">
                         <thead><tr><th>Material</th><th>On Time</th><th>Off Time</th><th>Silo/Wet Bin</th><th>Break</th><th>Remarks</th></tr></thead>
                         <tbody>
-                            ${r.material_dumping && r.material_dumping.length > 0 ? r.material_dumping.map(d => `<tr><td>${d.material}</td><td>${d.onTime}</td><td>${d.offTime}</td><td>${d.siloWetBin}</td><td>${d.breakReason || ''}</td><td>${d.remarks}</td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:#64748b;">No records</td></tr>'}
+                            ${Array.isArray(r.material_dumping) && r.material_dumping.length > 0 ? r.material_dumping.map(d => `<tr><td>${d.material}</td><td>${d.onTime}</td><td>${d.offTime}</td><td>${d.siloWetBin}</td><td>${d.breakReason || ''}</td><td>${d.remarks}</td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:#64748b;">No records</td></tr>'}
                         </tbody>
                     </table>
                     ${(r.dumping_total_weight || r.dumping_total_eff) ? `
@@ -549,7 +760,7 @@
                     <table class="pdf-table" style="width:100%; font-size:0.8rem; margin-bottom:10px;">
                         <thead><tr><th>Material</th><th>Silo No.</th><th>On Time</th><th>Off Time</th><th>Break</th><th>Remarks</th></tr></thead>
                         <tbody>
-                            ${r.material_discharge && r.material_discharge.length > 0 ? r.material_discharge.map(d => `<tr><td>${d.material}</td><td>${d.siloNo}</td><td>${d.onTime}</td><td>${d.offTime}</td><td>${d.breakReason || ''}</td><td>${d.remarks}</td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:#64748b;">No records</td></tr>'}
+                            ${Array.isArray(r.material_discharge) && r.material_discharge.length > 0 ? r.material_discharge.map(d => `<tr><td>${d.material}</td><td>${d.siloNo}</td><td>${d.onTime}</td><td>${d.offTime}</td><td>${d.breakReason || ''}</td><td>${d.remarks}</td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:#64748b;">No records</td></tr>'}
                         </tbody>
                     </table>
 
@@ -560,7 +771,7 @@
                                 <table class="pdf-table" style="width:100%;">
                                     <thead><tr><th>Conv #</th><th>Silo #</th><th>Gate #</th><th>Open</th></tr></thead>
                                     <tbody>
-                                        ${r.silos_discharge_gates ? r.silos_discharge_gates.map(g => `<tr><td>${g.conveyor}</td><td>${g.silo}</td><td>${g.gate}</td><td>${g.isOpen ? 'Yes' : 'No'}</td></tr>`).join('') : ''}
+                                        ${Array.isArray(r.silos_discharge_gates) ? r.silos_discharge_gates.map(g => `<tr><td>${g.conveyor}</td><td>${g.silo}</td><td>${g.gate}</td><td>${g.isOpen ? 'Yes' : 'No'}</td></tr>`).join('') : ''}
                                     </tbody>
                                 </table>
                             </td>
@@ -650,24 +861,22 @@
             `;
         }
 
-        const container = document.getElementById('shift-report-print-container');
-        if (container) {
-            container.innerHTML = html;
-        }
-
-        // Trigger print
-        document.body.classList.add('printing-shift-pdf');
-        setTimeout(() => {
-            window.print();
-            // Remove class after print dialog closes
-            setTimeout(() => {
-                document.body.classList.remove('printing-shift-pdf');
-            }, 1000);
-        }, 300);
+        return html;
     }
+
+    let pdfSbClient = null;
+    const initPdfSb = () => {
+        const sbUrl = localStorage.getItem('fmpr_supabaseUrl') || (window.env && window.env.SUPABASE_URL) || '';
+        const sbKey = localStorage.getItem('fmpr_supabaseKey') || (window.env && window.env.SUPABASE_KEY) || '';
+        if (sbUrl && sbKey && typeof supabase !== 'undefined') {
+            const cleanUrl = sbUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+            pdfSbClient = supabase.createClient(cleanUrl, sbKey);
+        }
+    };
 
     // Initialize when DOM is ready
     const initPDFEvents = () => {
+        initPdfSb();
         const updatePreview = () => {
             const chk = document.getElementById('preview-approval-check');
             const rem = document.getElementById('preview-approval-remarks');
@@ -692,12 +901,25 @@
             const rem = document.getElementById('preview-approval-remarks');
             if (rem) rem.value = '';
 
-            // Generate initial preview HTML with dynamic approval block
-            updatePreview();
+            const paper = document.getElementById('preview-document-paper');
+            if (paper) paper.innerHTML = '<div style="padding:2rem;text-align:center;">Loading report...</div>';
 
-            // Open preview modal
             const modal = document.getElementById('report-preview-modal');
             if (modal) modal.classList.add('show');
+
+            if (pdfSbClient) {
+                pdfSbClient.from('generated_shift_reports').select('*').eq('report_date', selectedDate).limit(1).then(({data, error}) => {
+                    if (!error && data && data.length > 0) {
+                        if (paper) paper.innerHTML = data[0].report_html;
+                        if (chk) chk.checked = data[0].is_approved;
+                        if (rem) rem.value = data[0].supervisor_remarks || '';
+                    } else {
+                        updatePreview();
+                    }
+                });
+            } else {
+                updatePreview();
+            }
         };
 
         // Bind main trigger button to open preview
@@ -734,9 +956,31 @@
                 document.getElementById('report-preview-modal').classList.remove('show');
 
                 // Generate full print HTML with approval info & remarks
-                const html = generateCompleteShiftPDF(isApproved, remarks);
+                let html = generateCompleteShiftPDF(isApproved, remarks);
+                
+                // If it was already loaded from Supabase and not modified, we might be overwriting it.
+                // But generating a fresh one incorporates any recent changes made in the forms!
+                // So always generating fresh on print is correct to capture latest changes.
+                
                 const container = document.getElementById('shift-report-print-container');
                 if (container) container.innerHTML = html;
+
+                if (pdfSbClient) {
+                    const dateInput = document.getElementById('sr-filter-date');
+                    const selectedDate = dateInput ? dateInput.value.trim() : '';
+                    if (selectedDate) {
+                        const dbRecord = {
+                            report_date: selectedDate,
+                            report_html: html,
+                            is_approved: isApproved,
+                            supervisor_remarks: remarks
+                        };
+                        pdfSbClient.from('generated_shift_reports').upsert([dbRecord], { onConflict: 'report_date' }).then(({error}) => {
+                            if (error) console.error("PDF Supabase save error:", error);
+                            else if (window.showToast) window.showToast('✓ Combined PDF Report saved to Supabase');
+                        });
+                    }
+                }
 
                 // Trigger print
                 document.body.classList.add('printing-shift-pdf');

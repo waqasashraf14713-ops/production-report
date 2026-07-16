@@ -1,5 +1,19 @@
 // dryer_report.js
 
+window.currentDryerEditId = null;
+
+let dryerSbClient = null;
+function initDryerSupabase() {
+    // Try to get from window.env first, then localStorage
+    const sbUrl = (window.env && window.env.SUPABASE_URL) || localStorage.getItem('fmpr_supabaseUrl');
+    const sbKey = (window.env && window.env.SUPABASE_KEY) || localStorage.getItem('fmpr_supabaseKey');
+    if (sbUrl && sbKey && typeof supabase !== 'undefined') {
+        const cleanUrl = sbUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+        dryerSbClient = supabase.createClient(cleanUrl, sbKey);
+    }
+}
+document.addEventListener('DOMContentLoaded', initDryerSupabase);
+
 let dryerReportData = {
     id: null,
     date: '',
@@ -16,6 +30,7 @@ let dryerReportData = {
 };
 
 function openDryerReportModal() {
+    window.currentDryerEditId = null; // reset
     const modal = document.getElementById('dryer-report-modal');
     if (!modal) return;
     
@@ -23,12 +38,27 @@ function openDryerReportModal() {
     const globalDate = document.getElementById('sr-filter-date') ? document.getElementById('sr-filter-date').value : '';
     document.getElementById('dryer-date').value = globalDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).replace(/ /g, '-');
     document.getElementById('dryer-shift').value = 'A'; // Default
+    document.getElementById('dryer-operator').value = '';
     
+    // Clear static fields
+    const staticFields = ['dump-total-weight','dump-total-eff','dryer-faults','dryer-maintenance','dryer-general','dryer-summary'];
+    staticFields.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    
+    // Clear checkboxes
+    ['chk-drum','chk-chamber','chk-sieves1','chk-sieves2','chk-exhaust','chk-dust','chk-tower','chk-fiber','chk-mech','chk-elec'].forEach(id => { const el = document.getElementById(id); if(el) el.checked = false; });
+    
+    // Clear silo times
+    const silos = ['08','09','10','11','12','13','14','15','16','wetbin','coolingbin'];
+    silos.forEach(s => {
+        ['on','off','meter'].forEach(type => {
+            const el = document.getElementById(`${s}-${type}`);
+            if(el) el.value = '';
+        });
+    });
+
     // Clear dynamic tables
     document.getElementById('dryer-dumping-tbody').innerHTML = '';
     document.getElementById('dryer-discharge-tbody').innerHTML = '';
-    document.getElementById('dump-total-weight').value = '';
-    document.getElementById('dump-total-eff').value = '';
     
     // Add one default row
     addDryerDumpingRow();
@@ -41,6 +71,7 @@ function openDryerReportModal() {
 }
 
 function closeDryerReportModal() {
+    window.currentDryerEditId = null;
     const modal = document.getElementById('dryer-report-modal');
     if (modal) modal.classList.remove('show');
 }
@@ -241,24 +272,7 @@ function gatherDryerReportData() {
         mech_elec_worker: getChk('chk-elec')
     };
 
-    return {
-        id: Date.now(), // Temporary until Supabase is used
-        date: getVal('dryer-date'),
-        shift: getVal('dryer-shift'),
-        operator_name: getVal('dryer-operator'),
-        material_dumping: dumping,
-        dumping_total_weight: getVal('dump-total-weight'),
-        dumping_total_eff: getVal('dump-total-eff'),
-        material_discharge: discharge,
-        silos_discharge_gates: gates,
-        silo_status: siloStatus,
-        faults_and_causes: getVal('dryer-faults'),
-        cleaning: cleaning,
-        under_process_work: getVal('dryer-maintenance'),
-        general: getVal('dryer-general'),
-        supervisor_approval: getVal('dryer-supervisor'),
-        summary: getVal('dryer-summary')
-    };
+    return dbData;
 }
 
 async function saveDryerReport() {
@@ -269,22 +283,67 @@ async function saveDryerReport() {
     }
 
     try {
-        if (window.isSbConnected && window.sbClient) {
+        if (dryerSbClient) {
             let dbData = { ...data };
-            delete dbData.id; // Let Supabase auto-generate the ID
-            const { data: result, error } = await window.sbClient.from('dryer_side_reports').insert([dbData]).select();
-            
-            // If the table is actually named 'dryer_side_report' (singular), fallback to it
-            if (error && (error.code === '42P01' || error.message.includes('relation "public.dryer_side_reports" does not exist'))) {
-                const retry = await window.sbClient.from('dryer_side_report').insert([dbData]).select();
-                if (retry.error) throw retry.error;
-            } else if (error) {
-                throw error;
+            if (!window.currentDryerEditId) {
+                delete dbData.id; // Let Supabase auto-generate the ID for new records
+            } else {
+                dbData.id = window.currentDryerEditId;
             }
+            
+            // Format date from DD-MMM to YYYY-MM-DD for Supabase
+            let sqlDate = dbData.date;
+            if (sqlDate && !/^\d{4}-\d{2}-\d{2}$/.test(sqlDate)) {
+                let parts = sqlDate.split('-');
+                if (parts.length >= 2) {
+                    let d = parts[0].padStart(2, '0');
+                    let m = parts[1].toLowerCase();
+                    let y = parts.length === 3 ? parts[2] : new Date().getFullYear().toString();
+                    if (y.length === 2) y = '20' + y;
+                    const mMap = { jan:'01', feb:'02', mar:'03', apr:'04', may:'05', jun:'06', jul:'07', aug:'08', sep:'09', oct:'10', nov:'11', dec:'12' };
+                    let mNum = mMap[m] || '01';
+                    sqlDate = `${y}-${mNum}-${d}`;
+                    dbData.date = sqlDate;
+                }
+            }
+            
+            // Clean up empty strings to NULL for database compatibility (fixes "invalid input syntax for type numeric: ''")
+            for (let key in dbData) {
+                if (dbData[key] === "") {
+                    dbData[key] = null;
+                }
+            }
+            
+            let result, error;
+            if (window.currentDryerEditId) {
+                // Update Existing
+                const res = await dryerSbClient.from('dryer_side_reports').update(dbData).eq('id', window.currentDryerEditId).select();
+                result = res.data;
+                error = res.error;
+            } else {
+                // Insert New
+                const res = await dryerSbClient.from('dryer_side_reports').insert([dbData]).select();
+                result = res.data;
+                error = res.error;
+                
+                // Fallback for singular table name if error
+                if (error && (error.code === '42P01' || error.message.includes('relation "public.dryer_side_reports" does not exist'))) {
+                    const retry = await dryerSbClient.from('dryer_side_report').insert([dbData]).select();
+                    if (retry.error) throw retry.error;
+                    error = null;
+                }
+            }
+            if (error) throw error;
         } else {
             // Fallback to local storage if supabase isn't connected
             let localReports = JSON.parse(localStorage.getItem('dryer_side_reports') || '[]');
-            localReports.push(data);
+            if (window.currentDryerEditId) {
+                let idx = localReports.findIndex(r => r.id === window.currentDryerEditId);
+                if (idx > -1) localReports[idx] = data;
+            } else {
+                data.id = Date.now();
+                localReports.push(data);
+            }
             localStorage.setItem('dryer_side_reports', JSON.stringify(localReports));
         }
         
@@ -326,15 +385,28 @@ document.addEventListener('DOMContentLoaded', () => {
 window.allDryerReports = [];
 
 async function fetchDryerReports() {
+    if (!dryerSbClient) initDryerSupabase(); // Ensure it's initialized
     let reports = [];
-    if (window.isSbConnected && window.sbClient) {
+    if (dryerSbClient) {
         try {
-            let res = await window.sbClient.from('dryer_side_reports').select('*').order('date', { ascending: false });
+            let res = await dryerSbClient.from('dryer_side_reports').select('*').order('date', { ascending: false });
             if (res.error && (res.error.code === '42P01' || res.error.message.includes('relation "public.dryer_side_reports" does not exist'))) {
-                res = await window.sbClient.from('dryer_side_report').select('*').order('date', { ascending: false });
+                res = await dryerSbClient.from('dryer_side_report').select('*').order('date', { ascending: false });
             }
             if (res.error) throw res.error;
             reports = res.data || [];
+            
+            // Merge any offline/local reports that were saved before Supabase was fixed
+            let localReports = JSON.parse(localStorage.getItem('dryer_side_reports') || '[]');
+            if (localReports.length > 0) {
+                // Optional: filter out any that might have been synced already (if IDs match, though local IDs are usually timestamps)
+                let cloudIds = new Set(reports.map(r => String(r.id)));
+                let unsyncedLocal = localReports.filter(lr => !cloudIds.has(String(lr.id)));
+                reports = [...reports, ...unsyncedLocal];
+                // Sort them again by date descending
+                reports.sort((a, b) => new Date(b.date) - new Date(a.date));
+            }
+            
         } catch (err) {
             console.error('Error fetching dryer reports from Supabase:', err);
             // Fallback to local
@@ -364,6 +436,7 @@ function renderDryerReportsTable(reports) {
             <td>${r.faults_and_causes || '-'}</td>
             <td class="no-print">
                 <button class="btn btn-secondary" onclick="viewDryerRecord(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;">View</button>
+                <button class="btn btn-secondary" onclick="editDryerRecord(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;margin-left:5px;">✏️ Edit</button>
                 ${r.supervisor_approval ? 
                     `<button class="btn btn-primary" disabled style="padding:0.25rem 0.5rem;font-size:0.85rem;background:#15803d;border-color:#15803d;color:white;margin-left:5px;cursor:default;">🟢 Approved</button>` 
                     : 
@@ -396,9 +469,9 @@ window.approveDryerRecordFromTable = async function(idx) {
     }
 
     // Save to Supabase
-    if (window.sbClient) {
+    if (dryerSbClient) {
         try {
-            await window.sbClient.from('dryer_side_reports').update({ supervisor_approval: record.supervisor_approval }).eq('id', record.id);
+            await dryerSbClient.from('dryer_side_reports').update({ supervisor_approval: record.supervisor_approval }).eq('id', record.id);
         } catch(e) { console.error(e); }
     }
 
@@ -555,6 +628,114 @@ window.viewDryerRecord = function(idx) {
         content.innerHTML = generateDryerReportHtml(record);
         modal.classList.add('show');
     }
+};
+
+window.editDryerRecord = function(idx) {
+    const record = window.allDryerReports[idx];
+    if (!record) return;
+    
+    // Clear and open modal
+    openDryerReportModal();
+    window.currentDryerEditId = record.id;
+    
+    // 1. Top Section
+    if (document.getElementById('dryer-date')) document.getElementById('dryer-date').value = record.date || '';
+    if (document.getElementById('dryer-shift')) document.getElementById('dryer-shift').value = record.shift || '';
+    if (document.getElementById('dryer-operator')) document.getElementById('dryer-operator').value = record.operator_name || '';
+    
+    // 2. Material Dumping
+    document.getElementById('dryer-dumping-tbody').innerHTML = '';
+    if (document.getElementById('dump-total-weight')) document.getElementById('dump-total-weight').value = record.dumping_total_weight || '';
+    if (document.getElementById('dump-total-eff')) document.getElementById('dump-total-eff').value = record.dumping_total_eff || '';
+    
+    if (record.material_dumping && record.material_dumping.length > 0) {
+        record.material_dumping.forEach(d => {
+            addDryerDumpingRow();
+            const tr = document.getElementById('dryer-dumping-tbody').lastElementChild;
+            if (tr) {
+                if (tr.querySelector('.dump-mat')) tr.querySelector('.dump-mat').value = d.material || '';
+                if (tr.querySelector('.dump-on')) tr.querySelector('.dump-on').value = d.onTime || '';
+                if (tr.querySelector('.dump-off')) tr.querySelector('.dump-off').value = d.offTime || '';
+                if (tr.querySelector('.dump-bin')) tr.querySelector('.dump-bin').value = d.siloWetBin || '';
+                if (tr.querySelector('.dump-break')) tr.querySelector('.dump-break').value = d.breakReason || '';
+                if (tr.querySelector('.dump-rem')) tr.querySelector('.dump-rem').value = d.remarks || '';
+            }
+        });
+    } else {
+        addDryerDumpingRow();
+    }
+    
+    // 3. Material Discharge
+    document.getElementById('dryer-discharge-tbody').innerHTML = '';
+    if (record.material_discharge && record.material_discharge.length > 0) {
+        record.material_discharge.forEach(d => {
+            addDryerDischargeRow();
+            const tr = document.getElementById('dryer-discharge-tbody').lastElementChild;
+            if (tr) {
+                if (tr.querySelector('.disc-mat')) tr.querySelector('.disc-mat').value = d.material || '';
+                if (tr.querySelector('.disc-silo')) tr.querySelector('.disc-silo').value = d.siloNo || '';
+                if (tr.querySelector('.disc-on')) tr.querySelector('.disc-on').value = d.onTime || '';
+                if (tr.querySelector('.disc-off')) tr.querySelector('.disc-off').value = d.offTime || '';
+                if (tr.querySelector('.disc-break')) tr.querySelector('.disc-break').value = d.breakReason || '';
+                if (tr.querySelector('.disc-rem')) tr.querySelector('.disc-rem').value = d.remarks || '';
+            }
+        });
+    } else {
+        addDryerDischargeRow();
+    }
+    
+    // 4. Gates
+    if (record.silos_discharge_gates && record.silos_discharge_gates.length > 0) {
+        record.silos_discharge_gates.forEach((g, i) => {
+            const gateNum = document.getElementById(`gate-num-${i}`);
+            const gateOpen = document.getElementById(`gate-open-${i}`);
+            if (gateNum) gateNum.value = g.gate || '';
+            if (gateOpen) gateOpen.checked = g.isOpen || false;
+        });
+    }
+    
+    // 5. Silo Status
+    const setSiloField = (key, type, val) => {
+        const idMap = { 'silo08':'08', 'silo09':'09', 'silo10':'10', 'silo11':'11', 'silo12':'12', 'silo13':'13', 'silo14':'14', 'silo15':'15', 'silo16':'16', 'wetBin':'wetbin', 'coolingBin':'coolingbin' };
+        const el = document.getElementById(`${idMap[key]}-${type}`);
+        if (el) el.value = val || '';
+    };
+    if (record.silo_status) {
+        Object.keys(record.silo_status).forEach(key => {
+            const obj = record.silo_status[key];
+            if (obj) {
+                setSiloField(key, 'on', obj.onTime);
+                setSiloField(key, 'off', obj.offTime);
+                setSiloField(key, 'meter', obj.meter);
+            }
+        });
+    }
+    
+    // 6. Cleaning
+    const setChk = (dbKey, elId) => {
+        if (record.cleaning && record.cleaning[dbKey]) {
+            const el = document.getElementById(elId);
+            if (el) el.checked = true;
+        }
+    };
+    if (record.cleaning) {
+        setChk('drum_cleaner', 'chk-drum');
+        setChk('chamber_section', 'chk-chamber');
+        setChk('sieves_box_1', 'chk-sieves1');
+        setChk('sieves_box_2', 'chk-sieves2');
+        setChk('exhaust_fan_pipe', 'chk-exhaust');
+        setChk('dust_collector', 'chk-dust');
+        setChk('dryer_tower', 'chk-tower');
+        setChk('dryer_fiber_pipe', 'chk-fiber');
+        setChk('mechanical_worker', 'chk-mech');
+        setChk('mech_elec_worker', 'chk-elec');
+    }
+    
+    // 7. General & Faults
+    if (document.getElementById('dryer-faults')) document.getElementById('dryer-faults').value = record.faults_and_causes || '';
+    if (document.getElementById('dryer-maintenance')) document.getElementById('dryer-maintenance').value = record.under_process_work || '';
+    if (document.getElementById('dryer-general')) document.getElementById('dryer-general').value = record.general || '';
+    if (document.getElementById('dryer-summary')) document.getElementById('dryer-summary').value = record.summary || '';
 };
 
 window.printDryerRecordPdf = function(idx) {

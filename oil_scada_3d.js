@@ -22,9 +22,9 @@ function initOilScada3D(containerId) {
     scene.background = new THREE.Color(0xf1f5f9); // Light background
 
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
-    // Zoomed in closer so models appear larger
-    camera.position.set(0, 8, 22);
-    camera.lookAt(0, 5, 0);
+    // Adjusted camera so the top overflow pipes are visible
+    camera.position.set(0, 9, 26);
+    camera.lookAt(0, 6, 0);
 
     // Main WebGL Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false }); 
@@ -156,16 +156,16 @@ function initOilScada3D(containerId) {
             div.style.whiteSpace = 'pre-wrap';
         } else {
             // CSS Styling for the standard label
-            div.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-            div.style.border = '1px solid #94a3b8'; // Lighter border
+            div.style.backgroundColor = '#ffffff'; // Solid white for contrast
+            div.style.border = '1px solid #64748b'; // Slightly darker border
             div.style.borderRadius = '4px';
-            div.style.padding = '1px 3px'; // Very small padding
-            div.style.color = '#475569'; // Light black / dark grey
+            div.style.padding = '2px 5px'; // Increased padding
+            div.style.color = '#000000'; // Pure black for readability
             div.style.fontFamily = 'sans-serif';
-            div.style.fontSize = '9px';
+            div.style.fontSize = '12px'; // Larger font size
             div.style.fontWeight = 'bold';
             div.style.textAlign = 'center';
-            div.style.boxShadow = '0 1px 2px -1px rgba(0,0,0,0.1)';
+            div.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)'; // Pronounced shadow
             div.style.whiteSpace = 'pre-wrap';
             div.style.pointerEvents = 'none';
         }
@@ -392,8 +392,8 @@ function initOilScada3D(containerId) {
         actuator.position.y = 0.3;
         group.add(actuator);
         
-        // Label firmly to the side
-        if (labelStr) addHtmlLabel(group, labelStr, 1.0, 0.0);
+        // Label firmly to the side and slightly up so it's not over the valve
+        if (labelStr) addHtmlLabel(group, labelStr, 1.2, 0.5);
         return group;
     }
     
@@ -518,24 +518,23 @@ function initOilScada3D(containerId) {
     const f1 = createFilter('(F1)'); f1.position.set(-8, 3, 6); scadaGroup.add(f1);
     const f2 = createFilter('(F2)'); f2.position.set(-2, 3, 6); scadaGroup.add(f2);
     
-    const v19 = createGlobeValve('(V19)', 'left'); v19.position.set(-8, 5, 6); scadaGroup.add(v19);
-    const v18 = createGlobeValve('(V18)', 'right'); v18.position.set(-2, 5, 6); scadaGroup.add(v18);
+    const v19 = createGlobeValve('(V19)', 'left'); v19.position.set(-8, 2, 6); scadaGroup.add(v19);
+    const v18 = createGlobeValve('(V18)', 'right'); v18.position.set(-2, 2, 6); scadaGroup.add(v18);
     
-    // V17 on the main filling line
+    // V17 on the merged filling line (above the merge point)
     const v17 = createGlobeValve('(V17)', 'left'); v17.position.set(-8, 8, 6); scadaGroup.add(v17);
 
     const pump259 = createPump('(259)'); pump259.position.set(2, 2, 0); scadaGroup.add(pump259);
 
-    const v10 = createGlobeValve('(V10)', 'left'); v10.position.set(6, 11, 0); scadaGroup.add(v10);
-    
-    const v251core = createButterflyValve('(V251.core)'); v251core.position.set(5.5, 9.5, 0); scadaGroup.add(v251core);
-    const v251fine = createButterflyValve('(V251.fine)'); v251fine.position.set(6.5, 9.5, 0); scadaGroup.add(v251fine);
+    const v10 = createGlobeValve('(V10)', 'left'); v10.position.set(6, 11, 0);
+    const v251core = createButterflyValve('(V251.core)'); v251core.position.set(0, 10, -8); scadaGroup.add(v251core);
+    const v251fine = createButterflyValve('(V251.fine)'); v251fine.position.set(0, 7, -8); scadaGroup.add(v251fine);
 
     const v11 = createButterflyValve('(V11)'); v11.position.set(6, 6, 0); scadaGroup.add(v11);
     const v12 = createGlobeValve('(V12)', 'right'); v12.position.set(6, 2, 0); scadaGroup.add(v12);
 
-    const v254 = createButterflyValve('(V254)'); v254.position.set(4, 0, 0); scadaGroup.add(v254);
-    const v257 = createButterflyValve('(V257)'); v257.position.set(8, 0, 0); scadaGroup.add(v257);
+    const v254 = createButterflyValve('(V254)'); v254.position.set(-2, -1.5, 0); scadaGroup.add(v254);
+    const v257 = createButterflyValve('(V257)'); v257.position.set(2, -1.5, 0); scadaGroup.add(v257);
     
     const v13 = createGlobeValve('(V13)', 'left'); v13.position.set(4, -1.5, 0); scadaGroup.add(v13);
     const v14 = createGlobeValve('(V14)', 'right'); v14.position.set(8, -1.5, 0); scadaGroup.add(v14);
@@ -553,30 +552,38 @@ function initOilScada3D(containerId) {
     // ROUTING PIPES
     // ==========================================
 
-    // Loading 1 & 2 -> Pumps -> Filters -> Valves -> 28-ton (TOP filling L-shape bend)
+    // Loading 1 -> Pipe 1
     createPipe([
         new THREE.Vector3(-8, -0.5, 6),
-        new THREE.Vector3(-8, 11, 6),   
-        new THREE.Vector3(-8, 11, 0),   
-        
-        // Horizontal run over the tank
-        new THREE.Vector3(-5, 11, 0),
-        new THREE.Vector3(-4, 11, 0), // Start of 90-degree elbow (radius 1, center -4, 10)
-        new THREE.Vector3(-3.8, 10.98, 0),
-        new THREE.Vector3(-3.6, 10.91, 0),
-        new THREE.Vector3(-3.4, 10.8, 0),
-        new THREE.Vector3(-3.2, 10.6, 0),
-        new THREE.Vector3(-3.0, 10.4, 0),
-        
-        // Vertical drop into the tank center
-        new THREE.Vector3(-3.0, 10.0, 0),
-        new THREE.Vector3(-3.0, 9.0, 0)
+        new THREE.Vector3(-8, 4, 6) // Stop at lower merge point
     ], matPipeGreen);
 
+    // Loading 2 -> Pipe 2
     createPipe([
         new THREE.Vector3(-2, -0.5, 6),
-        new THREE.Vector3(-2, 7, 6),
-        new THREE.Vector3(-8, 7, 6) 
+        new THREE.Vector3(-2, 3.8, 6), // Pinch
+        new THREE.Vector3(-2, 4, 6),   // Corner
+        new THREE.Vector3(-2.2, 4, 6), // Pinch
+        new THREE.Vector3(-8, 4, 6)    // Merge into Pipe 1
+    ], matPipeGreen);
+
+    // Merged Pipe -> V17 -> 28-ton (TOP filling L-shape bend)
+    createPipe([
+        new THREE.Vector3(-8, 4, 6),
+        
+        new THREE.Vector3(-8, 10.8, 6), // Pinch
+        new THREE.Vector3(-8, 11, 6),   // Corner 1
+        new THREE.Vector3(-8, 11, 5.8), // Pinch
+        
+        new THREE.Vector3(-8, 11, 0.2), // Pinch
+        new THREE.Vector3(-8, 11, 0),   // Corner 2
+        new THREE.Vector3(-7.8, 11, 0), // Pinch
+        
+        new THREE.Vector3(-4.2, 11, 0), // Pinch
+        new THREE.Vector3(-4, 11, 0),   // Corner 3
+        new THREE.Vector3(-4, 10.8, 0), // Pinch
+        
+        new THREE.Vector3(-4, 9, 0)     // Drop straight down
     ], matPipeGreen);
 
     // 28-ton -> Pump 259 -> Service Tank
@@ -590,9 +597,9 @@ function initOilScada3D(containerId) {
     // Service Tank (Top) -> Overflow -> 28-ton (Top)
     createPipeRed([
         new THREE.Vector3(6, 14.25, 0),
-        new THREE.Vector3(6, 15.5, 0),
-        new THREE.Vector3(-3, 15.5, 0),
-        new THREE.Vector3(-3, 10, 0)
+        new THREE.Vector3(6, 14.8, 0), // Lowered peak so it's visible on screen
+        new THREE.Vector3(-2, 14.8, 0), 
+        new THREE.Vector3(-2, 10, 0)
     ], matPipeRed);
 
     // Service Tank -> V10 -> Split(V251.core & fine) -> Scale 1

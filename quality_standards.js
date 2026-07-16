@@ -46,6 +46,9 @@ const qsPelletItems = [
     'پيلٹ آپريٹر ہر 30منٹ بعد پيلٹ کے سيمپل چيک کرارہے ہيں'
 ];
 
+window.QS_BATCHING_ITEMS = qsBatchingItems;
+window.QS_PELLET_ITEMS = qsPelletItems;
+
 const chkHtml = (id) => `<input type="checkbox" id="${id}" style="transform:scale(1.3);cursor:pointer;">`;
 
 const buildQsUI = () => {

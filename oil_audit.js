@@ -361,6 +361,10 @@ try {
         document.getElementById('oa-modal-shift').value = audit.shift || 'ABC';
         document.getElementById('oa-modal-limit').value = audit.acceptableLimit !== undefined ? audit.acceptableLimit : '0.4';
         document.getElementById('oa-modal-total-batches').value = audit.totalBatches !== undefined ? audit.totalBatches : '113';
+        document.getElementById('oa-modal-loss-storage').value = audit.lossStorage !== undefined ? audit.lossStorage : '';
+        document.getElementById('oa-modal-service-tank').value = audit.serviceTankVol !== undefined ? audit.serviceTankVol : '';
+        document.getElementById('oa-modal-service-hl').value = audit.serviceHl !== undefined ? audit.serviceHl : '';
+        document.getElementById('oa-modal-service-ll').value = audit.serviceLl !== undefined ? audit.serviceLl : '';
 
         const savedRecipes = audit.recipes || {};
         document.querySelectorAll('.oa-recipe-input').forEach(input => {
@@ -540,6 +544,10 @@ try {
                 document.getElementById('oa-modal-shift').value = 'ABC';
                 document.getElementById('oa-modal-limit').value = '0.4';
                 document.getElementById('oa-modal-total-batches').value = '0';
+                document.getElementById('oa-modal-loss-storage').value = '';
+                document.getElementById('oa-modal-service-tank').value = '';
+                document.getElementById('oa-modal-service-hl').value = '';
+                document.getElementById('oa-modal-service-ll').value = '';
 
                 document.querySelectorAll('.oa-recipe-input').forEach(input => {
                     input.value = '';
@@ -578,6 +586,11 @@ try {
                 const acceptableLimit = parseFloat(document.getElementById('oa-modal-limit').value) || 0.4;
                 const totalBatches = parseFloat(document.getElementById('oa-modal-total-batches').value) || 0;
                 
+                const lossStorage = parseFloat(document.getElementById('oa-modal-loss-storage').value) || 0;
+                const serviceTankVol = parseFloat(document.getElementById('oa-modal-service-tank').value) || 0;
+                const serviceHl = parseFloat(document.getElementById('oa-modal-service-hl').value) || 0;
+                const serviceLl = parseFloat(document.getElementById('oa-modal-service-ll').value) || 0;
+
                 const formChenab = parseFloat(document.getElementById('oa-form-chenab').value) || 0;
                 const formDelta = parseFloat(document.getElementById('oa-form-delta').value) || 0;
                 const formWanda = parseFloat(document.getElementById('oa-form-wanda').value) || 0;
@@ -624,6 +637,10 @@ try {
                     shift,
                     acceptableLimit,
                     totalBatches,
+                    lossStorage,
+                    serviceTankVol,
+                    serviceHl,
+                    serviceLl,
                     formChenab,
                     formDelta,
                     formWanda,
@@ -654,6 +671,10 @@ try {
                             shift: report.shift,
                             total_batches: report.totalBatches,
                             acceptable_limit: report.acceptableLimit,
+                            loss_storage: report.lossStorage,
+                            service_tank_vol: report.serviceTankVol,
+                            service_hl: report.serviceHl,
+                            service_ll: report.serviceLl,
                             form_chenab: report.formChenab,
                             form_delta: report.formDelta,
                             form_wanda: report.formWanda,
@@ -695,6 +716,10 @@ try {
                             shift: r.shift,
                             totalBatches: r.total_batches || 0,
                             acceptableLimit: r.acceptable_limit || 0.4,
+                            lossStorage: r.loss_storage || 0,
+                            serviceTankVol: r.service_tank_vol || 0,
+                            serviceHl: r.service_hl || 0,
+                            serviceLl: r.service_ll || 0,
                             formChenab: r.form_chenab || 0,
                             formDelta: r.form_delta || 0,
                             formWanda: r.form_wanda || 0,

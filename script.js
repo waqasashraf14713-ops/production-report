@@ -4062,9 +4062,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="sr-stat-pill">🏭 ${r.batches} Batches</span>
                         <span class="sr-stat-pill">👜 ${(r.productionBags || 0).toLocaleString()} Bags</span>
                         ${statusBadge}
-                        <button class="btn btn-secondary" style="padding:0.3rem 0.75rem;font-size:0.82rem;" onclick="openSrEditModal(${r.id})">✏️ Edit</button>
-                        <button class="btn" style="padding:0.3rem 0.75rem;font-size:0.82rem;background:var(--accent-color);color:#fff;" onclick="toggleSrSubmit(${r.id})">${r.isSubmitted ? '↩ Unsubmit' : '✅ Submit'}</button>
-                        <button class="btn btn-danger" style="padding:0.3rem 0.75rem;font-size:0.82rem;" onclick="deleteSrReport(${r.id})">🗑</button>
+                        <button class="btn btn-secondary" style="padding:0.3rem 0.75rem;font-size:0.82rem;" onclick="openSrEditModal('${r.id}')">✏️ Edit</button>
+                        <button class="btn" style="padding:0.3rem 0.75rem;font-size:0.82rem;background:var(--accent-color);color:#fff;" onclick="toggleSrSubmit('${r.id}')">${r.isSubmitted ? '↩ Unsubmit' : '✅ Submit'}</button>
+                        <button class="btn btn-danger" style="padding:0.3rem 0.75rem;font-size:0.82rem;" onclick="deleteSrReport('${r.id}')">🗑</button>
                     </div>
                 </div>
                 <div class="sr-card-body">
@@ -4098,7 +4098,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Global helpers for inline onclick in rendered cards
     window.openSrEditModal = (id) => {
-        const r = shiftReports.find(x => x.id === id);
+        const r = shiftReports.find(x => x.id.toString() === id.toString());
         if (!r) return;
         activeSrId = id;
         const set = (elId, val) => { const e = document.getElementById(elId); if (e) e.value = val || ''; };
@@ -4121,7 +4121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.toggleSrSubmit = async (id) => {
-        const r = shiftReports.find(x => x.id === id);
+        const r = shiftReports.find(x => x.id.toString() === id.toString());
         if (!r) return;
         r.isSubmitted = !r.isSubmitted;
         await saveShiftReports();
@@ -4130,7 +4130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.deleteSrReport = async (id) => {
         if (!confirm('Delete this shift report?')) return;
-        shiftReports = shiftReports.filter(x => x.id !== id);
+        shiftReports = shiftReports.filter(x => x.id.toString() !== id.toString());
         if (isSbConnected && sbClient) {
             try { await sbClient.from('shift_reports').delete().eq('id', id); } catch (e) { /* ignore */ }
         }
@@ -4366,6 +4366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { cat: 'RAW MATERIAL UNLOADING PROTOCOLS', name: 'Dryer to Concrete Silo Shifting Maize Sample', m:true, e:true, n:true },
 
     ];
+    window.PERFORMA_ITEMS = performaItems;
 
     const savePerformas = () => {
         localStorage.setItem(LS_PERFORMAS, JSON.stringify(performasData));
@@ -4405,17 +4406,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `<tr style="background:rgba(0,0,0,0.03);"><td colspan="5" style="font-weight:bold;color:var(--text-primary);padding-top:1rem;border-bottom:2px solid var(--card-border);">${currentCat}</td></tr>`;
             }
             
-            const cellM = item.m ? `<input type="checkbox" id="pf-chk-m-${index}" style="transform:scale(1.2); cursor:pointer;" ${dataMap[index]?.m ? 'checked' : ''}>` : '<div style="background:var(--card-border);height:100%;width:100%;min-height:24px;border-radius:4px;"></div>';
-            const cellE = item.e ? `<input type="checkbox" id="pf-chk-e-${index}" style="transform:scale(1.2); cursor:pointer;" ${dataMap[index]?.e ? 'checked' : ''}>` : '<div style="background:var(--card-border);height:100%;width:100%;min-height:24px;border-radius:4px;"></div>';
-            const cellN = item.n ? `<input type="checkbox" id="pf-chk-n-${index}" style="transform:scale(1.2); cursor:pointer;" ${dataMap[index]?.n ? 'checked' : ''}>` : '<div style="background:var(--card-border);height:100%;width:100%;min-height:24px;border-radius:4px;"></div>';
+            const buildSelect = (id, val) => `
+                <select id="${id}" style="width:100%; border:1px solid var(--card-border); background:var(--card-bg); color:var(--text-primary); padding:2px; border-radius:4px; outline:none; text-align:center;">
+                    <option value="U" ${val === 'U' || val === false || val == null ? 'selected' : ''}>-</option>
+                    <option value="Y" ${val === 'Y' || val === true ? 'selected' : ''}>✔ Yes</option>
+                    <option value="N" ${val === 'N' ? 'selected' : ''}>❌ No</option>
+                </select>`;
+
+            const cellM = item.m ? buildSelect(`pf-sel-m-${index}`, dataMap[index]?.m) : '<div style="background:var(--card-border);height:100%;width:100%;min-height:24px;border-radius:4px;"></div>';
+            const cellE = item.e ? buildSelect(`pf-sel-e-${index}`, dataMap[index]?.e) : '<div style="background:var(--card-border);height:100%;width:100%;min-height:24px;border-radius:4px;"></div>';
+            const cellN = item.n ? buildSelect(`pf-sel-n-${index}`, dataMap[index]?.n) : '<div style="background:var(--card-border);height:100%;width:100%;min-height:24px;border-radius:4px;"></div>';
 
             html += `
                 <tr style="border-bottom:1px solid var(--card-border);">
                     <td style="text-align:center;color:var(--text-secondary);font-size:0.85rem;">${index + 1}</td>
                     <td style="font-size:0.9rem;padding:0.6rem;">${item.name}</td>
-                    <td style="text-align:center;padding:0;">${cellM}</td>
-                    <td style="text-align:center;padding:0;">${cellE}</td>
-                    <td style="text-align:center;padding:0;">${cellN}</td>
+                    <td style="text-align:center;padding:2px;">${cellM}</td>
+                    <td style="text-align:center;padding:2px;">${cellE}</td>
+                    <td style="text-align:center;padding:2px;">${cellN}</td>
                 </tr>
             `;
         });
@@ -4427,7 +4435,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!p) return;
         activePerformaId = id;
         document.getElementById('performa-modal-date').value = p.date || '';
-        document.getElementById('performa-modal-sign').value = p.sign || '';
+        document.getElementById('pf-off-m').value = p.signM || '';
+        document.getElementById('pf-off-e').value = p.signE || '';
+        document.getElementById('pf-off-n').value = p.signN || '';
         document.getElementById('performa-modal-remarks').value = p.remarks || '';
         
         populatePerformaModalTable(p.checks || {});
@@ -4445,7 +4455,9 @@ document.addEventListener('DOMContentLoaded', () => {
         activePerformaId = null;
         const today = new Date();
         document.getElementById('performa-modal-date').value = today.getDate() + '-' + today.toLocaleString('default', { month: 'short' }) + '-' + today.getFullYear();
-        document.getElementById('performa-modal-sign').value = window.getDefaultOfficer(true);
+        document.getElementById('pf-off-m').value = '';
+        document.getElementById('pf-off-e').value = '';
+        document.getElementById('pf-off-n').value = '';
         document.getElementById('performa-modal-remarks').value = '';
         populatePerformaModalTable({});
         document.getElementById('performa-modal').classList.add('show');
@@ -4460,15 +4472,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const checks = {};
         performaItems.forEach((item, index) => {
             checks[index] = {
-                m: item.m ? (document.getElementById(`pf-chk-m-${index}`)?.checked || false) : false,
-                e: item.e ? (document.getElementById(`pf-chk-e-${index}`)?.checked || false) : false,
-                n: item.n ? (document.getElementById(`pf-chk-n-${index}`)?.checked || false) : false,
+                m: item.m ? (document.getElementById(`pf-sel-m-${index}`)?.value || 'U') : 'U',
+                e: item.e ? (document.getElementById(`pf-sel-e-${index}`)?.value || 'U') : 'U',
+                n: item.n ? (document.getElementById(`pf-sel-n-${index}`)?.value || 'U') : 'U',
             };
         });
 
         const p = {
             date,
-            sign: document.getElementById('performa-modal-sign').value.trim(),
+            signM: document.getElementById('pf-off-m').value.trim(),
+            signE: document.getElementById('pf-off-e').value.trim(),
+            signN: document.getElementById('pf-off-n').value.trim(),
             remarks: document.getElementById('performa-modal-remarks').value.trim(),
             checks
         };
@@ -4482,6 +4496,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         savePerformas();
+        
+        if (isSbConnected && sbClient) {
+            const dbRecord = {
+                id: p.id,
+                date: p.date,
+                sign_m: p.signM || '',
+                sign_e: p.signE || '',
+                sign_n: p.signN || '',
+                remarks: p.remarks || '',
+                checks: p.checks
+            };
+            sbClient.from('performas_reports').upsert([dbRecord]).then(({error}) => {
+                if (error) console.error("Performa Supabase save error:", error);
+                else if (window.showToast) window.showToast('✓ Performa Checklist saved to Supabase');
+            });
+        }
+        
         renderPerformaTable();
         closePerformaModal();
         if (window.updateAllSubreportBadges) window.updateAllSubreportBadges();
@@ -4554,7 +4585,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         if (activeSrId) {
-            const idx = shiftReports.findIndex(x => x.id === activeSrId);
+            const idx = shiftReports.findIndex(x => x.id.toString() === activeSrId.toString());
             if (idx !== -1) {
                 reportData.id = activeSrId;
                 reportData.isSubmitted = shiftReports[idx].isSubmitted;

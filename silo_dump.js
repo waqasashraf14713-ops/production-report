@@ -11,6 +11,21 @@ try {
 }
 let activeSdId = null;
 
+let sdSbClient = null;
+const initSdSb = () => {
+    const sbUrl = localStorage.getItem('fmpr_supabaseUrl') || (window.env && window.env.SUPABASE_URL) || '';
+    const sbKey = localStorage.getItem('fmpr_supabaseKey') || (window.env && window.env.SUPABASE_KEY) || '';
+    if (sbUrl && sbKey && typeof supabase !== 'undefined') {
+        const cleanUrl = sbUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+        sdSbClient = supabase.createClient(cleanUrl, sbKey);
+    }
+};
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSdSb);
+} else {
+    initSdSb();
+}
+
 const inp = (id, w = '100%') => `<input type="text" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;">`;
 
 const matInp = (id) => {
@@ -35,25 +50,17 @@ const matInp = (id) => {
 };
 
 const generateTimeSlots = (shift) => {
-    let startHour = 0;
-    if (shift === 'Morning') startHour = 6;
-    else if (shift === 'Evening') startHour = 14;
-    else if (shift === 'Night') startHour = 22;
-
+    // Generate all 24 hours (48 slots of 30 mins) in 24-hour format
     const slots = [];
-    for (let i = 0; i < 16; i++) {
-        let totalMinutes = startHour * 60 + i * 30;
-        let h = Math.floor(totalMinutes / 60) % 24;
+    for (let i = 0; i < 48; i++) {
+        let totalMinutes = i * 30;
+        let h = Math.floor(totalMinutes / 60);
         let m = totalMinutes % 60;
         
-        let ampm = h >= 12 ? 'PM' : 'AM';
-        let h12 = h % 12;
-        if (h12 === 0) h12 = 12;
-        
         const mStr = m === 0 ? '00' : '30';
-        const hStr = h12 < 10 ? '0' + h12 : h12;
+        const hStr = h < 10 ? '0' + h : h;
         
-        slots.push(`${hStr}:${mStr} ${ampm}`);
+        slots.push(`${hStr}:${mStr}`);
     }
     return slots;
 };
@@ -160,6 +167,24 @@ const saveSd = () => {
     }
     
     localStorage.setItem(LS_SD, JSON.stringify(sdData));
+    
+    if (!sdSbClient) initSdSb();
+    if (sdSbClient) {
+        const dbData = {
+            id: data.id,
+            report_date: data.date,
+            shift: data.shift,
+            officer: data.officer,
+            apm_signature: data.apm || '',
+            remarks: data.remarks || '',
+            rows_data: data.rows
+        };
+        sdSbClient.from('silo_dump_reports').upsert([dbData]).then(({error}) => {
+            if (error) console.error("Silo Dump Supabase save error:", error);
+            else if (window.showToast) window.showToast('✓ Silo Dump saved to Supabase');
+        });
+    }
+
     renderSdTable();
     document.getElementById('silo-dump-modal').classList.remove('show');
     if (window.updateAllSubreportBadges) window.updateAllSubreportBadges();

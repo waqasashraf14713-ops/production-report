@@ -150,7 +150,7 @@
         <main class="main-content">
             <div class="container">
                 <header>
-                    <h1>Feed Mill Production Report</h1>
+                    <h1 id="main-report-title">Feed Mill Production Report</h1>
                     <div class="header-actions">
                         <button class="btn-supabase-status" id="btn-supabase-status" style="display: none;">
                             <span id="supabase-status-dot"></span>
@@ -1542,10 +1542,225 @@
         <div id="view-oil-audit" class="view-section" style="display: none;">
             <section class="table-container">
                 
+                <!-- Dynamic Storage Configuration -->
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:1.5rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                        <h3 style="margin:0;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;">⚙️ Storage Oil Type Configuration</h3>
+                        <button id="btn-save-storage" style="background:var(--primary-color);color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:0.9rem;transition:0.2s;">💾 Save Config</button>
+                    </div>
+                    
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:1rem;">
+                        <div style="background:var(--bg-secondary);padding:1rem;border-radius:8px;border:1px solid var(--card-border);">
+                            <label style="display:block;font-size:0.9rem;font-weight:bold;color:var(--text-primary);margin-bottom:0.5rem;">Storage 01 (Tank #01 & #02)</label>
+                            <select id="config-st1" style="width:100%;padding:0.5rem;border:1px solid var(--card-border);border-radius:6px;background:var(--card-bg);color:var(--text-primary);">
+                                <option value="Mix Oil">Mix Oil</option>
+                                <option value="Poultry Oil">Poultry Oil</option>
+                                <option value="Soybean Oil">Soybean Oil</option>
+                                <option value="Veg Oil">Veg. Oil</option>
+                            </select>
+                        </div>
+                        <div style="background:var(--bg-secondary);padding:1rem;border-radius:8px;border:1px solid var(--card-border);">
+                            <label style="display:block;font-size:0.9rem;font-weight:bold;color:var(--text-primary);margin-bottom:0.5rem;">Storage 02 (Tank #03)</label>
+                            <select id="config-st2" style="width:100%;padding:0.5rem;border:1px solid var(--card-border);border-radius:6px;background:var(--card-bg);color:var(--text-primary);">
+                                <option value="Mix Oil">Mix Oil</option>
+                                <option value="Poultry Oil">Poultry Oil</option>
+                                <option value="Soybean Oil">Soybean Oil</option>
+                                <option value="Veg Oil">Veg. Oil</option>
+                            </select>
+                        </div>
+                        <div style="background:var(--bg-secondary);padding:1rem;border-radius:8px;border:1px solid var(--card-border);">
+                            <label style="display:block;font-size:0.9rem;font-weight:bold;color:var(--text-primary);margin-bottom:0.5rem;">Storage 03 (Tank A & B)</label>
+                            <select id="config-st3" style="width:100%;padding:0.5rem;border:1px solid var(--card-border);border-radius:6px;background:var(--card-bg);color:var(--text-primary);">
+                                <option value="Veg Oil">Veg. Oil</option>
+                                <option value="Mix Oil">Mix Oil</option>
+                                <option value="Poultry Oil">Poultry Oil</option>
+                                <option value="Soybean Oil">Soybean Oil</option>
+                            </select>
+                        </div>
+                        <div style="background:var(--bg-secondary);padding:1rem;border-radius:8px;border:1px solid var(--card-border);">
+                            <label style="display:block;font-size:0.9rem;font-weight:bold;color:var(--text-primary);margin-bottom:0.5rem;">Storage 04 (Service Tank)</label>
+                            <select id="config-st4" style="width:100%;padding:0.5rem;border:1px solid var(--card-border);border-radius:6px;background:var(--card-bg);color:var(--text-primary);">
+                                <option value="Soybean Oil">Soybean Oil</option>
+                                <option value="Mix Oil">Mix Oil</option>
+                                <option value="Poultry Oil">Poultry Oil</option>
+                                <option value="Veg Oil">Veg. Oil</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="storage-save-msg" style="margin-top:0.75rem;font-size:0.85rem;color:#10b981;display:none;font-weight:bold;">Configuration saved successfully!</div>
+                </div>
+
+                <!-- Oil Dip & Density Calculator -->
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:1.5rem;">
+                    <h3 style="margin-bottom:1rem;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;margin-top:0;">🧮 Oil Dip & Density Calculator</h3>
+                    
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:1rem;margin-bottom:1rem;">
+                        <div>
+                            <label style="display:block;font-size:0.875rem;color:var(--text-secondary);margin-bottom:0.25rem;">Select Tank</label>
+                            <select id="calc-tank-select" style="width:100%;padding:0.75rem;border:1px solid var(--card-border);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);font-size:0.95rem;cursor:pointer;">
+                                <!-- Will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.875rem;color:var(--text-secondary);margin-bottom:0.25rem;">Temperature (°C)</label>
+                            <input type="number" id="calc-temp" value="27" step="1" style="width:100%;padding:0.75rem;border:1px solid var(--card-border);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);font-size:0.95rem;">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.875rem;color:var(--text-secondary);margin-bottom:0.25rem;">Dip (mm)</label>
+                            <input type="number" id="calc-dip" value="290" step="1" style="width:100%;padding:0.75rem;border:1px solid var(--card-border);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);font-size:0.95rem;">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.875rem;color:var(--text-secondary);margin-bottom:0.25rem;">Gate Scale Weight (kg) - Optional</label>
+                            <input type="number" id="calc-gate-weight" value="" placeholder="e.g. 29370" step="1" style="width:100%;padding:0.75rem;border:1px solid var(--card-border);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);font-size:0.95rem;">
+                        </div>
+                    </div>
+                    
+                    <div style="background:var(--bg-secondary);border:1px solid var(--card-border);border-radius:8px;padding:1rem;display:flex;flex-wrap:wrap;align-items:center;gap:2rem;">
+                        <div>
+                            <div style="font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.25rem;">Density (gm/cm³)</div>
+                            <input type="number" id="calc-res-density" value="0.9145" step="0.0001" style="width:110px;font-size:1.5rem;font-weight:700;color:var(--primary-color);background:transparent;border:1px dashed var(--primary-color);border-radius:4px;padding:2px 4px;outline:none;">
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;">Oil Stock (kg)</div>
+                            <div id="calc-res-stock" style="font-size:1.5rem;font-weight:700;color:#10b981;">1,207</div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;">Diff vs Scale (kg)</div>
+                            <div id="calc-res-diff" style="font-size:1.5rem;font-weight:700;color:var(--text-primary);">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;">% Diff vs Scale</div>
+                            <div id="calc-res-diff-pct" style="font-size:1.5rem;font-weight:700;color:var(--text-primary);">-</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Storage Configuration Elements
+                    const btnSaveStorage = document.getElementById('btn-save-storage');
+                    const configSelects = [
+                        document.getElementById('config-st1'),
+                        document.getElementById('config-st2'),
+                        document.getElementById('config-st3'),
+                        document.getElementById('config-st4')
+                    ];
+                    const storageMsg = document.getElementById('storage-save-msg');
+
+                    // Calculator Elements
+                    const tankSelect = document.getElementById('calc-tank-select');
+                    const tempInput = document.getElementById('calc-temp');
+                    const dipInput = document.getElementById('calc-dip');
+                    const gateWeightInput = document.getElementById('calc-gate-weight');
+                    
+                    const resDensity = document.getElementById('calc-res-density');
+                    const resStock = document.getElementById('calc-res-stock');
+                    const resDiff = document.getElementById('calc-res-diff');
+                    const resDiffPct = document.getElementById('calc-res-diff-pct');
+
+                    // Load saved storage config
+                    function loadStorageConfig() {
+                        configSelects.forEach((sel, i) => {
+                            const saved = localStorage.getItem('storage_config_' + i);
+                            if (saved) sel.value = saved;
+                        });
+                        updateCalculatorDropdown();
+                    }
+
+                    // Save storage config
+                    btnSaveStorage.addEventListener('click', () => {
+                        configSelects.forEach((sel, i) => {
+                            localStorage.setItem('storage_config_' + i, sel.value);
+                        });
+                        updateCalculatorDropdown();
+                        storageMsg.style.display = 'block';
+                        setTimeout(() => { storageMsg.style.display = 'none'; }, 2000);
+                        calculateDip(); // Recalculate in case factor changed
+                    });
+
+                    // Update the calculator dropdown based on config
+                    function updateCalculatorDropdown() {
+                        const s1 = configSelects[0].value;
+                        const s2 = configSelects[1].value;
+                        const s3 = configSelects[2].value;
+                        const s4 = configSelects[3].value;
+
+                        tankSelect.innerHTML = `
+                            <option value="4.5517">Storage 01 (${s1}) - Tank #01 / #02</option>
+                            <option value="7.292">Storage 02 (${s2}) - Tank #03</option>
+                            <option value="5.39">Storage 03 (${s3}) - Tank A / B</option>
+                            <option value="5.00">Storage 04 (${s4}) - Default</option>
+                        `;
+                    }
+
+                    // Flag to track if user manually typed density
+                    let userOverrodeDensity = false;
+                    resDensity.addEventListener('input', () => {
+                        userOverrodeDensity = true;
+                        calculateDip();
+                    });
+
+                    tempInput.addEventListener('input', () => {
+                        userOverrodeDensity = false; // Reset if they change temperature
+                        let temp = parseFloat(tempInput.value) || 0;
+                        let density = 0.9315 - (temp * 0.000628);
+                        if (density < 0) density = 0;
+                        resDensity.value = density.toFixed(4);
+                        calculateDip();
+                    });
+
+                    function calculateDip() {
+                        if (!dipInput) return;
+                        
+                        let dip = parseFloat(dipInput.value) || 0;
+                        let tankFactor = parseFloat(tankSelect.value) || 4.5517;
+                        let gateWeight = parseFloat(gateWeightInput.value);
+                        let density = parseFloat(resDensity.value) || 0;
+                        
+                        // Volume (Liters) = Dip (mm) * Tank Factor (Liters/mm)
+                        let volume = dip * tankFactor;
+                        
+                        // Oil Stock (Kg) = Volume (L) * Density (kg/L)
+                        let stock = volume * density;
+                        
+                        resStock.innerText = Math.round(stock).toLocaleString();
+
+                        // Calculate differences if Gate Scale Weight is provided
+                        if (!isNaN(gateWeight) && gateWeight > 0) {
+                            let diff = gateWeight - stock;
+                            let diffPct = (diff / gateWeight) * 100;
+                            
+                            resDiff.innerText = Math.round(diff).toLocaleString();
+                            resDiff.style.color = diff < 0 ? '#ef4444' : '#10b981';
+                            
+                            resDiffPct.innerText = diffPct.toFixed(2) + '%';
+                            resDiffPct.style.color = diff < 0 ? '#ef4444' : '#10b981';
+                        } else {
+                            resDiff.innerText = '-';
+                            resDiff.style.color = 'var(--text-primary)';
+                            resDiffPct.innerText = '-';
+                            resDiffPct.style.color = 'var(--text-primary)';
+                        }
+                    }
+
+                    // Attach event listeners for real-time calculation
+                    [tankSelect, dipInput, gateWeightInput].forEach(el => {
+                        if(el) {
+                            el.addEventListener('input', calculateDip);
+                            el.addEventListener('change', calculateDip);
+                        }
+                    });
+
+                    // Init
+                    loadStorageConfig();
+                    calculateDip();
+                });
+                </script>
+
                 <!-- 3D Oil Tanks Visualization -->
                 <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);margin-bottom:1.5rem;display:flex;flex-direction:column;">
                     <h3 style="margin-bottom:1rem;color:var(--text-primary);font-size:1.05rem;display:flex;align-items:center;gap:0.5rem;margin-top:0;">🛢️ Oil SCADA 3D Network</h3>
-                    <div id="oil-tanks-3d" style="width:100%;height:80vh;min-height:600px;position:relative;background:#0f172a;border-radius:8px;overflow:hidden;border:1px solid #334155; box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);">
+                    <div id="oil-tanks-3d" style="width:100%;height:80vh;min-height:600px;position:relative;background:#e2e8f0;border-radius:8px;overflow:hidden;border:1px solid #cbd5e1; box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);">
                         <button id="btn-anim-toggle" style="position:absolute; top:15px; right:135px; z-index:10; background:rgba(234,179,8,0.8); color:#000; border:1px solid rgba(255,255,255,0.4); padding:8px 12px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:bold; backdrop-filter:blur(4px); transition:0.2s;">⏸ Pause Oil Flow</button>
                         <button id="btn-fullscreen-3d" style="position:absolute; top:15px; right:15px; z-index:10; background:rgba(0,0,0,0.6); color:#fff; border:1px solid rgba(255,255,255,0.2); padding:8px 12px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:bold; backdrop-filter:blur(4px); transition:0.2s;">⛶ Fullscreen</button>
                     </div>
@@ -2492,6 +2707,25 @@ order by
                             <input type="number" step="any" id="oa-modal-total-batches" value="113" readonly style="width:100%;border-radius:4px;border:1px solid #3b82f6;padding:0.2rem;background:#eff6ff;color:#1e3a8a;font-size:0.8rem;font-weight:700;text-align:center;" />
                         </div>
                     </div>
+                    <!-- Additional Service Tank & Storage Settings -->
+                    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.75rem;background:#ffffff;padding:0.5rem 0.75rem;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:0.5rem;margin-top:0.5rem;">
+                        <div class="form-group" style="margin:0;">
+                            <label for="oa-modal-loss-storage" style="font-weight:700;font-size:0.8rem;margin-bottom:0.15rem;display:block;">Loss in Storage</label>
+                            <input type="number" step="any" id="oa-modal-loss-storage" value="" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.2rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="oa-modal-service-tank" style="font-weight:700;font-size:0.8rem;margin-bottom:0.15rem;display:block;">Service Tank Vol.</label>
+                            <input type="number" step="any" id="oa-modal-service-tank" value="" style="width:100%;border-radius:4px;border:1px solid #cbd5e1;padding:0.2rem;background:#ffffff;color:#0f172a;font-size:0.8rem;" />
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="oa-modal-service-hl" style="font-weight:700;font-size:0.8rem;margin-bottom:0.15rem;display:block;color:#ef4444;">Service Tank HL</label>
+                            <input type="number" step="any" id="oa-modal-service-hl" value="" style="width:100%;border-radius:4px;border:1px solid #ef4444;padding:0.2rem;background:#fef2f2;color:#991b1b;font-size:0.8rem;" />
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="oa-modal-service-ll" style="font-weight:700;font-size:0.8rem;margin-bottom:0.15rem;display:block;color:#eab308;">Service Tank LL</label>
+                            <input type="number" step="any" id="oa-modal-service-ll" value="" style="width:100%;border-radius:4px;border:1px solid #eab308;padding:0.2rem;background:#fefce8;color:#854d0e;font-size:0.8rem;" />
+                        </div>
+                    </div>
                     <!-- Formulations Group Sums (Read-only summary) -->
                     <div style="background:#ffffff;padding:0.5rem 0.75rem;border-radius:8px;border:1px solid #cbd5e1;display:flex;flex-direction:column;justify-content:center;">
                         <div style="font-weight:700;font-size:0.82rem;color:#4f46e5;margin-bottom:0.3rem;display:flex;align-items:center;gap:0.25rem;">📊 Formulation Group Sums <span style="font-size:0.75rem;font-weight:normal;color:#64748b;">(Read-only sums of detailed recipes)</span></div>
@@ -3387,30 +3621,48 @@ order by
                 <button id="performa-modal-close" class="modal-close-btn">&times;</button>
             </div>
             <div class="modal-body" style="padding:2rem; flex:1; overflow-y: auto;">
-                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
-                    <div class="form-group">
+                <div class="form-row" style="margin-bottom:1.5rem;">
+                    <div class="form-group" style="width: 300px;">
                         <label>Date</label>
                         <input type="text" id="performa-modal-date" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;" />
-                    </div>
-                    <div class="form-group">
-                        <label>Production Officer / Signature</label>
-                        <select id="performa-modal-sign" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.5rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
-                            <option value="">Select Officer</option>
-                            <option value="M. Zubair">M. Zubair</option>
-                            <option value="M. Tahir">M. Tahir</option>
-                            <option value="M. Shoaib">M. Shoaib</option>
-                        </select>
                     </div>
                 </div>
                 
                 <table class="report-table" style="width:100%; border-collapse: collapse; margin-bottom: 1.5rem;">
                     <thead>
                         <tr>
-                            <th style="width: 40px;">#</th>
-                            <th>Performa Name/Category</th>
-                            <th style="width: 80px; text-align: center;">Morning</th>
-                            <th style="width: 80px; text-align: center;">Evening</th>
-                            <th style="width: 80px; text-align: center;">Night</th>
+                            <th style="width: 40px; vertical-align: bottom;">#</th>
+                            <th style="vertical-align: bottom;">Performa Name/Category</th>
+                            <th style="width: 120px; text-align: center;">
+                                <div style="font-size:0.75rem; color:var(--text-secondary); font-weight:normal; margin-bottom: 0.2rem;">Officer Name</div>
+                                <select id="pf-off-m" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.2rem;margin-bottom:0.25rem;font-size:0.8rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
+                                    <option value="">Select Officer</option>
+                                    <option value="M. Zubair">M. Zubair</option>
+                                    <option value="M. Tahir">M. Tahir</option>
+                                    <option value="M. Shoaib">M. Shoaib</option>
+                                </select>
+                                Morning
+                            </th>
+                            <th style="width: 120px; text-align: center;">
+                                <div style="font-size:0.75rem; color:var(--text-secondary); font-weight:normal; margin-bottom: 0.2rem;">Officer Name</div>
+                                <select id="pf-off-e" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.2rem;margin-bottom:0.25rem;font-size:0.8rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
+                                    <option value="">Select Officer</option>
+                                    <option value="M. Zubair">M. Zubair</option>
+                                    <option value="M. Tahir">M. Tahir</option>
+                                    <option value="M. Shoaib">M. Shoaib</option>
+                                </select>
+                                Evening
+                            </th>
+                            <th style="width: 120px; text-align: center;">
+                                <div style="font-size:0.75rem; color:var(--text-secondary); font-weight:normal; margin-bottom: 0.2rem;">Officer Name</div>
+                                <select id="pf-off-n" style="width:100%;border-radius:4px;border:1px solid var(--card-border);padding:0.2rem;margin-bottom:0.25rem;font-size:0.8rem;background:var(--card-bg);color:var(--text-primary);outline:none;">
+                                    <option value="">Select Officer</option>
+                                    <option value="M. Zubair">M. Zubair</option>
+                                    <option value="M. Tahir">M. Tahir</option>
+                                    <option value="M. Shoaib">M. Shoaib</option>
+                                </select>
+                                Night
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="performa-modal-tbody">
@@ -4293,11 +4545,27 @@ order by
     <script src="oil_audit.js?v=1"></script>
     <script src="silo_performa.js?v=5"></script>
     <script src="dryer_report.js?v=5"></script>
-    <script src="script.js?v=5"></script>
-    <script src="shift_report_pdf.js?v=4"></script>
+    <script src="script.js?v=9"></script>
+    <script src="shift_report_pdf.js?v=9"></script>
     <script src="less_excess_pdf.js?v=4"></script>
     <script src="executive_dashboard.js?v=3"></script>
 
+    <!-- Title Toggler Script -->
+    <script>
+        function toggleMainTitle() {
+            const title = document.getElementById('main-report-title');
+            if (title) {
+                if (window.location.hash === '#oil-audit') {
+                    title.style.display = 'none';
+                } else {
+                    title.style.display = 'block';
+                }
+            }
+        }
+        window.addEventListener('hashchange', toggleMainTitle);
+        document.addEventListener('DOMContentLoaded', toggleMainTitle);
+    </script>
+    
     <!-- Batching Scale inline script (avoids external file cache issues) -->
     <script>
     (function() {
@@ -4878,8 +5146,8 @@ order by
     })();
     </script>
     <!-- Complete Shift Report Print Preview Modal -->
-    <div id="report-preview-modal" class="modal-overlay" style="z-index: 100000;">
-        <div class="modal-card" style="max-width: 1000px; width: 95%; height: 95vh; display: flex; flex-direction: column; padding: 0; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);">
+    <div id="report-preview-modal" class="modal-overlay" style="z-index: 100000; padding: 0; margin: 0;">
+        <div class="modal-card" style="max-width: 100vw; width: 100vw; max-height: 100vh; height: 100vh; display: flex; flex-direction: column; padding: 0; background: var(--card-bg); border: none; border-radius: 0; box-shadow: none; margin: 0;">
             <div class="modal-header" style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--card-border); display:flex; justify-content:space-between; align-items:center;">
                 <h2 style="margin:0; font-size:1.25rem; color:var(--text-primary);">📋 Shift Report View</h2>
                 <button id="btn-close-preview" class="modal-close-btn" style="font-size:1.5rem;">&times;</button>
@@ -4888,7 +5156,7 @@ order by
             <!-- Preview Scrollable Content Area -->
             <div style="flex: 1; overflow-y: auto; padding: 2rem; background: #f3f4f6; display: flex; justify-content: center;">
                 <!-- Simulated Paper Document with Border -->
-                <div id="preview-document-paper" style="width: 100%; max-width: 800px; background: #ffffff; padding: 3rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-radius: 6px; color: #000000; font-family: 'Segoe UI', Arial, sans-serif; overflow-x: auto; border: 2px solid rgba(139, 92, 246, 0.4);">
+                <div id="preview-document-paper" style="width: 100%; max-width: 100%; background: #ffffff; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-radius: 6px; color: #000000; font-family: 'Segoe UI', Arial, sans-serif; overflow-x: auto; border: 2px solid rgba(139, 92, 246, 0.4);">
                     <!-- Complete Report Content will be injected here -->
                 </div>
             </div>

@@ -10,6 +10,21 @@ try {
     }
     let activeMoistReportId = null;
 
+    let smSbClient = null;
+    const initSmSb = () => {
+        const sbUrl = localStorage.getItem('fmpr_supabaseUrl') || (window.env && window.env.SUPABASE_URL) || '';
+        const sbKey = localStorage.getItem('fmpr_supabaseKey') || (window.env && window.env.SUPABASE_KEY) || '';
+        if (sbUrl && sbKey && typeof supabase !== 'undefined') {
+            const cleanUrl = sbUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+            smSbClient = supabase.createClient(cleanUrl, sbKey);
+        }
+    };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSmSb);
+    } else {
+        initSmSb();
+    }
+
     const inp = (id, w = '100%') => `<input type="text" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;">`;
     const num = (id, w = '100%') => `<input type="number" step="any" id="${id}" style="width:${w};border-radius:4px;border:1px solid var(--card-border);padding:0.4rem;outline:none;">`;
     const btn = (icon, color) => `<button class="btn" style="background:transparent;color:${color};font-size:1.2rem;padding:0;box-shadow:none;">${icon}</button>`;
@@ -190,6 +205,24 @@ try {
         }
 
         saveSiloMoistData();
+        
+        if (!smSbClient) initSmSb();
+        if (smSbClient) {
+            const dbData = {
+                id: report.id,
+                report_date: report.date,
+                shift: report.shift,
+                officer: report.officerName || '',
+                shift_incharge: '',
+                remarks: '',
+                rows_data: report.rows
+            };
+            smSbClient.from('silo_moisture_reports').upsert([dbData]).then(({error}) => {
+                if (error) console.error("Silo Moisture Supabase save error:", error);
+                else if (window.showToast) window.showToast('✓ Moisture Report saved to Supabase');
+            });
+        }
+        
         renderSiloMoistTable();
         closeSmModal();
         if (window.updateAllSubreportBadges) window.updateAllSubreportBadges();
