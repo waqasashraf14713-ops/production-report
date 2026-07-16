@@ -293,40 +293,71 @@ function updateExecutiveDashboard() {
     let diffStr = '--';
     let statusStr = '';
     try {
-        const maizeLogs = JSON.parse(localStorage.getItem('fmpr_maizeLogs') || '[]');
-        const targetLogs = maizeLogs.filter(r => parseDateToISO(r.date) === selectedDateStr);
-        
-        if (targetLogs.length > 0) {
-            let totalDiff = 0;
-            let count = 0;
-            
-            targetLogs.forEach(log => {
-                const formM = parseFloat(log.formula_moisture);
-                if (!isNaN(formM) && log.c_room_un_grind && log.c_room_un_grind.length > 0) {
-                    const validReadings = log.c_room_un_grind.map(v => parseFloat(v)).filter(v => !isNaN(v));
-                    if (validReadings.length > 0) {
-                        const avgRoomM = validReadings.reduce((sum, val) => sum + val, 0) / validReadings.length;
-                        const diff = avgRoomM - formM;
-                        totalDiff += diff;
-                        count++;
-                    }
+        const siloMoistDataAll = JSON.parse(localStorage.getItem('fm_silo_moisture') || '[]');
+        const targetMoistData = siloMoistDataAll.filter(r => {
+            let rd = r.date;
+            try {
+                const parts = r.date.split('-');
+                if(parts.length===3) {
+                    const mName = parts[1];
+                    const months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+                    rd = `${parts[2]}-${months[mName]}-${parts[0].padStart(2,'0')}`;
                 }
-            });
+            } catch(e){}
+            return rd === selectedDateStr || r.date === document.getElementById('exec-filter-date').value;
+        });
 
-            if (count > 0) {
-                const avgDiff = totalDiff / count;
-                diffStr = Math.abs(avgDiff).toFixed(2) + '%';
-                
-                if (avgDiff > 0) {
-                    statusStr = '<span style="color:#ef4444;">(Excess ⬇)</span>'; // Higher consumed moisture
-                } else if (avgDiff < 0) {
-                    statusStr = '<span style="color:#10b981;">(Saving ⬆)</span>'; // Lower consumed moisture
-                } else {
-                    statusStr = '<span style="color:#94a3b8;">(Neutral)</span>';
+        let sum = 0, count = 0;
+        targetMoistData.forEach(r => {
+            (r.rows || []).forEach(row => {
+                const mat = (row.material || '').trim().toLowerCase();
+                if (mat !== 'maize') return;
+                const m = parseFloat(row.ctrlMoisture);
+                if (!isNaN(m)) { sum += m; count++; }
+            });
+        });
+
+        if (count > 0) {
+            const avg = sum / count;
+            const formulas = JSON.parse(localStorage.getItem('fm_daily_formula_moisture') || '{}');
+            // Try to match by the exact string format used in the filter
+            const filterStr = document.getElementById('exec-filter-date').value;
+            // Also try formatting to dd-MMM-yyyy as saved by silo moisture
+            const dt = new Date(filterStr);
+            const dateFmt = dt.getDate() + '-' + dt.toLocaleString('en-US', {month:'short'}) + '-' + dt.getFullYear();
+            
+            let formulaVal = formulas[dateFmt] !== undefined ? formulas[dateFmt] : formulas[filterStr];
+            
+            if (formulaVal === undefined) {
+                const globalVal = localStorage.getItem('fm_global_formula_moisture');
+                if (globalVal !== null && globalVal !== '') {
+                    formulaVal = parseFloat(globalVal);
                 }
             }
+
+            if (formulaVal !== undefined) {
+                const diff = avg - formulaVal;
+                diffStr = Math.abs(diff).toFixed(2) + '%';
+                
+                if (diff > 0) {
+                    statusStr = '<span style="color:#ef4444;">(Out of Range ⬇)</span>'; 
+                } else if (diff < 0) {
+                    statusStr = '<span style="color:#10b981;">(Match / Saving ⬆)</span>';
+                } else {
+                    statusStr = '<span style="color:#10b981;">(Match)</span>';
+                }
+                
+                // Add sign if requested:
+                diffStr = (diff > 0 ? '+' : (diff < 0 ? '-' : '')) + diffStr;
+            } else {
+                diffStr = 'Formula N/A';
+            }
+        } else {
+            diffStr = 'No Data';
         }
-    } catch(e) {}
+    } catch(e) {
+        console.error("Moisture diff error:", e);
+    }
     
     document.getElementById('exec-moisture-diff').textContent = diffStr;
     document.getElementById('exec-moisture-diff-status').innerHTML = statusStr;

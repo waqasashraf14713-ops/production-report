@@ -18,8 +18,8 @@
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.urdu-text {
-  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Urdu Typesetting', serif !important;
+.urdu-text, .urdu-text th, .urdu-text td {
+  font-family: 'Jameel Noori Nastaleeq', 'JameelNooriNastaliq', 'Noto Nastaliq Urdu', 'Urdu Typesetting', serif !important;
   direction: rtl !important;
   text-align: right !important;
 }
@@ -2478,10 +2478,10 @@ header h1 {
     margin-bottom: 5px;
   }
 
-.urdu-text {
-  font-family: 'JameelNooriNastaliq', 'Noto Nastaliq Urdu', serif !important;
+.urdu-text, .urdu-text th, .urdu-text td {
+  font-family: 'Jameel Noori Nastaleeq', 'JameelNooriNastaliq', 'Noto Nastaliq Urdu', serif !important;
   direction: rtl;
-  font-size: 1.25rem; /* slightly larger for readability */
+  font-size: 1.3rem; /* slightly larger for readability */
   line-height: 2.0; /* slightly higher line height for Nastaliq script spacing */
 }
 

@@ -94,6 +94,13 @@ try {
         document.getElementById('sm-shift').value = r.shift || 'Morning';
         document.getElementById('sm-officer').value = r.officerName || '';
 
+        const formulas = JSON.parse(localStorage.getItem('fm_daily_formula_moisture') || '{}');
+        let formulaVal = formulas[r.date || ''];
+        if (formulaVal === undefined) {
+            formulaVal = localStorage.getItem('fm_global_formula_moisture') || '';
+        }
+        document.getElementById('sm-formula-input').value = formulaVal;
+
         const tbody = document.getElementById('sm-rows-tbody');
         tbody.innerHTML = '';
         if (r.rows && r.rows.length > 0) {
@@ -155,6 +162,13 @@ try {
         document.getElementById('sm-shift').value = 'Morning';
         document.getElementById('sm-officer').value = '';
 
+        const formulas = JSON.parse(localStorage.getItem('fm_daily_formula_moisture') || '{}');
+        let formulaVal = formulas[filterDate];
+        if (formulaVal === undefined) {
+            formulaVal = localStorage.getItem('fm_global_formula_moisture') || '';
+        }
+        document.getElementById('sm-formula-input').value = formulaVal;
+
         const tbody = document.getElementById('sm-rows-tbody');
         tbody.innerHTML = '';
         addSmRowUI();
@@ -173,6 +187,15 @@ try {
 
         const shift = document.getElementById('sm-shift').value;
         const officerName = document.getElementById('sm-officer').value;
+
+        // Save formula moisture globally and for this date
+        const formulaVal = document.getElementById('sm-formula-input').value.trim();
+        if (formulaVal) {
+            const formulas = JSON.parse(localStorage.getItem('fm_daily_formula_moisture') || '{}');
+            formulas[date] = parseFloat(formulaVal);
+            localStorage.setItem('fm_daily_formula_moisture', JSON.stringify(formulas));
+            localStorage.setItem('fm_global_formula_moisture', formulaVal);
+        }
 
         const rows = [];
         document.querySelectorAll('#sm-rows-tbody .sm-row').forEach(tr => {

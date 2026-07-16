@@ -60,14 +60,19 @@
         sortByShift(dryerReportData);
 
         let html = `
-            <div class="pdf-report-header">
+            <style>
+                .pdf-report-header h1, .pdf-report-header p { text-align: center !important; }
+                .pdf-section h3, .pdf-section h4, .pdf-section h5 { text-align: center !important; }
+                .pdf-table th, .pdf-table td { text-align: center !important; }
+            </style>
+            <div class="pdf-report-header" style="text-align:center;">
                 <h1>Combined Daily Shift Report</h1>
                 <p>Date: ${selectedDate}</p>
             </div>
         `;
 
-        // NEW COMPARISON SUMMARY
-        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>Summary: Shift A vs B vs C</h3>`;
+        // 1. Production Officer Shift Reports (Combined)
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>1. Production Officer Shift Reports (Combined)</h3>`;
         html += `<table class="pdf-table" style="margin-bottom: 1.5rem; width: 100%; border: 2px solid #1e293b; text-align: center;">
             <thead style="background-color: #e2e8f0; font-weight: bold;">
                 <tr>
@@ -120,8 +125,8 @@
         html += `</tbody></table></div>`;
 
 
-        // 1. Raw Material
-        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>1. Raw Material Checks (Combined)</h3>`;
+        // 2. Raw Material
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>2. Raw Material Checks (Combined)</h3>`;
         if (rmData.length > 0) {
             html += `<table class="pdf-table"><thead><tr>
                 <th>Shift</th><th>Vehicle No</th><th>Location</th><th>Moisture %</th><th>Quality</th><th>Remarks</th>
@@ -140,8 +145,8 @@
         }
         html += `</div>`;
 
-        // 2. Performas
-        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>2. Performas (Combined)</h3>`;
+        // 3. Performas
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>3. Performas (Combined)</h3>`;
         if (performaData.length > 0) {
             performaData.forEach(row => {
                 html += `<div style="border: 1px solid #000; padding: 1rem; margin-bottom: 1rem; page-break-inside: avoid; background: #fff;">
@@ -180,7 +185,7 @@
                     hasItems = true;
                     const check = (row.checks && row.checks[idx]) ? row.checks[idx] : {};
                     html += `<tr>
-                        <td>${item.name}</td>
+                        <td style="font-weight:600; color:#1e293b; font-size:1.05em; text-align:left;">${item.name}</td>
                         ${renderCell(check.m, item.m)}
                         ${renderCell(check.e, item.e)}
                         ${renderCell(check.n, item.n)}
@@ -196,8 +201,8 @@
         }
         html += `</div>`;
 
-        // 3. Plant Report
-        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>3. Plant Report (Combined)</h3>`;
+        // 4. Plant Report
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>4. Plant Report (Combined)</h3>`;
         if (plantReportData.length > 0) {
             plantReportData.forEach(row => {
                 html += `<div style="margin-top: 1rem; border: 2px solid #000; padding: 1rem; background: #fff; page-break-inside: avoid; margin-bottom: 1.5rem;">
@@ -219,27 +224,6 @@
                                 <td>${row.shiftDetails?.op || '-'}</td>
                                 <td>${row.shiftDetails?.st || '-'}</td>
                                 <td>${row.shiftDetails?.fn || '-'}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <!-- 5S Checklist Sign Table -->
-                    <h5 style="margin: 0.5rem 0 0.25rem 0; font-size: 0.95rem;">5'S Checklists Sign</h5>
-                    <table class="pdf-table" style="margin-bottom: 0.75rem;">
-                        <thead>
-                            <tr>
-                                <th>Control ROOMS</th>
-                                <th>Pellet Mills</th>
-                                <th>Batching</th>
-                                <th>Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>${row.fiveS?.cr || '-'}</td>
-                                <td>${row.fiveS?.pm || '-'}</td>
-                                <td>${row.fiveS?.b || '-'}</td>
-                                <td>${row.fiveS?.rm || '-'}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -373,54 +357,57 @@
                         </tbody>
                     </table>
 
-                    <!-- Physical Visit Table -->
-                    <h5 style="margin: 0.5rem 0 0.25rem 0; font-size: 0.95rem;">Physical Visit Checklist</h5>
-                    <table class="pdf-table">
-                        <thead>
-                            <tr>
-                                <th>Checking Parameters</th>
-                                <th>Basement</th>
-                                <th>Ground Flr</th>
-                                <th>1st Flr (19)</th>
-                                <th>2nd Flr (51)</th>
-                                <th>3rd Flr (67)</th>
-                                <th>4th Flr (91)</th>
-                                <th>Roof (110)</th>
-                                <th>Silos Top</th>
-                                <th>Silos Tower</th>
-                                <th>Dryer Side</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-                
-                const locations = ['Basement', 'Ground Flr', '1st Flr (19)', '2nd Flr (51)', '3rd Flr (67)', '4th Flr (91)', 'Roof (110)', 'Silos Top', 'Silos Tower', 'Dryer Side'];
-                const params = [
-                    'Floor & Walls Cleaning',
-                    'Machine Cleaning',
-                    'Leakage',
-                    'Abnormal Machine Sound',
-                    'Unnecessary item'
-                ];
-
-                params.forEach((pName, pIdx) => {
-                    html += `<tr>
-                        <td><strong>${pName}</strong></td>`;
-                    locations.forEach((loc, lIdx) => {
-                        const checked = row.pv && row.pv[pIdx] ? !!row.pv[pIdx][lIdx] : false;
-                        html += `<td style="text-align: center; font-weight: bold; color: ${checked ? 'green' : '#ccc'};">${checked ? '✓' : '-'}</td>`;
-                    });
-                    html += `</tr>`;
-                });
-
-                html += `</tbody>
-                    </table>
                 </div>`;
             });
         }
         html += `</div>`;
 
-        // 4. Quality Standards
-        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>4. Quality Standards (Combined)</h3>`;
+        // 5. Physical Visit (Combined)
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>5. Physical Visit (Combined)</h3>`;
+        if (plantReportData.length > 0) {
+            const locations = ['Basement', 'Ground Flr', '1st Flr (19)', '2nd Flr (51)', '3rd Flr (67)', '4th Flr (91)', 'Roof (110)', 'Silos Top', 'Silos Tower', 'Dryer Side'];
+            const params = ['Floor & Walls Cleaning', 'Machine Cleaning', 'Leakage', 'Abnormal Machine Sound', 'Unnecessary item'];
+            
+            html += `<div style="border: 1px solid #000; padding: 1rem; page-break-inside: avoid; background: #fff;">
+                <table class="pdf-table" style="font-size:0.85rem;">
+                    <thead>
+                        <tr>
+                            <th style="width:140px;">Parameter</th>
+                            <th style="width:70px;">Shift</th>`;
+            locations.forEach(loc => { html += `<th>${loc}</th>`; });
+            html += `</tr>
+                    </thead>
+                    <tbody>`;
+            
+            const shifts = ['Morning', 'Evening', 'Night'];
+            params.forEach((pName, pIdx) => {
+                shifts.forEach((shiftName, sIdx) => {
+                    const row = plantReportData.find(r => r.shift === shiftName);
+                    html += `<tr>`;
+                    if (sIdx === 0) {
+                        html += `<td rowspan="3" style="font-weight:bold; vertical-align:middle; background:#f8fafc;">${pName}</td>`;
+                    }
+                    html += `<td style="font-weight:600; color:#555; text-align:center;">${shiftName.substring(0,3)}</td>`;
+                    
+                    locations.forEach((loc, lIdx) => {
+                        if (!row) {
+                            html += `<td style="text-align:center;color:#ccc;">-</td>`;
+                        } else {
+                            const checked = row.pv && row.pv[pIdx] ? !!row.pv[pIdx][lIdx] : false;
+                            html += `<td style="text-align:center; font-weight:bold; color: ${checked ? 'green' : '#ccc'};">${checked ? '✓' : '-'}</td>`;
+                        }
+                    });
+                    html += `</tr>`;
+                });
+            });
+            html += `</tbody></table></div>`;
+        } else {
+            html += `<p style="color:#666; font-style:italic;">No physical visit data found.</p>`;
+        }
+        html += `</div>`;
+
+        // 6. Quality Standards
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>6. Quality Standards (Combined)</h3>`;
         if (qsReportData.length > 0) {
             const qsM = qsReportData.find(r => r.shift === 'Morning') || {};
             const qsE = qsReportData.find(r => r.shift === 'Evening') || {};
@@ -459,7 +446,7 @@
                 html += `<tr><td colspan="4" style="background:#f8fafc; font-weight:bold;">Batching Standards</td></tr>`;
                 bItems.forEach((item, idx) => {
                     html += `<tr>
-                        <td class="urdu-text" style="direction: rtl; font-family: 'Jameel Noori Nastaleeq', Arial, sans-serif; text-align: right;">${item}</td>
+                        <td class="urdu-text" style="direction: rtl; font-family: 'Jameel Noori Nastaleeq', Arial, sans-serif; text-align: right; font-size: 1.4em; font-weight: bold; color: #000; line-height: 1.6;">${item}</td>
                         ${renderQsCell(qsM, idx, 'B')}
                         ${renderQsCell(qsE, idx, 'B')}
                         ${renderQsCell(qsN, idx, 'B')}
@@ -472,7 +459,7 @@
                 html += `<tr><td colspan="4" style="background:#f8fafc; font-weight:bold;">Pellet Standards</td></tr>`;
                 pItems.forEach((item, idx) => {
                     html += `<tr>
-                        <td class="urdu-text" style="direction: rtl; font-family: 'Jameel Noori Nastaleeq', Arial, sans-serif; text-align: right;">${item}</td>
+                        <td class="urdu-text" style="direction: rtl; font-family: 'Jameel Noori Nastaleeq', Arial, sans-serif; text-align: right; font-size: 1.4em; font-weight: bold; color: #000; line-height: 1.6;">${item}</td>
                         ${renderQsCell(qsM, idx, 'P')}
                         ${renderQsCell(qsE, idx, 'P')}
                         ${renderQsCell(qsN, idx, 'P')}
@@ -486,33 +473,37 @@
         }
         html += `</div>`;
 
-        // 5. Silo Dumping
-        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>5. Silo Dumping Moisture (24-Hour Combined)</h3>`;
-        if (siloDumpData.length > 0) {
+        // 7. Silo Dumping
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>7. Silo Dumping Moisture (24-Hour Combined)</h3>`;
+        if (siloDumpData.length >= 0) { // Always show, even if no data, since user wants empty items too. Wait, if there's absolutely no data filled, it might still be good to show the blank 24 hours table. But let's check `if (true)`
             const times = [];
             for (let i = 0; i < 48; i++) {
                 let totalMinutes = i * 30;
                 let h = Math.floor(totalMinutes / 60);
                 let m = totalMinutes % 60;
-                times.push(`${h < 10 ? '0'+h : h}:${m === 0 ? '00' : '30'}`);
+                let hh24 = h < 10 ? '0'+h : h;
+                let mm = m === 0 ? '00' : '30';
+                
+                let ampm = h >= 12 ? 'PM' : 'AM';
+                let h12 = h % 12;
+                if (h12 === 0) h12 = 12;
+                let hh12 = h12 < 10 ? '0'+h12 : h12;
+                
+                times.push(`${hh12}:${mm} ${ampm}`);
             }
 
             let rowsHtml = '';
-            let hasData = false;
-
+            
             times.forEach((timeStr, i) => {
-                // Find if any shift has data for this timeslot index 'i'
                 let filledRow = null;
-                let filledShift = '';
-                let filledOfficer = '';
+                let filledShift = '-';
+                let filledOfficer = '-';
 
                 siloDumpData.forEach(r => {
                     if (r.rows && r.rows[i]) {
                         const row = r.rows[i];
                         const hasA = row.amois || row.acr || row.acond || row.asilo;
                         const hasB = row.bmois || row.bcr || row.bcond || row.bsilo;
-                        // ONLY consider the row filled if it has A Line or B Line data
-                        // Ignore the material default value "Winter Maize"
                         if (hasA || hasB) {
                             filledRow = row;
                             filledShift = r.shift || '-';
@@ -521,65 +512,77 @@
                     }
                 });
 
-                if (filledRow) {
-                    hasData = true;
-                    rowsHtml += `<tr>
-                        <td style="font-weight:bold;">${timeStr}</td>
-                        <td style="font-weight:bold; color:var(--primary);">${filledShift}</td>
-                        <td>${filledOfficer}</td>
-                        <td>${filledRow.mat || '-'}</td>
-                        <td style="border-left: 2px solid #000;">${filledRow.amois || '-'}</td>
-                        <td>${filledRow.acr || '-'}</td>
-                        <td>${filledRow.acond || '-'}</td>
-                        <td style="border-right: 2px solid #000;">${filledRow.asilo || '-'}</td>
-                        
-                        <td>${filledRow.bmois || '-'}</td>
-                        <td>${filledRow.bcr || '-'}</td>
-                        <td>${filledRow.bcond || '-'}</td>
-                        <td>${filledRow.bsilo || '-'}</td>
-                    </tr>`;
+                if (!filledRow) {
+                    filledRow = { mat: '-', amois: '-', acr: '-', acond: '-', asilo: '-', bmois: '-', bcr: '-', bcond: '-', bsilo: '-' };
+                } else {
+                    ['mat','amois','acr','acond','asilo','bmois','bcr','bcond','bsilo'].forEach(k => {
+                        if (!filledRow[k]) filledRow[k] = '-';
+                    });
                 }
+
+                rowsHtml += `<tr>
+                    <td style="font-weight:bold; font-size:0.75rem;">${timeStr}</td>
+                    <td style="font-weight:bold; color:var(--primary);">${filledShift}</td>
+                    <td>${filledOfficer}</td>
+                    <td>${filledRow.mat}</td>
+                    <td style="border-left: 2px solid #000;">${filledRow.amois}</td>
+                    <td>${filledRow.acr}</td>
+                    <td>${filledRow.acond}</td>
+                    <td style="border-right: 2px solid #000;">${filledRow.asilo}</td>
+                    
+                    <td>${filledRow.bmois}</td>
+                    <td>${filledRow.bcr}</td>
+                    <td>${filledRow.bcond}</td>
+                    <td>${filledRow.bsilo}</td>
+                </tr>`;
             });
 
-            if (hasData) {
-                html += `<div style="border: 1px solid #000; padding: 1rem; margin-bottom: 1.5rem; background: #fff; page-break-inside: avoid;">
-                    <table class="pdf-table" style="font-size:0.8rem; text-align:center;">
-                        <thead>
-                            <tr>
-                                <th rowspan="2" style="vertical-align:middle; width: 60px;">Time</th>
-                                <th rowspan="2" style="vertical-align:middle;">Shift</th>
-                                <th rowspan="2" style="vertical-align:middle;">Officer</th>
-                                <th rowspan="2" style="vertical-align:middle;">Material</th>
-                                <th colspan="4" style="border-left: 2px solid #000; border-right: 2px solid #000;">A Line</th>
-                                <th colspan="4">B Line</th>
-                            </tr>
-                            <tr>
-                                <th style="border-left: 2px solid #000;">Moisture</th>
-                                <th>C.R</th>
-                                <th>Condition</th>
-                                <th style="border-right: 2px solid #000;">Silo</th>
-                                
-                                <th>Moisture</th>
-                                <th>C.R</th>
-                                <th>Condition</th>
-                                <th>Silo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rowsHtml}
-                        </tbody>
-                    </table>
-                </div>`;
-            } else {
-                html += `<p style="font-style: italic; color: #666;">No valid readings filled across shifts.</p>`;
-            }
+            html += `<div style="border: 1px solid #000; padding: 1rem; margin-bottom: 1.5rem; background: #fff; page-break-inside: avoid;">
+                <table class="pdf-table" style="font-size:0.8rem; text-align:center;">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="vertical-align:middle; width: 110px;">Time</th>
+                            <th rowspan="2" style="vertical-align:middle;">Shift</th>
+                            <th rowspan="2" style="vertical-align:middle;">Officer</th>
+                            <th rowspan="2" style="vertical-align:middle;">Material</th>
+                            <th colspan="4" style="border-left: 2px solid #000; border-right: 2px solid #000;">A Line</th>
+                            <th colspan="4">B Line</th>
+                        </tr>
+                        <tr>
+                            <th style="border-left: 2px solid #000;">Moisture</th>
+                            <th>C.R</th>
+                            <th>Condition</th>
+                            <th style="border-right: 2px solid #000;">Silo</th>
+                            
+                            <th>Moisture</th>
+                            <th>C.R</th>
+                            <th>Condition</th>
+                            <th>Silo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            </div>`;
         } else {
             html += `<p style="font-style: italic; color: #666;">No Silo Dumping records filled yet.</p>`;
         }
         
         html += `</div>`;
-        // 6. Silo Moisture
+        // 8. Silo Moisture Records
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>8. Silo Moisture Records (Control Room / Lab)</h3>`;
         if (siloMoistData.length > 0 && siloMoistData.some(r => r.rows && r.rows.length > 0)) {
+            const formulas = JSON.parse(localStorage.getItem('fm_daily_formula_moisture') || '{}');
+            let formulaVal = formulas[selectedDate];
+            if (formulaVal === undefined) {
+                const globalVal = localStorage.getItem('fm_global_formula_moisture');
+                if (globalVal !== null && globalVal !== '') {
+                    formulaVal = parseFloat(globalVal);
+                }
+            }
+            const formulaDisplay = formulaVal !== undefined ? formulaVal + '%' : 'N/A';
+
             html += `<table class="pdf-table"><thead><tr>
                 <th>Shift</th><th>Officer</th><th>Silo No</th><th>Material</th><th>Control Room %</th><th>Lab Ungrind %</th><th>Lab Grind %</th><th>Remarks</th>
             </tr></thead><tbody>`;
@@ -610,38 +613,194 @@
             html += `</tbody></table>`;
             
             // Add Moisture Summary
-            if (count > 0) {
-                const formulas = JSON.parse(localStorage.getItem('fm_daily_formula_moisture') || '{}');
-                const formulaVal = formulas[selectedDate];
-                const avg = (sum / count).toFixed(2);
-                
-                html += `<div style="margin-top:10px; padding:10px; border:1px solid #000; background:#f9fafb;">
-                    <strong>Daily Moisture Summary (All Shifts):</strong><br>
-                    Actual Average: ${avg}% (Based on ${count} readings)<br>`;
-                
-                if (formulaVal !== undefined) {
-                    html += `Formula Moisture: ${formulaVal}%<br>`;
+            const avg = count > 0 ? (sum / count).toFixed(2) : '0.00';
+            
+            html += `<div style="margin-top:10px; padding:15px; border:1px solid #000; background:#f9fafb; text-align:center; border-radius:8px;">
+                <strong style="font-size:1.1em; color:#1f2937;">Daily Moisture Summary (All Shifts):</strong><br><br>
+                <span style="color:#4b5563;">Actual Average:</span> <strong>${count > 0 ? avg + '%' : 'N/A'}</strong> (Based on ${count} readings)<br>`;
+            
+            if (formulaVal !== undefined) {
+                html += `<span style="color:#4b5563;">Formula Moisture:</span> <strong>${formulaVal}%</strong><br><br>`;
+                if (count > 0) {
                     const diff = parseFloat((avg - formulaVal).toFixed(2));
                     const absDiff = Math.abs(diff);
                     const sign = diff > 0 ? '+' : '';
                     if (absDiff === 0) {
-                        html += `Difference: 0.00% (Match)<br>`;
+                        html += `<strong style="color:#10b981; font-size:1.4em;">Difference: 0.00% (Match)</strong><br>`;
                     } else if (absDiff <= 2) {
-                        html += `Difference: ${sign}${diff}% (Within Limits)<br>`;
+                        html += `<strong style="color:#0284c7; font-size:1.4em;">Difference: ${sign}${diff}% (Within Limits)</strong><br>`;
                     } else {
-                        html += `<strong style="color:red;">Difference: ${sign}${diff}% (Out of Range!)</strong><br>`;
+                        html += `<strong style="color:#e11d48; font-size:1.4em;">Difference: ${sign}${diff}% (Out of Range!)</strong><br>`;
                     }
                 } else {
-                    html += `Formula Moisture: Not Entered<br>`;
+                    html += `<strong style="color:#6b7280; font-size:1.4em;">Difference: N/A (No maize readings)</strong><br>`;
                 }
-                html += `</div>`;
+            } else {
+                html += `<strong style="color:#6b7280; font-size:1.1em;">Formula Moisture: Not Entered</strong><br>`;
             }
+            html += `</div>`;
 
+        } else {
+            html += `<p style="font-style: italic; color: #666;">No Silo Moisture records filled yet.</p>`;
         }
         html += `</div>`;
 
-        // 7. Department Daily Checklists
-        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>7. Department Daily Checklists (Combined)</h3>`;
+        // 9. Daily Less / Excess Report (Combined)
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>9. Daily Less / Excess Report (Combined)</h3>`;
+        
+        try {
+            const allLeLogs = JSON.parse(localStorage.getItem('fmpr_lessExcessLogs') || '[]');
+            
+            // Format selectedDate for Less/Excess filter
+            let leFormattedDate = selectedDate;
+            const leParts = selectedDate.split('-');
+            if (leParts.length === 3) {
+                const day = parseInt(leParts[2], 10);
+                const monthIndex = parseInt(leParts[1], 10) - 1;
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                if (monthIndex >= 0 && monthIndex < 12) {
+                    leFormattedDate = day + '-' + months[monthIndex];
+                }
+            }
+            
+            const leLogs = allLeLogs.filter(r => r.date === leFormattedDate || r.date === selectedDate);
+            
+            if (leLogs.length > 0) {
+                // Calculate overall averages first
+                const feedTotals = {};
+                allLeLogs.forEach(log => {
+                    const expectedBags = (log.batches || 0) * 100;
+                    const diffBags = (log.productionBags || 0) - expectedBags;
+                    if (!feedTotals[log.feedName]) feedTotals[log.feedName] = { expected: 0, diff: 0 };
+                    feedTotals[log.feedName].expected += expectedBags;
+                    feedTotals[log.feedName].diff += diffBags;
+                    const totals = feedTotals[log.feedName];
+                    let pct = '0.00%';
+                    if (totals && totals.expected > 0) {
+                        const pctNum = (totals.diff / totals.expected) * 100;
+                        pct = pctNum.toFixed(2) + '%';
+                        if (pctNum > 0) pct = '+' + pct;
+                    }
+                    log._overallPct = pct;
+                });
+                
+                // Group by shift/officer
+                const groups = {};
+                leLogs.forEach(log => {
+                    const key = `${log.shift} - ${log.officerName}`;
+                    if (!groups[key]) groups[key] = [];
+                    groups[key].push(log);
+                });
+                
+                let totalBatches = 0, totalProdBags = 0, totalExpectedBags = 0;
+                
+                Object.keys(groups).forEach(key => {
+                    const logs = groups[key];
+                    const [shift, officer] = key.split(' - ');
+                    
+                    html += `
+                        <div style="margin-top:10px; border:1px solid #000; padding:10px; page-break-inside: avoid;">
+                            <h4 style="margin:0 0 10px 0; background:#f1f5f9; padding:5px; text-align:left !important;">Shift: ${shift} | Officer: ${officer}</h4>
+                            <table class="pdf-table">
+                                <thead>
+                                    <tr>
+                                        <th>Feed Name</th>
+                                        <th>Batches</th>
+                                        <th>Prod. Bags</th>
+                                        <th>Difference</th>
+                                        <th>Percentage</th>
+                                        <th>Overall Avg L/E</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    let shiftExpected = 0, shiftProd = 0;
+                    
+                    logs.forEach(log => {
+                        const expected = (log.batches || 0) * 100;
+                        const prod = log.productionBags || 0;
+                        const diff = prod - expected;
+                        const diffStr = diff > 0 ? `+${diff}` : `${diff}`;
+                        const pct = expected > 0 ? ((diff / expected) * 100).toFixed(2) + '%' : '0.00%';
+                        const pctStr = diff > 0 ? `+${pct}` : `${pct}`;
+                        
+                        shiftExpected += expected; shiftProd += prod;
+                        totalBatches += (log.batches || 0); totalProdBags += prod; totalExpectedBags += expected;
+                        
+                        html += `
+                            <tr>
+                                <td>${log.feedName || '-'}</td>
+                                <td>${log.batches || '0'}</td>
+                                <td>${prod.toLocaleString()}</td>
+                                <td style="font-weight:bold; color:${diff >= 0 ? '#15803d' : '#b91c1c'};">${diffStr}</td>
+                                <td style="font-weight:bold; color:${diff >= 0 ? '#15803d' : '#b91c1c'};">${pctStr}</td>
+                                <td style="font-weight:bold; color:${(log._overallPct||'').startsWith('+') ? '#15803d' : (log._overallPct||'').startsWith('-') ? '#b91c1c' : '#475569'};">${log._overallPct || '-'}</td>
+                                <td>${log.remarks || '-'}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    const shiftDiff = shiftProd - shiftExpected;
+                    const shiftDiffStr = shiftDiff > 0 ? `+${shiftDiff}` : `${shiftDiff}`;
+                    const shiftPct = shiftExpected > 0 ? ((shiftDiff / shiftExpected) * 100).toFixed(2) + '%' : '0.00%';
+                    const shiftPctStr = shiftDiff > 0 ? `+${shiftPct}` : `${shiftPct}`;
+                    
+                    html += `
+                                    <tr style="font-weight:bold; background-color:#f8fafc;">
+                                        <td>Total</td>
+                                        <td>-</td>
+                                        <td>${shiftProd.toLocaleString()}</td>
+                                        <td style="color:${shiftDiff >= 0 ? '#15803d' : '#b91c1c'};">${shiftDiffStr}</td>
+                                        <td style="color:${shiftDiff >= 0 ? '#15803d' : '#b91c1c'};">${shiftPctStr}</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                });
+                
+                // Overall summary
+                const overallDiff = totalProdBags - totalExpectedBags;
+                const overallDiffStr = overallDiff > 0 ? `+${overallDiff}` : `${overallDiff}`;
+                const overallPct = totalExpectedBags > 0 ? ((overallDiff / totalExpectedBags) * 100).toFixed(2) + '%' : '0.00%';
+                const overallPctStr = overallDiff > 0 ? `+${overallPct}` : `${overallPct}`;
+                
+                html += `
+                    <div style="margin-top:15px; border:2px solid #000; padding:10px; background-color:#f8fafc; page-break-inside: avoid;">
+                        <h4 style="margin:0 0 10px 0;">Daily Overall Summary (All Shifts Combined)</h4>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr>
+                                    <th>Overall Batches</th>
+                                    <th>Overall Production</th>
+                                    <th>Overall Avg Less/Excess</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-weight:bold;">${totalBatches}</td>
+                                    <td style="font-weight:bold;">${totalProdBags.toLocaleString()} Bags</td>
+                                    <td style="font-weight:bold; color:${overallDiff >= 0 ? '#15803d' : '#b91c1c'};">${overallPctStr} (${overallDiffStr} Bags)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } else {
+                html += `<p style="font-style: italic; color: #666;">No Less/Excess logs found for this date.</p>`;
+            }
+        } catch(e) {
+            console.error(e);
+            html += `<p style="color:red;">Error loading Less/Excess Report.</p>`;
+        }
+        html += `</div>`;
+
+        // 10. Department Daily Checklists
+        html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>10. Department Daily Checklists (Combined)</h3>`;
         if (dailyChecklistData.length > 0) {
             const localChecklistQuestions = window.DAILY_CHECKLIST_QUESTIONS || {
                 'Old Godown': [
@@ -738,7 +897,7 @@
 
         // Dryer Side Reports
         if (dryerReportData && dryerReportData.length > 0) {
-            html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>Dryer Side Shift Reports</h3>`;
+            html += `<div class="pdf-section" style="page-break-inside: avoid; margin-bottom: 20px;"><h3>11. Dryer Side Shift Reports</h3>`;
             dryerReportData.forEach(r => {
                 html += `
                 <div style="border:1px solid #000; padding:10px; margin-bottom:15px; page-break-inside: avoid;">
@@ -809,57 +968,26 @@
             html += `</div>`;
         }
 
-        // Approval Block
-        if (isApproved) {
-            html += `
-                <div class="pdf-approval-block" style="border: 2px solid green; padding: 15px; border-radius: 8px;">
-                    <h3 style="margin-top:0; border-bottom:1px solid green; padding-bottom:10px; color: green;">Production Manager Approval</h3>
-                    <div style="margin-top:15px; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem; color: green; font-weight: bold;">
-                        <span>✅ APPROVED BY PRODUCTION MANAGER</span>
+        // Approval & Remarks Block
+        html += `
+            <div class="pdf-approval-block" style="margin-top: 30px; border-top: 2px solid #1e293b; padding-top: 20px; page-break-inside: avoid;">
+                <h3 style="margin-top:0; color: #1e293b; font-size: 1.1rem; margin-bottom: 15px;">Production Manager Remarks</h3>
+                <textarea id="preview-approval-remarks" rows="3" placeholder="Write remarks here... (they will appear on the printed report)" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; font-family: inherit; font-size: 0.95rem; resize: vertical; outline: none; background: #f8fafc; box-sizing: border-box;">${remarks || ''}</textarea>
+                
+                <div class="signature-box" style="margin-top:40px; display:flex; justify-content:space-between; align-items:flex-end;">
+                    <div style="text-align:center;">
+                        <div style="border-bottom: 1px solid #000; width:250px; padding-bottom:5px;"></div>
+                        <div style="margin-top:8px; font-weight:600;">Production Manager Signature</div>
                     </div>
-                    <div style="margin-top:15px;">
-                        <strong>Comments / Remarks:</strong>
-                        <div style="border: 1px solid #ddd; background: #f9f9f9; padding: 10px; border-radius: 4px; margin-top:5px; font-style: italic; color: #333;">
-                            ${remarks ? remarks : 'Approved with one-click approval.'}
+                    <div style="text-align:center;">
+                        <div style="border-bottom: 1px solid #000; width:150px; padding-bottom:5px; font-weight:bold;">
+                            ${new Date().toLocaleDateString('en-GB')}
                         </div>
-                    </div>
-                    <div class="signature-box" style="margin-top:25px;">
-                        <div>
-                            <div style="font-weight:bold; font-family:'Courier New', monospace; border-bottom:1px solid #000; padding-bottom:5px; text-align:center; width:250px;">Production Manager</div>
-                            <div style="margin-top:5px;">Production Manager Signature</div>
-                        </div>
-                        <div>
-                            <div style="border-bottom: 1px solid #000; width:150px; text-align:center; padding-bottom:5px; font-weight:bold;">
-                                ${new Date().toLocaleDateString('en-GB')}
-                            </div>
-                            <div style="margin-top:5px;">Date</div>
-                        </div>
+                        <div style="margin-top:8px; font-weight:600;">Date</div>
                     </div>
                 </div>
-            `;
-        } else {
-            html += `
-                <div class="pdf-approval-block">
-                    <h3 style="margin-top:0; border-bottom:1px solid #000; padding-bottom:10px;">Production Manager Approval</h3>
-                    <div style="margin-top:20px;">
-                        <strong>Comments / Remarks:</strong>
-                        <div style="border-bottom: 1px dotted #999; height: 30px; margin-top:10px;"></div>
-                        <div style="border-bottom: 1px dotted #999; height: 30px;"></div>
-                        <div style="border-bottom: 1px dotted #999; height: 30px;"></div>
-                    </div>
-                    <div class="signature-box">
-                        <div>
-                            <div class="signature-line"></div>
-                            <div>Production Manager Signature</div>
-                        </div>
-                        <div>
-                            <div class="signature-line" style="width:150px;"></div>
-                            <div>Date</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+            </div>
+        `;
 
         return html;
     }
@@ -910,9 +1038,44 @@
             if (pdfSbClient) {
                 pdfSbClient.from('generated_shift_reports').select('*').eq('report_date', selectedDate).limit(1).then(({data, error}) => {
                     if (!error && data && data.length > 0) {
-                        if (paper) paper.innerHTML = data[0].report_html;
-                        if (chk) chk.checked = data[0].is_approved;
-                        if (rem) rem.value = data[0].supervisor_remarks || '';
+                        let htmlStr = data[0].report_html;
+                        
+                        // If it's an old report without the textarea, upgrade it so it's editable
+                        if (!htmlStr.includes('id="preview-approval-remarks"')) {
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = htmlStr;
+                            const oldBlock = tempDiv.querySelector('.pdf-approval-block');
+                            if (oldBlock) {
+                                oldBlock.outerHTML = `
+            <div class="pdf-approval-block" style="margin-top: 30px; border-top: 2px solid #1e293b; padding-top: 20px; page-break-inside: avoid;">
+                <h3 style="margin-top:0; color: #1e293b; font-size: 1.1rem; margin-bottom: 15px;">Production Manager Remarks</h3>
+                <textarea id="preview-approval-remarks" rows="3" placeholder="Write remarks here... (they will appear on the printed report)" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; font-family: inherit; font-size: 0.95rem; resize: vertical; outline: none; background: #f8fafc; box-sizing: border-box;">${data[0].supervisor_remarks || ''}</textarea>
+                
+                <div class="signature-box" style="margin-top:40px; display:flex; justify-content:space-between; align-items:flex-end;">
+                    <div style="text-align:center;">
+                        <div style="border-bottom: 1px solid #000; width:250px; padding-bottom:5px;"></div>
+                        <div style="margin-top:8px; font-weight:600;">Production Manager Signature</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="border-bottom: 1px solid #000; width:150px; padding-bottom:5px; font-weight:bold;">
+                            ${new Date(selectedDate).toLocaleDateString('en-GB') || new Date().toLocaleDateString('en-GB')}
+                        </div>
+                        <div style="margin-top:8px; font-weight:600;">Date</div>
+                    </div>
+                </div>
+            </div>`;
+                                htmlStr = tempDiv.innerHTML;
+                            }
+                        }
+                        
+                        if (paper) paper.innerHTML = htmlStr;
+                        
+                        // Sync saved remarks to the textarea
+                        const remBox = paper ? paper.querySelector('#preview-approval-remarks') : null;
+                        if (remBox) {
+                            remBox.value = data[0].supervisor_remarks || '';
+                            remBox.textContent = data[0].supervisor_remarks || '';
+                        }
                     } else {
                         updatePreview();
                     }
@@ -926,11 +1089,41 @@
         const btnView = document.getElementById('btn-view-shift-report');
         if (btnView) btnView.addEventListener('click', openPreviewModal);
 
-        // Bind instant update events
-        const chk = document.getElementById('preview-approval-check');
-        if (chk) chk.addEventListener('change', updatePreview);
-        const rem = document.getElementById('preview-approval-remarks');
-        if (rem) rem.addEventListener('input', updatePreview);
+        // Auto-save remarks when typed in the View Report modal
+        const paperContainer = document.getElementById('preview-document-paper');
+        if (paperContainer) {
+            // Keep innerHTML synced as they type
+            paperContainer.addEventListener('input', (e) => {
+                if (e.target && e.target.id === 'preview-approval-remarks') {
+                    e.target.textContent = e.target.value;
+                }
+            });
+            
+            // Save to Supabase when they click outside the textarea
+            paperContainer.addEventListener('change', (e) => {
+                if (e.target && e.target.id === 'preview-approval-remarks') {
+                    const remarks = e.target.value.trim();
+                    const html = paperContainer.innerHTML;
+                    const dateInput = document.getElementById('sr-filter-date');
+                    const selectedDate = dateInput ? dateInput.value.trim() : '';
+
+                    if (selectedDate && pdfSbClient) {
+                        const dbRecord = {
+                            report_date: selectedDate,
+                            report_html: html,
+                            is_approved: false,
+                            supervisor_remarks: remarks
+                        };
+                        pdfSbClient.from('generated_shift_reports').upsert([dbRecord], { onConflict: 'report_date' }).then(({error}) => {
+                            if (!error) {
+                                if (window.showToast) window.showToast('✓ Remarks auto-saved');
+                                if (window.loadShiftReportsSummary) window.loadShiftReportsSummary();
+                            }
+                        });
+                    }
+                }
+            });
+        }
 
         // Close preview modal logic
         const closePreview = () => {
@@ -955,12 +1148,19 @@
                 // Close preview modal
                 document.getElementById('report-preview-modal').classList.remove('show');
 
-                // Generate full print HTML with approval info & remarks
-                let html = generateCompleteShiftPDF(isApproved, remarks);
+                // FIX: Instead of regenerating from empty localStorage (which breaks backdated reports),
+                // we grab the exact HTML that is currently displayed in the preview modal!
+                const paper = document.getElementById('preview-document-paper');
                 
-                // If it was already loaded from Supabase and not modified, we might be overwriting it.
-                // But generating a fresh one incorporates any recent changes made in the forms!
-                // So always generating fresh on print is correct to capture latest changes.
+                // Sync textarea value before grabbing HTML so typed remarks get printed
+                if (paper) {
+                    const remarkBox = paper.querySelector('#preview-approval-remarks');
+                    if (remarkBox) {
+                        remarkBox.textContent = remarkBox.value;
+                    }
+                }
+                
+                let html = paper ? paper.innerHTML : '';
                 
                 const container = document.getElementById('shift-report-print-container');
                 if (container) container.innerHTML = html;
@@ -977,27 +1177,137 @@
                         };
                         pdfSbClient.from('generated_shift_reports').upsert([dbRecord], { onConflict: 'report_date' }).then(({error}) => {
                             if (error) console.error("PDF Supabase save error:", error);
-                            else if (window.showToast) window.showToast('✓ Combined PDF Report saved to Supabase');
+                            else {
+                                if (window.showToast) window.showToast('✓ Combined PDF Report saved to Supabase');
+                                if (window.loadShiftReportsSummary) window.loadShiftReportsSummary();
+                            }
                         });
                     }
                 }
 
-                // Trigger print
-                document.body.classList.add('printing-shift-pdf');
-                setTimeout(() => {
-                    window.print();
-                    // Remove class after print dialog closes
+                // Trigger print using a robust popup window
+                const printWindow = window.open('', '_blank', 'width=1000,height=800');
+                if (printWindow) {
+                    printWindow.document.write(`<!DOCTYPE html><html><head><title>Shift Report</title>
+                        <style>
+                            body { font-family: 'Segoe UI', Arial, sans-serif; color: #000; padding: 20px; background: #fff; }
+                            .pdf-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px; }
+                            .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 6px; text-align: left; color: #000; }
+                            .pdf-table th { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                            .pdf-section { margin-bottom: 30px; page-break-inside: avoid; }
+                            .pdf-section h3 { background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; color: #000; padding: 8px; border: 1px solid #000; margin: 0; font-size: 14px; }
+                            h1, h2, h3, h4 { color: #000; }
+                            textarea { border: 1px solid #000; width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px; padding: 8px; }
+                            @media print {
+                                body { margin: 0; padding: 10px; }
+                                textarea { resize: none; overflow: hidden; border: none; }
+                            }
+                        </style>
+                    </head><body>${html}</body></html>`);
+                    printWindow.document.close();
+                    printWindow.focus();
                     setTimeout(() => {
-                        document.body.classList.remove('printing-shift-pdf');
-                    }, 1000);
-                }, 300);
+                        printWindow.print();
+                        printWindow.close();
+                    }, 500);
+                } else {
+                    alert('Please allow popups for this site to print the report.');
+                }
             });
         }
     };
 
+    function loadShiftReportsSummary() {
+        const tbody = document.getElementById('generated-shift-reports-tbody');
+        if (!tbody || !pdfSbClient) return;
+
+        pdfSbClient.from('generated_shift_reports')
+            .select('report_date, is_approved, supervisor_remarks')
+            .order('report_date', { ascending: false })
+            .then(({ data, error }) => {
+                if (error) {
+                    console.error("Error loading shift reports history:", error);
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:red;">Failed to load reports</td></tr>';
+                    return;
+                }
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#64748b;">No shift reports generated yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                data.forEach(report => {
+                    let dateStr = report.report_date;
+                    try {
+                        const parts = report.report_date.split('-');
+                        if (parts.length === 3) {
+                            dateStr = new Date(report.report_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                        }
+                    } catch(e) {}
+
+                    const remarks = report.supervisor_remarks ? report.supervisor_remarks : '<span style="color:#94a3b8;font-style:italic;">No remarks</span>';
+                    const isApproved = report.is_approved === true || report.is_approved === 'true';
+                    const rowBg = isApproved ? 'background-color: #f0fdf4;' : 'background-color: #ffffff;';
+                    const btnStyle = isApproved 
+                        ? 'background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 10px rgba(34,197,94,0.3); transition: all 0.3s; width: 120px;'
+                        : 'background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 120px;';
+                    const btnText = isApproved ? '✅ Approved' : '⏳ Pending';
+
+                    const tr = document.createElement('tr');
+                    tr.style.cssText = rowBg + ' transition: background-color 0.3s;';
+                    tr.innerHTML = `
+                        <td style="font-weight:700; color: #1e293b;">${dateStr}</td>
+                        <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; color: #334155;" title="${report.supervisor_remarks || ''}">${remarks}</td>
+                        <td style="text-align:center;">
+                            <button onclick="window.toggleShiftReportApproval('${report.report_date}')" style="${btnStyle}">
+                                ${btnText}
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="document.getElementById('sr-filter-date').value='${report.report_date}'; document.getElementById('btn-view-shift-report').click();" style="padding:0.3rem 0.8rem; font-size:0.85rem; border-radius: 6px; background: #3b82f6; color: white; border: none; box-shadow: 0 2px 5px rgba(59,130,246,0.3);">👁️ View Report</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+    }
+
+    window.loadShiftReportsSummary = loadShiftReportsSummary;
+    window.toggleShiftReportApproval = (dateStr) => {
+        if (!pdfSbClient) return;
+        pdfSbClient.from('generated_shift_reports')
+            .select('is_approved')
+            .eq('report_date', dateStr)
+            .single()
+            .then(({ data, error }) => {
+                if (error || !data) return;
+                const newState = !(data.is_approved === true || data.is_approved === 'true');
+                pdfSbClient.from('generated_shift_reports')
+                    .update({ is_approved: newState })
+                    .eq('report_date', dateStr)
+                    .then(({ error: updateErr }) => {
+                        if (updateErr) {
+                            console.error("Failed to update approval status:", updateErr);
+                            alert("Failed to save approval status.");
+                        } else {
+                            if (window.showToast) {
+                                window.showToast(newState ? '✓ Report Approved' : '✓ Approval Removed');
+                            }
+                            // Reload table to show green color immediately
+                            loadShiftReportsSummary();
+                        }
+                    });
+            });
+    };
+
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initPDFEvents);
+        document.addEventListener('DOMContentLoaded', () => {
+            initPDFEvents();
+            loadShiftReportsSummary();
+        });
     } else {
         initPDFEvents();
+        loadShiftReportsSummary();
     }
 })();

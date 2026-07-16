@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const globalHeader = document.querySelector('header');
         if (globalHeader) {
-            if (activeView === viewExecutiveDashboard || activeView === viewPremixArea) {
+            if (activeView === viewExecutiveDashboard || activeView === viewPremixArea || activeView === viewShiftReport) {
                 globalHeader.style.display = 'none';
             } else {
                 globalHeader.style.display = 'flex'; // It's usually a flex container
@@ -660,36 +660,48 @@ document.addEventListener('DOMContentLoaded', () => {
         is_locked: log.locked === true
     });
 
-    const mapCleaningScheduleFromDb = (dbRow) => ({
-        id: dbRow.id,
-        area: dbRow.area,
-        year: dbRow.year,
-        month: dbRow.month,
-        week: dbRow.week,
-        date: dbRow.schedule_date,
-        mirrors: dbRow.mirrors,
-        walls: dbRow.walls,
-        roof: dbRow.roof,
-        electricalPanel: dbRow.electrical_panel,
-        areaIncharge: dbRow.area_incharge || '',
-        siteIncharge: dbRow.site_incharge || '',
-        updatedAt: dbRow.updated_at
-    });
+    const mapCleaningScheduleFromDb = (dbRow) => {
+        let weekStr = dbRow.week;
+        if (typeof dbRow.week === 'number' || (typeof dbRow.week === 'string' && /^\d+$/.test(dbRow.week))) {
+            weekStr = `Week ${dbRow.week}`;
+        }
+        return {
+            id: dbRow.id,
+            area: dbRow.area,
+            year: dbRow.year,
+            month: dbRow.month,
+            week: weekStr,
+            date: dbRow.schedule_date,
+            mirrors: dbRow.mirrors,
+            walls: dbRow.walls,
+            roof: dbRow.roof,
+            electricalPanel: dbRow.electrical_panel,
+            areaIncharge: dbRow.area_incharge || '',
+            siteIncharge: dbRow.site_incharge || '',
+            updatedAt: dbRow.updated_at
+        };
+    };
 
     const mapCleaningScheduleToDb = (log) => {
         let safeDate = log.date;
         if (safeDate && !/^\d{4}-\d{2}-\d{2}$/.test(safeDate)) {
-            // attempt to fix DD/MM/YYYY
             const parts = safeDate.split('/');
             if (parts.length === 3) safeDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
             else safeDate = null;
         }
+        
+        let weekVal = log.week;
+        if (typeof log.week === 'string') {
+            const match = log.week.match(/\d+/);
+            if (match) weekVal = parseInt(match[0], 10);
+        }
+
         return {
             id: log.id,
             area: log.area,
             year: log.year,
             month: log.month,
-            week: log.week,
+            week: weekVal,
             schedule_date: safeDate || null,
             mirrors: log.mirrors,
         walls: log.walls,
@@ -3998,16 +4010,12 @@ document.addEventListener('DOMContentLoaded', () => {
             updateBadge('fm_silo_dump', 'badge-silo');
             updateBadge('fm_silo_moisture', 'badge-silo-moist');
             updateBadge('fmpr_dailyChecklists', 'badge-dc');
+            updateBadge('fmpr_lessExcessLogs', 'badge-le');
         };
         window.updateAllSubreportBadges();
 
         if (filtered.length === 0) {
-            container.innerHTML = `
-                <div style="text-align:center;padding:3rem 1rem;color:var(--text-secondary);opacity:0.65;">
-                    <div style="font-size:3rem;margin-bottom:1rem;">📋</div>
-                    <div style="font-size:1.1rem;font-weight:600;">No shift reports for this date</div>
-                    <div style="font-size:0.9rem;margin-top:0.5rem;">Click "+ New Shift Report" to add the first one.</div>
-                </div>`;
+            container.innerHTML = '';
             return;
         }
 
@@ -4019,6 +4027,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const siloDumpData = JSON.parse(localStorage.getItem('fm_silo_dump') || '[]') || [];
         const siloMoistData = JSON.parse(localStorage.getItem('fm_silo_moisture') || '[]') || [];
         const dailyChecklistData = JSON.parse(localStorage.getItem('fmpr_dailyChecklists') || '[]') || [];
+        const leData = JSON.parse(localStorage.getItem('fmpr_lessExcessLogs') || '[]') || [];
 
         filtered.forEach(r => {
             const shiftClass = { A: 'shift-a', B: 'shift-b', C: 'shift-c' }[r.shift] || 'shift-a';
@@ -4039,6 +4048,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasSilo = siloDumpData.some(d => d.date === r.date && d.shift === r.shift);
             const hasSiloMoist = siloMoistData.some(d => d.date === r.date && d.shift === r.shift);
             const hasDc = dailyChecklistData.some(d => d.date === r.date);
+            const hasLe = leData.some(d => d.date === r.date && d.shift === r.shift);
 
             const subReportStatus = (name, hasReport) => `
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px dashed var(--card-border);">
@@ -4085,6 +4095,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${subReportStatus('Silo Dumping Moisture Report', hasSilo)}
                         ${subReportStatus('Silo Moisture Report', hasSiloMoist)}
                         ${subReportStatus('Department Daily Checklist', hasDc)}
+                        ${subReportStatus('Less / Excess Report', hasLe)}
                     </div>
                 </div>
             `;

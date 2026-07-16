@@ -186,6 +186,56 @@
             </div>
         `;
 
+        // Calculate Moisture Difference to show in Less/Excess Report
+        const siloMoistDataAll = JSON.parse(localStorage.getItem('fm_silo_moisture') || '[]');
+        const targetMoistData = siloMoistDataAll.filter(r => r.date === selectedDate || r.date === formattedDate);
+        let mSum = 0, mCount = 0;
+        targetMoistData.forEach(r => {
+            (r.rows || []).forEach(row => {
+                const mat = (row.material || '').trim().toLowerCase();
+                if (mat !== 'maize') return;
+                const m = parseFloat(row.ctrlMoisture);
+                if (!isNaN(m)) { mSum += m; mCount++; }
+            });
+        });
+
+        const formulas = JSON.parse(localStorage.getItem('fm_daily_formula_moisture') || '{}');
+        const dt = new Date(selectedDate);
+        const dateFmt = dt.getDate() + '-' + dt.toLocaleString('en-US', {month:'short'}) + '-' + dt.getFullYear();
+        let formulaVal = formulas[dateFmt] !== undefined ? formulas[dateFmt] : formulas[selectedDate];
+
+        if (mCount > 0 || formulaVal !== undefined) {
+            html += `<div style="margin-top:15px; padding:15px; border:1px solid #000; background:#f9fafb; text-align:center; page-break-inside: avoid;">
+                <strong style="font-size:1.1em; color:#1f2937;">Maize Moisture Impact:</strong><br><br>`;
+            
+            if (mCount > 0) {
+                const mAvg = parseFloat((mSum / mCount).toFixed(2));
+                html += `<span style="color:#4b5563;">Actual Average:</span> <strong>${mAvg}%</strong> (Based on ${mCount} readings)<br>`;
+                
+                if (formulaVal !== undefined) {
+                    html += `<span style="color:#4b5563;">Formula Moisture:</span> <strong>${formulaVal}%</strong><br><br>`;
+                    const diff = parseFloat((mAvg - formulaVal).toFixed(2));
+                    const absDiff = Math.abs(diff);
+                    const sign = diff > 0 ? '+' : '';
+                    if (absDiff === 0) {
+                        html += `<strong style="color:#10b981; font-size:1.4em;">Difference: 0.00% (Match)</strong><br>`;
+                    } else if (absDiff <= 2) {
+                        html += `<strong style="color:#0284c7; font-size:1.4em;">Difference: ${sign}${diff}% (Within Limits)</strong><br>`;
+                    } else {
+                        html += `<strong style="color:#e11d48; font-size:1.4em;">Difference: ${sign}${diff}% (Out of Range!)</strong><br>`;
+                    }
+                } else {
+                    html += `<br><strong style="color:#6b7280; font-size:1.1em;">Formula Moisture: Not Entered</strong><br>`;
+                }
+            } else {
+                html += `<span style="color:#4b5563;">Actual Average:</span> <strong>N/A</strong> (No maize readings found)<br>`;
+                if (formulaVal !== undefined) {
+                    html += `<span style="color:#4b5563;">Formula Moisture:</span> <strong>${formulaVal}%</strong><br><br>`;
+                }
+            }
+            html += `</div>`;
+        }
+
         // Add Approval Block
         html += `
             <div class="pdf-approval-block" style="margin-top:40px; border:2px solid #000; padding:15px; page-break-inside:avoid;">
