@@ -122,3 +122,17 @@ CREATE TABLE cleaning_schedules (
 );
 
 ALTER TABLE cleaning_schedules DISABLE ROW LEVEL SECURITY;
+
+-- Backup table for silo cycles (fan hours & days stayed)
+CREATE TABLE silo_cycle_history (
+    id SERIAL PRIMARY KEY,
+    silo_name VARCHAR(50),
+    material_type VARCHAR(150),
+    filling_start_date TIMESTAMP,
+    empty_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total_days_stayed DECIMAL(10, 2),
+    total_fan_running_hours DECIMAL(10, 2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE silo_cycle_history DISABLE ROW LEVEL SECURITY;

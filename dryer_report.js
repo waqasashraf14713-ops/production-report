@@ -22,7 +22,7 @@ let dryerReportData = {
     materialDumping: [],
     materialDischarge: [],
     silosDischargeGates: [],
-    siloStatus: { silo08: {on:'', off:'', meter:''}, silo09: {on:'', off:'', meter:''}, silo10: {on:'', off:'', meter:''}, silo11: {on:'', off:'', meter:''}, silo12: {on:'', off:'', meter:''}, silo13: {on:'', off:'', meter:''}, silo14: {on:'', off:'', meter:''}, silo15: {on:'', off:'', meter:''}, silo16: {on:'', off:'', meter:''}, wetBin: {on:'', off:'', meter:''}, coolingBin: {on:'', off:'', meter:''} },
+    siloStatus: { silo09: {on:'', off:'', meter:''}, silo10: {on:'', off:'', meter:''}, silo11: {on:'', off:'', meter:''}, silo12: {on:'', off:'', meter:''}, silo13: {on:'', off:'', meter:''}, silo14: {on:'', off:'', meter:''}, silo15: {on:'', off:'', meter:''}, silo16: {on:'', off:'', meter:''}, wetBin: {on:'', off:'', meter:''}, coolingBin: {on:'', off:'', meter:''} },
     faultsAndCauses: '',
     cleaning: {},
     underProcessWork: '',
@@ -48,7 +48,7 @@ function openDryerReportModal() {
     ['chk-drum','chk-chamber','chk-sieves1','chk-sieves2','chk-exhaust','chk-dust','chk-tower','chk-fiber','chk-mech','chk-elec'].forEach(id => { const el = document.getElementById(id); if(el) el.checked = false; });
     
     // Clear silo times
-    const silos = ['08','09','10','11','12','13','14','15','16','wetbin','coolingbin'];
+    const silos = ['09','10','11','12','13','14','15','16','wetbin','coolingbin'];
     silos.forEach(s => {
         ['on','off','meter'].forEach(type => {
             const el = document.getElementById(`${s}-${type}`);
@@ -130,8 +130,10 @@ function calcTotalDryerEff() {
     });
 
     if (totalHours > 0) {
-        const eff = wt / totalHours;
-        effInput.value = eff.toFixed(2) + " kg/h";
+        const tons = wt;
+        const tonsPerHour = tons / totalHours;
+        const eff = (tonsPerHour / 60) * 100;
+        effInput.value = eff.toFixed(2) + " %";
     } else {
         effInput.value = "";
     }
@@ -151,7 +153,7 @@ function addDryerDischargeRow() {
         <td>
             <select class="disc-silo" style="width:100%;">
                 <option value="">Select...</option>
-                ${Array.from({length: 16}, (_, i) => `<option value="Silo ${i+1}">Silo ${i+1}</option>`).join('')}
+                ${Array.from({length: 8}, (_, i) => `<option value="Silo ${i+9}">Silo ${i+9}</option>`).join('')}
                 <option value="Wet Bin 1">Wet Bin 1</option>
                 <option value="Wet Bin 2">Wet Bin 2</option>
                 <option value="Wet Bin 3">Wet Bin 3</option>
@@ -246,7 +248,6 @@ function gatherDryerReportData() {
     
     // Silo Status
     const siloStatus = {
-        silo08: { onTime: getVal('silo08-on'), offTime: getVal('silo08-off'), meter: getVal('silo08-meter') },
         silo09: { onTime: getVal('silo09-on'), offTime: getVal('silo09-off'), meter: getVal('silo09-meter') },
         silo10: { onTime: getVal('silo10-on'), offTime: getVal('silo10-off'), meter: getVal('silo10-meter') },
         silo11: { onTime: getVal('silo11-on'), offTime: getVal('silo11-off'), meter: getVal('silo11-meter') },
@@ -271,6 +272,25 @@ function gatherDryerReportData() {
         mechanical_worker: getChk('chk-mech'),
         mech_elec_worker: getChk('chk-elec')
     };
+    const dbData = {
+        date: getVal('dryer-date'),
+        shift: getVal('dryer-shift'),
+        operator_name: getVal('dryer-operator'),
+        dumping_total_weight: getVal('dump-total-weight'),
+        dumping_total_eff: getVal('dump-total-eff'),
+        dump_total_weight: getVal('dump-total-weight'),
+        dump_total_eff: getVal('dump-total-eff'),
+        material_dumping: dumping,
+        material_discharge: discharge,
+        silos_discharge_gates: gates,
+        silo_status: siloStatus,
+        cleaning: cleaning,
+        cleaning_checklist: cleaning,
+        faults_and_causes: getVal('dryer-faults'),
+        under_process_work: getVal('dryer-maintenance'),
+        general: getVal('dryer-general'),
+        summary: getVal('dryer-summary')
+    };
 
     return dbData;
 }
@@ -285,8 +305,10 @@ async function saveDryerReport() {
     try {
         if (dryerSbClient) {
             let dbData = { ...data };
+            let isNewReport = false;
             if (!window.currentDryerEditId) {
                 delete dbData.id; // Let Supabase auto-generate the ID for new records
+                isNewReport = true;
             } else {
                 dbData.id = window.currentDryerEditId;
             }
@@ -347,6 +369,34 @@ async function saveDryerReport() {
             localStorage.setItem('dryer_side_reports', JSON.stringify(localReports));
         }
         
+        if (isNewReport && typeof window.silosData !== 'undefined' && dryerSbClient) {
+            const sMap = {
+                '08': 'Silo 08', '09': 'Silo 09', '10': 'Silo 10', '11': 'Silo 11',
+                '12': 'Silo 12', '13': 'Silo 13', '14': 'Silo 14', '15': 'Silo 15', '16': 'Silo 16'
+            };
+            for (let k of Object.keys(sMap)) {
+                let sKey = `silo${k}`;
+                if (data.silo_status[sKey]) {
+                    const onT = data.silo_status[sKey].onTime;
+                    const offT = data.silo_status[sKey].offTime;
+                    if (onT && offT) {
+                        const [onH, onM] = onT.split(':').map(Number);
+                        const [offH, offM] = offT.split(':').map(Number);
+                        let diff = (offH + offM / 60) - (onH + onM / 60);
+                        if (diff < 0) diff += 24;
+                        if (diff > 0) {
+                            const siloTarget = window.silosData.find(s => s.name === sMap[k]);
+                            if (siloTarget) {
+                                siloTarget.runTime = parseFloat(siloTarget.runTime || 0) + diff;
+                                dryerSbClient.from('silos').update({ run_time: siloTarget.runTime }).eq('name', siloTarget.name).then();
+                            }
+                        }
+                    }
+                }
+            }
+            if (typeof window.renderSilos === 'function') window.renderSilos();
+        }
+        
         if (typeof showToast === 'function') showToast("✓ Dryer Report saved successfully.");
         else alert("Report Saved.");
         
@@ -380,7 +430,47 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Attach open method to window
     window.openDryerReportModal = openDryerReportModal;
+    
+    setupSiloFanListeners();
 });
+
+function setupSiloFanListeners() {
+    const silos = ['08', '09', '10', '11', '12', '13', '14', '15', '16', 'wetbin', 'coolingbin'];
+    const sMap = {
+        '08': 'Silo 08', '09': 'Silo 09', '10': 'Silo 10', '11': 'Silo 11',
+        '12': 'Silo 12', '13': 'Silo 13', '14': 'Silo 14', '15': 'Silo 15', '16': 'Silo 16'
+    };
+
+    silos.forEach(s => {
+        const onEl = document.getElementById(`silo${s}-on`) || document.getElementById(`${s}-on`);
+        const offEl = document.getElementById(`silo${s}-off`) || document.getElementById(`${s}-off`);
+        const meterEl = document.getElementById(`silo${s}-meter`) || document.getElementById(`${s}-meter`);
+        
+        if (onEl && offEl && meterEl) {
+            const calculateTotal = () => {
+                const onT = onEl.value;
+                const offT = offEl.value;
+                if (onT && offT) {
+                    const [onH, onM] = onT.split(':').map(Number);
+                    const [offH, offM] = offT.split(':').map(Number);
+                    let diff = (offH + offM/60) - (onH + onM/60);
+                    if (diff < 0) diff += 24;
+                    
+                    let prevTotal = 0;
+                    if (window.silosData && sMap[s]) {
+                        const siloTarget = window.silosData.find(st => st.name === sMap[s]);
+                        if (siloTarget) prevTotal = parseFloat(siloTarget.runTime || 0);
+                    }
+                    
+                    // Add shift difference to previous accumulated total
+                    meterEl.value = (prevTotal + diff).toFixed(2);
+                }
+            };
+            onEl.addEventListener('change', calculateTotal);
+            offEl.addEventListener('change', calculateTotal);
+        }
+    });
+}
 
 window.allDryerReports = [];
 
@@ -517,7 +607,7 @@ function generateDryerReportHtml(record) {
             <thead><tr><th>Silo</th><th>On Time</th><th>Off Time</th><th>Meter (Hrs)</th></tr></thead>
             <tbody>
     `;
-    const silos = ['08','09','10','11','12','13','14','15','16','wetbin','coolingbin'];
+    const silos = ['09','10','11','12','13','14','15','16','wetbin','coolingbin'];
     silos.forEach(s => {
         let label = s.startsWith('0') || s.startsWith('1') ? 'Silo ' + s : (s === 'wetbin' ? 'Wet Bin' : 'Cooling Bin');
         let key = s;
@@ -551,7 +641,7 @@ function generateDryerReportHtml(record) {
         
         <div class="pdf-section">
             <h3 style="background-color:#f1f5f9; padding:8px; border:1px solid #000; font-size:14px; margin-bottom:10px;">1. Material Dumping</h3>
-            <p style="margin-bottom:8px;"><strong>Total Dumping Weight:</strong> ${record.dump_total_weight || '-'} kg | <strong>Efficiency:</strong> ${record.dump_total_eff || '-'}</p>
+            <p style="margin-bottom:8px;"><strong>Total Dumping Weight:</strong> ${record.dump_total_weight || '-'} ton | <strong>Efficiency:</strong> ${record.dump_total_eff || '-'}</p>
             <table class="pdf-table">
                 <thead><tr><th>Material</th><th>On Time</th><th>Off Time</th><th>Silo/Wet Bin</th><th>Break Reason</th><th>Remarks</th></tr></thead>
                 <tbody>
@@ -576,7 +666,7 @@ function generateDryerReportHtml(record) {
                 ${gatesHtml}
             </div>
             <div style="flex:1;">
-                <h3 style="background-color:#f1f5f9; padding:8px; border:1px solid #000; font-size:14px; margin-bottom:10px;">4. Silo Status (Active Times)</h3>
+                <h3 style="background-color:#f1f5f9; padding:8px; border:1px solid #000; font-size:14px; margin-bottom:10px;">4. Silo Fan Status (Active Times)</h3>
                 ${siloStatusHtml}
             </div>
         </div>
@@ -584,16 +674,21 @@ function generateDryerReportHtml(record) {
         <div class="pdf-section" style="page-break-inside: avoid;">
             <h3 style="background-color:#f1f5f9; padding:8px; border:1px solid #000; font-size:14px; margin-bottom:10px;">5. Cleaning Checklist</h3>
             <div style="margin-bottom:10px;">
-                ${getChkBadge(record.cleaning_checklist?.drum_cleaner, 'Drum Cleaner')}
-                ${getChkBadge(record.cleaning_checklist?.chamber_section, 'Chamber Section')}
-                ${getChkBadge(record.cleaning_checklist?.sieves_box1, 'Sieves Box-1')}
-                ${getChkBadge(record.cleaning_checklist?.sieves_box2, 'Sieves Box-2')}
-                ${getChkBadge(record.cleaning_checklist?.exhaust_fan, 'Exhaust Fan Pipe')}
-                ${getChkBadge(record.cleaning_checklist?.dust_collector, 'Dust Collector')}
-                ${getChkBadge(record.cleaning_checklist?.dryer_tower, 'Dryer Tower')}
-                ${getChkBadge(record.cleaning_checklist?.dryer_fiber_pipe, 'Dryer Fiber Pipe')}
-                ${getChkBadge(record.cleaning_checklist?.mechanical_worker, 'Mechanical Worker')}
-                ${getChkBadge(record.cleaning_checklist?.elec_worker, 'Mech/Electrical Worker')}
+                ${(() => {
+                    const cln = record.cleaning || record.cleaning_checklist || {};
+                    return `
+                        ${getChkBadge(cln.drum_cleaner, 'Drum Cleaner')}
+                        ${getChkBadge(cln.chamber_section, 'Chamber Section')}
+                        ${getChkBadge(cln.sieves_box_1, 'Sieves Box-1')}
+                        ${getChkBadge(cln.sieves_box_2, 'Sieves Box-2')}
+                        ${getChkBadge(cln.exhaust_fan_pipe, 'Exhaust Fan Pipe')}
+                        ${getChkBadge(cln.dust_collector, 'Dust Collector')}
+                        ${getChkBadge(cln.dryer_tower, 'Dryer Tower')}
+                        ${getChkBadge(cln.dryer_fiber_pipe, 'Dryer Fiber Pipe')}
+                        ${getChkBadge(cln.mechanical_worker, 'Mechanical Worker')}
+                        ${getChkBadge(cln.mech_elec_worker, 'Mech/Electrical Worker')}
+                    `;
+                })()}
             </div>
         </div>
 
@@ -696,7 +791,7 @@ window.editDryerRecord = function(idx) {
     
     // 5. Silo Status
     const setSiloField = (key, type, val) => {
-        const idMap = { 'silo08':'08', 'silo09':'09', 'silo10':'10', 'silo11':'11', 'silo12':'12', 'silo13':'13', 'silo14':'14', 'silo15':'15', 'silo16':'16', 'wetBin':'wetbin', 'coolingBin':'coolingbin' };
+        const idMap = { 'silo09':'09', 'silo10':'10', 'silo11':'11', 'silo12':'12', 'silo13':'13', 'silo14':'14', 'silo15':'15', 'silo16':'16', 'wetBin':'wetbin', 'coolingBin':'coolingbin' };
         const el = document.getElementById(`${idMap[key]}-${type}`);
         if (el) el.value = val || '';
     };
@@ -712,24 +807,23 @@ window.editDryerRecord = function(idx) {
     }
     
     // 6. Cleaning
+    const cln = record.cleaning || record.cleaning_checklist || {};
     const setChk = (dbKey, elId) => {
-        if (record.cleaning && record.cleaning[dbKey]) {
+        if (cln[dbKey]) {
             const el = document.getElementById(elId);
             if (el) el.checked = true;
         }
     };
-    if (record.cleaning) {
-        setChk('drum_cleaner', 'chk-drum');
-        setChk('chamber_section', 'chk-chamber');
-        setChk('sieves_box_1', 'chk-sieves1');
-        setChk('sieves_box_2', 'chk-sieves2');
-        setChk('exhaust_fan_pipe', 'chk-exhaust');
-        setChk('dust_collector', 'chk-dust');
-        setChk('dryer_tower', 'chk-tower');
-        setChk('dryer_fiber_pipe', 'chk-fiber');
-        setChk('mechanical_worker', 'chk-mech');
-        setChk('mech_elec_worker', 'chk-elec');
-    }
+    setChk('drum_cleaner', 'chk-drum');
+    setChk('chamber_section', 'chk-chamber');
+    setChk('sieves_box_1', 'chk-sieves1');
+    setChk('sieves_box_2', 'chk-sieves2');
+    setChk('exhaust_fan_pipe', 'chk-exhaust');
+    setChk('dust_collector', 'chk-dust');
+    setChk('dryer_tower', 'chk-tower');
+    setChk('dryer_fiber_pipe', 'chk-fiber');
+    setChk('mechanical_worker', 'chk-mech');
+    setChk('mech_elec_worker', 'chk-elec');
     
     // 7. General & Faults
     if (document.getElementById('dryer-faults')) document.getElementById('dryer-faults').value = record.faults_and_causes || '';

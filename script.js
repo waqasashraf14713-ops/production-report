@@ -1338,6 +1338,97 @@ document.addEventListener('DOMContentLoaded', () => {
             dailyChecklists = [];
             shiftReports = [];
             batchingAudits = [];
+            window.cleaningSchedules = [];
+
+            // Fallback save modal event listeners
+            if (document.getElementById('btn-save-sm')) {
+                document.getElementById('btn-save-sm').addEventListener('click', () => {
+                    const el = document.getElementById('staff-meeting-modal');
+                    if (el) el.style.display = 'none';
+                });
+            }
+
+            // --- Silo History Backup Logic ---
+            window.logSiloCycleHistory = async function(silo) {
+                let daysStayed = 0;
+                if (silo.fillingStart) {
+                    const startD = new Date(silo.fillingStart);
+                    if (!isNaN(startD.getTime())) {
+                        const diffTime = Math.abs(new Date() - startD);
+                        daysStayed = diffTime / (1000 * 60 * 60 * 24); 
+                    }
+                }
+                
+                const record = {
+                    silo_name: silo.name,
+                    material_type: silo.materialType || 'Unknown',
+                    filling_start_date: silo.fillingStart ? new Date(silo.fillingStart).toISOString() : new Date().toISOString(),
+                    empty_date: new Date().toISOString(),
+                    total_days_stayed: parseFloat(daysStayed.toFixed(2)),
+                    total_fan_running_hours: parseFloat(silo.runTime || 0).toFixed(2)
+                };
+
+                if (window.sbClient) {
+                    try {
+                        await window.sbClient.from('silo_cycle_history').insert([record]);
+                        console.log("Logged silo cycle history successfully.");
+                    } catch (err) {
+                        console.error("Error logging silo cycle history:", err);
+                    }
+                }
+            };
+
+            window.openSiloHistoryModal = async function() {
+                const modal = document.getElementById('silo-history-modal');
+                const tbody = document.querySelector('#silo-history-table tbody');
+                if (!modal || !tbody) return;
+                
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading history...</td></tr>';
+                modal.style.display = 'flex';
+
+                if (window.sbClient) {
+                    try {
+                        const { data, error } = await window.sbClient.from('silo_cycle_history').select('*').order('created_at', { ascending: false });
+                        if (error) {
+                            if (error.code === '42P01') {
+                                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Table not created yet. Please run the SQL command in Supabase.</td></tr>';
+                            } else {
+                                throw error;
+                            }
+                        } else if (data && data.length > 0) {
+                            tbody.innerHTML = '';
+                            data.forEach(row => {
+                                const tr = document.createElement('tr');
+                                const formatDt = (iso) => iso ? new Date(iso).toLocaleDateString() + ' ' + new Date(iso).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '-';
+                                tr.innerHTML = `
+                                    <td>${row.silo_name}</td>
+                                    <td>${row.material_type}</td>
+                                    <td>${formatDt(row.filling_start_date)}</td>
+                                    <td>${formatDt(row.empty_date)}</td>
+                                    <td>${row.total_days_stayed} days</td>
+                                    <td>${row.total_fan_running_hours} Hrs</td>
+                                `;
+                                tbody.appendChild(tr);
+                            });
+                        } else {
+                            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No history records found.</td></tr>';
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Error fetching data: ' + err.message + '</td></tr>';
+                    }
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Database connection required.</td></tr>';
+                }
+            };
+
+            const shClose = document.getElementById('silo-history-close');
+            if (shClose) {
+                shClose.addEventListener('click', () => {
+                    document.getElementById('silo-history-modal').style.display = 'none';
+                });
+            }
+
             saveData();
             seedDefaultFiveSLogs();
             renderSilos();
@@ -1707,6 +1798,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         if (selectStatus) silo.status = selectStatus.value;
                         if (selectMaterial) silo.materialType = selectMaterial.value;
+                        const oldFillLevel = silo.fillLevel;
                         if (inputFill) silo.currentFillTons = parseFloat(inputFill.value) || 0;
                         if (silo.capacity) {
                             silo.fillLevel = Math.round((silo.currentFillTons / silo.capacity) * 100);
@@ -1715,6 +1807,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (inputCMoist) silo.currentMoisture = parseFloat(inputCMoist.value) || 0;
                         if (selectFan) silo.fanStatus = selectFan.value;
                         if (inputRuntime) silo.runTime = parseFloat(inputRuntime.value) || 0;
+                        
+                        if (silo.fillLevel === 0 && oldFillLevel > 0) {
+                            logSiloCycleHistory(silo);
+                            silo.runTime = 0;
+                            if (inputRuntime) inputRuntime.value = 0;
+                        } else if (silo.fillLevel > 0 && oldFillLevel === 0) {
+                            silo.fillingStart = new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+                        }
                         if (inputFanOn) silo.fanOnTime = to12Hour(inputFanOn.value);
                         if (inputFanOff) silo.fanOffTime = to12Hour(inputFanOff.value);
                         if (inputTemperature) silo.temperature = parseFloat(inputTemperature.value) || 15;
@@ -2071,8 +2171,16 @@ document.addEventListener('DOMContentLoaded', () => {
             makeEditable(document.getElementById(`tbl-fill-${silo.id}`), 'number', () => silo.currentFillTons, (val, el) => {
                 const n = parseFloat(val);
                 if (!isNaN(n) && n >= 0) {
+                    const oldFillLevel = silo.fillLevel;
                     silo.currentFillTons = Math.min(n, silo.capacity);
                     silo.fillLevel = Math.round((silo.currentFillTons / silo.capacity) * 100);
+                    
+                    if (silo.fillLevel === 0 && oldFillLevel > 0) {
+                        logSiloCycleHistory(silo);
+                        silo.runTime = 0;
+                    } else if (silo.fillLevel > 0 && oldFillLevel === 0) {
+                        silo.fillingStart = new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+                    }
                 }
                 saveData(silo);
                 renderSilos();
