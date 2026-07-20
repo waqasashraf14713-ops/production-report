@@ -2881,10 +2881,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
 
-                        <!-- Current Moisture -->
+                        <!-- Average Purchase Moisture -->
                         <div class="metric">
                             <div class="metric-label">
-                                <span>Current Moisture</span>
+                                <span>Average Purchase Moisture</span>
                                 <span class="metric-value" id="cmoist-${silo.id}" style="color:${mc}">${silo.currentMoisture}%</span>
                             </div>
                             <div class="progress-bar-bg">
