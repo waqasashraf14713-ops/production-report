@@ -2526,7 +2526,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             <th>Date</th>
                             <th>Feed No / Name</th>
                             <th>Batches</th>
-                            <th>Production (Bags)</th>
+                            <th style="width: 90px;">Production (Bags)</th>
+                            <th>Water Add (Kg)</th>
                             <th>Less/Excess (Bags)</th>
                             <th>Percentage</th>
                             <th>Remarks</th>
@@ -2599,13 +2600,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const tr = document.createElement('tr');
+            const diffBags = log.productionBags - (log.batches * 100);
+            if (diffBags > 1) {
+                tr.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+            } else if (diffBags < -1) {
+                tr.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+            }
             tr.innerHTML = `
                 <td>${log.date || '-'}</td>
                 <td><span class="${log.locked ? '' : 'editable-value'}" id="le-feed-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.feedName}</span></td>
                 <td><span class="${log.locked ? '' : 'editable-value'}" id="le-batch-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.batches}</span></td>
-                <td><span class="${log.locked ? '' : 'editable-value'}" id="le-prod-${log.id}" title="${log.locked ? '' : 'Click to edit'}" style="font-weight: bold; color: #93c5fd;">${log.productionBags}</span></td>
-                <td><span class="badge ${log._badgeClass}">${log._diffStr}</span></td>
-                <td><span class="badge ${log._badgeClass}">${log._pctStr}</span></td>
+                <td><span class="${log.locked ? '' : 'editable-value'}" id="le-prod-${log.id}" title="${log.locked ? '' : 'Click to edit'}" style="font-weight: bold; color: #000;">${log.productionBags}</span></td>
+                <td><span class="${log.locked ? '' : 'editable-value'}" id="le-water-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.waterAddition || 0}</span></td>
+                <td><span style="font-weight: bold; color: ${log._diffStr.toString().startsWith('+') ? '#10b981' : log._diffStr.toString().startsWith('-') ? '#ef4444' : 'inherit'};">${log._diffStr}</span></td>
+                <td><span style="font-weight: bold; color: ${log._pctStr.toString().startsWith('+') ? '#10b981' : log._pctStr.toString().startsWith('-') ? '#ef4444' : 'inherit'};">${log._pctStr}</span></td>
                 <td><span class="${log.locked ? '' : 'editable-value'}" id="le-remarks-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.remarks || (log.locked ? '' : '<span style="color:var(--text-secondary); font-style:italic; font-size:0.85rem;">+ Add remark</span>')}</span></td>
                 <td>${log.locked ? '' : `<button class="btn btn-sm" style="background:transparent; border:none; color:var(--danger-color); cursor:pointer; font-size:1.1rem; padding:0;" id="le-del-${log.id}" title="Delete Entry">🗑️</button>`}</td>
             `;
@@ -2613,9 +2621,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!log.locked) {
                 // Bind individual row editables
-                makeEditable(document.getElementById(`le-feed-${log.id}`), 'text', () => log.feedName, (val) => { log.feedName = val || log.feedName; saveLessExcessLogs(); renderLessExcessTable(); });
+                const baseFeedOptions = ['430', '431', '432', '433', '434', '31A', '33A', '324', '34A', '721', '722', '723', '733', '741', '742', '743', '744'];
+                let currentFeedOptions = [...baseFeedOptions];
+                if (log.feedName && !currentFeedOptions.includes(log.feedName)) {
+                    currentFeedOptions.unshift(log.feedName);
+                }
+                currentFeedOptions.push('+ Add New');
+                
+                makeEditable(document.getElementById(`le-feed-${log.id}`), 'text', () => log.feedName, (val) => { 
+                    if (val === '+ Add New') {
+                        const custom = prompt("Enter custom Feed No / Name:");
+                        if (custom && custom.trim()) {
+                            log.feedName = custom.trim();
+                        }
+                    } else {
+                        log.feedName = val || log.feedName;
+                    }
+                    saveLessExcessLogs(); 
+                    renderLessExcessTable(); 
+                }, currentFeedOptions);
                 makeEditable(document.getElementById(`le-batch-${log.id}`), 'number', () => log.batches, (val) => { const n = parseFloat(val); if (!isNaN(n)) log.batches = n; saveLessExcessLogs(); renderLessExcessTable(); });
                 makeEditable(document.getElementById(`le-prod-${log.id}`), 'number', () => log.productionBags, (val) => { const n = parseFloat(val); if (!isNaN(n)) log.productionBags = n; saveLessExcessLogs(); renderLessExcessTable(); });
+                makeEditable(document.getElementById(`le-water-${log.id}`), 'number', () => log.waterAddition || 0, (val) => { const n = parseFloat(val); if (!isNaN(n)) log.waterAddition = n; saveLessExcessLogs(); renderLessExcessTable(); });
                 makeEditable(document.getElementById(`le-remarks-${log.id}`), 'text', () => log.remarks || '', (val) => { log.remarks = val || ''; saveLessExcessLogs(); renderLessExcessTable(); });
 
                 document.getElementById(`le-del-${log.id}`).addEventListener('click', () => {

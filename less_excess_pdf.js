@@ -90,7 +90,8 @@
                                 <th>Officer Name</th>
                                 <th>Feed Name</th>
                                 <th>Batches</th>
-                                <th>Prod. Bags</th>
+                                <th style="width:10%">Production (Bags)</th>
+                                <th>Water Add (Kg)</th>
                                 <th>Difference</th>
                                 <th>Percentage</th>
                                 <th>Overall Avg Less/Excess</th>
@@ -118,14 +119,19 @@
                 totalProdBags += prod;
                 totalExpectedBags += expected;
 
+                let rowBg = '';
+                if (diff > 1) rowBg = 'background-color:#dcfce7;'; // light green
+                else if (diff < -1) rowBg = 'background-color:#fee2e2;'; // light red
+
                 html += `
-                    <tr>
+                    <tr style="${rowBg}">
                         <td>${log.date || '-'}</td>
                         <td>${log.shift || '-'}</td>
                         <td>${log.officerName || '-'}</td>
                         <td>${log.feedName || '-'}</td>
                         <td>${log.batches || '0'}</td>
                         <td>${prod.toLocaleString()}</td>
+                        <td>${log.waterAddition || 0}</td>
                         <td style="font-weight:bold; color:${diff >= 0 ? '#15803d' : '#b91c1c'};">${diffStr}</td>
                         <td style="font-weight:bold; color:${diff >= 0 ? '#15803d' : '#b91c1c'};">${pctStr}</td>
                         <td style="font-weight:bold; color:${log._overallPct.startsWith('+') ? '#15803d' : log._overallPct.startsWith('-') ? '#b91c1c' : '#475569'};">${log._overallPct}</td>
@@ -147,6 +153,7 @@
                             <td>-</td>
                             <td>-</td>
                             <td>${shiftProd.toLocaleString()}</td>
+                            <td>-</td>
                             <td style="color:${shiftDiff >= 0 ? '#15803d' : '#b91c1c'};">${shiftDiffStr}</td>
                             <td style="color:${shiftDiff >= 0 ? '#15803d' : '#b91c1c'};">${shiftPctStr}</td>
                             <td>-</td>

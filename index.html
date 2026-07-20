@@ -149,7 +149,7 @@
         
         <main class="main-content">
             <div class="container">
-                <header>
+                <header id="main-top-header">
                     <h1 id="main-report-title">Feed Mill Production Report</h1>
                     <div class="header-actions">
                         <button class="btn-supabase-status" id="btn-supabase-status" style="display: none;">
@@ -1047,13 +1047,13 @@
 
         <div id="view-daily-less-excess" class="view-section" style="display: none;">
             <section class="table-container">
-                <div class="table-header">
+                <div class="table-header" style="flex-wrap: wrap; gap: 1rem;">
                     <h2>Daily Less / Excess Report</h2>
-                    <div class="header-actions" style="display:flex;gap:1rem;align-items:center;">
+                    <div class="header-actions" style="display:flex; flex-wrap: wrap; gap:0.75rem; align-items:center;">
                         <input type="date" id="le-filter-date" style="padding:0.45rem;border-radius:6px;border:1px solid var(--card-border);outline:none;background:var(--card-bg);color:var(--text-primary);font-size:0.9rem;font-weight:500;">
-                        <button class="btn btn-primary" id="btn-generate-le-pdf" style="background:#8b5cf6;border-color:#8b5cf6;">📄 Generate PDF</button>
-                        <button class="btn btn-secondary" id="btn-add-less-excess-log">➕ Start New Shift</button>
-                        <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+                        <button class="btn btn-secondary" id="btn-add-less-excess-log" style="white-space: nowrap;">➕ Start New Shift</button>
+                        <button class="btn btn-primary" id="btn-generate-le-pdf" style="background:#8b5cf6;border-color:#8b5cf6; white-space: nowrap;">📄 Generate PDF</button>
+                        <button class="btn btn-primary" onclick="window.print()" style="white-space: nowrap;">🖨️ Print Report</button>
                     </div>
                 </div>
                 <div class="table-responsive" id="daily-less-excess-container" style="display: flex; flex-direction: column; gap: 2rem;">
@@ -4615,11 +4615,14 @@ order by
     <script>
         function toggleMainTitle() {
             const title = document.getElementById('main-report-title');
-            if (title) {
-                if (window.location.hash === '#oil-audit') {
+            const header = document.getElementById('main-top-header');
+            if (title && header) {
+                if (window.location.hash === '#oil-audit' || window.location.hash === '#daily-less-excess') {
                     title.style.display = 'none';
+                    header.style.display = 'none';
                 } else {
                     title.style.display = 'block';
+                    header.style.display = 'flex';
                 }
             }
         }
