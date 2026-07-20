@@ -5102,7 +5102,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            let allowed = (data && data.allowed_sections) ? data.allowed_sections : [...allNavIds];
+            let allowed = (data && data.allowed_sections) ? data.allowed_sections : [];
             
             // Always allow Control Center to be visible in sidebar
             if (!allowed.includes('nav-plant-animation')) allowed.push('nav-plant-animation');
