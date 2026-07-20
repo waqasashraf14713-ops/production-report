@@ -176,7 +176,7 @@
                     <div class="dash-quick-desc">Live capacity & inventory</div>
                 </div>
                 <div class="dash-quick-card" onclick="window.openSiloHistoryModal()">
-                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#3b82f6,#93c5fd);">⏱️</div>
+                    <div class="dash-quick-icon" style="background:linear-gradient(135deg,#10b981,#34d399);">⏱️</div>
                     <div class="dash-quick-label">Silo History Backup</div>
                     <div class="dash-quick-desc">Past cycles & fan hours</div>
                 </div>
@@ -1943,6 +1943,9 @@
                                 <!-- JS will populate -->
                             </tbody>
                         </table>
+                    </div>
+                    <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+                        <button class="btn btn-primary" onclick="window.openSiloHistoryModal()" style="background: #10b981; border: none;">⏱️ Open Silo Backup History</button>
                     </div>
                 </div>
             </section>
@@ -4602,7 +4605,7 @@ order by
     <script src="oil_audit.js?v=1"></script>
     <script src="silo_performa.js?v=5"></script>
     <script src="dryer_report.js?v=5"></script>
-    <script src="script.js?v=9"></script>
+    <script src="script.js?v=12"></script>
     <script src="shift_report_pdf.js?v=9"></script>
     <script src="less_excess_pdf.js?v=4"></script>
     <script src="executive_dashboard.js?v=3"></script>
@@ -5222,8 +5225,8 @@ order by
             </div>
         </div>
     </div>
-    <div id="silo-history-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 900px;">
+    <div id="silo-backup-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 900px;">
             <div class="modal-header">
                 <h2>⏱️ Silo History / Backup</h2>
                 <button class="close-btn" id="silo-history-close">&times;</button>
