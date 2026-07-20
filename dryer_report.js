@@ -479,27 +479,28 @@ async function fetchDryerReports() {
     let reports = [];
     if (dryerSbClient) {
         try {
-            let res = await dryerSbClient.from('dryer_side_reports').select('*').order('date', { ascending: false });
-            if (res.error && (res.error.code === '42P01' || res.error.message.includes('relation "public.dryer_side_reports" does not exist'))) {
-                res = await dryerSbClient.from('dryer_side_report').select('*').order('date', { ascending: false });
+            // Try correct table name first (dryer_side_report)
+            let res = await dryerSbClient.from('dryer_side_report').select('*').order('date', { ascending: false });
+            
+            // Fallback to plural if singular doesn't exist
+            if (res.error && (res.error.code === '42P01' || res.error.message?.includes('does not exist'))) {
+                res = await dryerSbClient.from('dryer_side_reports').select('*').order('date', { ascending: false });
             }
+            
             if (res.error) throw res.error;
             reports = res.data || [];
             
             // Merge any offline/local reports that were saved before Supabase was fixed
             let localReports = JSON.parse(localStorage.getItem('dryer_side_reports') || '[]');
             if (localReports.length > 0) {
-                // Optional: filter out any that might have been synced already (if IDs match, though local IDs are usually timestamps)
                 let cloudIds = new Set(reports.map(r => String(r.id)));
                 let unsyncedLocal = localReports.filter(lr => !cloudIds.has(String(lr.id)));
                 reports = [...reports, ...unsyncedLocal];
-                // Sort them again by date descending
                 reports.sort((a, b) => new Date(b.date) - new Date(a.date));
             }
             
         } catch (err) {
             console.error('Error fetching dryer reports from Supabase:', err);
-            // Fallback to local
             reports = JSON.parse(localStorage.getItem('dryer_side_reports') || '[]');
         }
     } else {
