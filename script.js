@@ -5122,42 +5122,62 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!deviceId) {
             deviceId = prompt("🔒 Please enter the Device ID for this system (e.g., PC-1):");
             if (deviceId) {
-                localStorage.setItem(LS_DEVICE_ID, deviceId.trim());
+                localStorage.setItem(LS_DEVICE_ID, deviceId.trim().toUpperCase());
+                deviceId = deviceId.trim().toUpperCase();
             } else {
+                // No device ID entered - show all sections
+                document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => {
+                    el.style.display = 'flex';
+                });
                 return;
             }
         }
 
-        if (!window.env || !window.env.SUPABASE_URL) return; 
+        if (!window.env || !window.env.SUPABASE_URL) {
+            // No supabase - show all sections
+            document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => {
+                el.style.display = 'flex';
+            });
+            return;
+        }
         
         try {
-            const tempSbClient = window.supabase.createClient(window.env.SUPABASE_URL, window.env.SUPABASE_KEY);
-            const { data, error } = await tempSbClient
+            // Reuse existing client if available
+            if (!window._permSbClient) {
+                window._permSbClient = window.supabase.createClient(window.env.SUPABASE_URL, window.env.SUPABASE_KEY);
+            }
+            const { data, error } = await window._permSbClient
                 .from('system_permissions')
                 .select('allowed_sections')
                 .eq('device_id', deviceId)
                 .single();
 
             if (error && error.code !== 'PGRST116') {
-                console.warn("Could not fetch device permissions. Using default access.");
+                // DB error - show all sections as fallback
+                console.warn("Could not fetch device permissions. Showing all sections.");
+                document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => {
+                    el.style.display = 'flex';
+                });
                 return;
             }
 
-            let allowed = (data && data.allowed_sections) ? data.allowed_sections : [];
-            
-            // Always allow Control Center to be visible in sidebar
-            if (!allowed.includes('nav-plant-animation')) allowed.push('nav-plant-animation');
-            if (!allowed.includes('nav-control-center')) {
-                allowed.push('nav-control-center');
+            // If no record found (new device), show all sections
+            if (!data || !data.allowed_sections || data.allowed_sections.length === 0) {
+                document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => {
+                    el.style.display = 'flex';
+                });
+                return;
             }
 
-            // Hide sidebar links
+            let allowed = [...data.allowed_sections];
+            
+            // Always allow Control Center and Plant Animation
+            if (!allowed.includes('nav-plant-animation')) allowed.push('nav-plant-animation');
+            if (!allowed.includes('nav-control-center')) allowed.push('nav-control-center');
+
+            // Show/hide sidebar links
             document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => {
-                if (allowed.includes(el.id)) {
-                    el.style.display = 'flex';
-                } else {
-                    el.style.display = 'none';
-                }
+                el.style.display = allowed.includes(el.id) ? 'flex' : 'none';
             });
 
             const hash = window.location.hash || '#dashboard';
@@ -5176,7 +5196,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
         } catch (err) {
+            // On any error - show all sections
             console.error("Device permission error:", err);
+            document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => {
+                el.style.display = 'flex';
+            });
         }
     }
 
