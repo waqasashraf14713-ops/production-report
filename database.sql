@@ -132,6 +132,7 @@ CREATE TABLE silo_cycle_history (
     empty_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     total_days_stayed DECIMAL(10, 2),
     total_fan_running_hours DECIMAL(10, 2),
+    avg_consumed_moisture DECIMAL(10, 2),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

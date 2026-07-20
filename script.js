@@ -1370,7 +1370,8 @@ document.addEventListener('DOMContentLoaded', () => {
             filling_start_date: silo.fillingStart ? new Date(silo.fillingStart).toISOString() : new Date().toISOString(),
             empty_date: new Date().toISOString(),
             total_days_stayed: parseFloat(daysStayed.toFixed(2)),
-            total_fan_running_hours: parseFloat(silo.runTime || 0).toFixed(2)
+            total_fan_running_hours: parseFloat(silo.runTime || 0).toFixed(2),
+            avg_consumed_moisture: getAverageConsumedMoisture(silo) !== '--' ? parseFloat(getAverageConsumedMoisture(silo)) : null
         };
 
         if (window.sbClient) {
@@ -1412,6 +1413,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <td>${formatDt(row.empty_date)}</td>
                             <td>${row.total_days_stayed} days</td>
                             <td>${row.total_fan_running_hours} Hrs</td>
+                            <td>${row.avg_consumed_moisture !== null ? row.avg_consumed_moisture + '%' : '-'}</td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -2125,18 +2127,29 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ─── Get Average Consumed Moisture ─────────────────────────────────────────
-    const getAverageConsumedMoisture = (siloName) => {
+    const getAverageConsumedMoisture = (silo) => {
         try {
             const reports = JSON.parse(localStorage.getItem('fm_silo_moisture') || '[]');
             let sum = 0, count = 0;
+            
+            let cycleStart = 0;
+            if (silo.fillingStart) {
+                const startD = new Date(silo.fillingStart);
+                if (!isNaN(startD.getTime())) {
+                    cycleStart = startD.getTime();
+                }
+            }
+
             reports.forEach(r => {
-                if (r.rows) {
-                    r.rows.forEach(row => {
-                        if (row.silo === siloName && row.ctrlMoisture) {
-                            const val = parseFloat(row.ctrlMoisture);
-                            if (!isNaN(val)) { sum += val; count++; }
-                        }
-                    });
+                if (r.id && r.id >= cycleStart) {
+                    if (r.rows) {
+                        r.rows.forEach(row => {
+                            if (row.silo === silo.name && row.ctrlMoisture) {
+                                const val = parseFloat(row.ctrlMoisture);
+                                if (!isNaN(val)) { sum += val; count++; }
+                            }
+                        });
+                    }
                 }
             });
             return count > 0 ? (sum / count).toFixed(1) : '--';
@@ -2172,7 +2185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><span class="editable-value" id="tbl-fill-${silo.id}" title="Click to edit">${silo.currentFillTons}</span> T</td>
                 <td><span class="editable-value" id="tbl-pmoist-${silo.id}" title="Click to edit">${silo.purchaseMoisture}</span>%</td>
                 <td><span class="editable-value" id="tbl-cmoist-${silo.id}" title="Click to edit" style="color:${getMoistureColor(silo.currentMoisture)}">${silo.currentMoisture}</span>%</td>
-                <td><span style="color:var(--text-primary); font-weight:600;">${getAverageConsumedMoisture(silo.name)}</span>%</td>
+                <td><span style="color:var(--text-primary); font-weight:600;">${getAverageConsumedMoisture(silo)}</span>%</td>
                 <td><span class="metric-value fan-toggle" id="tbl-fan-${silo.id}" title="Click to toggle" style="color:${silo.fanStatus==='On'?'var(--success-color)':'var(--text-secondary)'}">${silo.fanStatus}</span></td>
                 <td><span class="editable-value" id="tbl-fanon-${silo.id}" title="Click to edit">${silo.fanOnTime}</span></td>
                 <td><span class="editable-value" id="tbl-fanoff-${silo.id}" title="Click to edit">${silo.fanOffTime}</span></td>
@@ -2916,7 +2929,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="metric">
                             <div class="metric-label">
                                 <span>Avg Consumed Moisture</span>
-                                <span class="metric-value" style="color:#6366f1;font-weight:700;">${getAverageConsumedMoisture(silo.name)}%</span>
+                                <span class="metric-value" style="color:#6366f1;font-weight:700;">${getAverageConsumedMoisture(silo)}%</span>
                             </div>
                         </div>
 
