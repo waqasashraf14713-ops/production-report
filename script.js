@@ -2124,6 +2124,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // ─── Get Average Consumed Moisture ─────────────────────────────────────────
+    const getAverageConsumedMoisture = (siloName) => {
+        try {
+            const reports = JSON.parse(localStorage.getItem('fm_silo_moisture') || '[]');
+            let sum = 0, count = 0;
+            reports.forEach(r => {
+                if (r.rows) {
+                    r.rows.forEach(row => {
+                        if (row.silo === siloName && row.ctrlMoisture) {
+                            const val = parseFloat(row.ctrlMoisture);
+                            if (!isNaN(val)) { sum += val; count++; }
+                        }
+                    });
+                }
+            });
+            return count > 0 ? (sum / count).toFixed(1) : '--';
+        } catch(e) { return '--'; }
+    };
+
     // ─── Render Daily Report Table ────────────────────────────────────────────
     const renderDailyReportTable = () => {
         const tbody = document.querySelector('#daily-report-table tbody');
@@ -2153,6 +2172,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><span class="editable-value" id="tbl-fill-${silo.id}" title="Click to edit">${silo.currentFillTons}</span> T</td>
                 <td><span class="editable-value" id="tbl-pmoist-${silo.id}" title="Click to edit">${silo.purchaseMoisture}</span>%</td>
                 <td><span class="editable-value" id="tbl-cmoist-${silo.id}" title="Click to edit" style="color:${getMoistureColor(silo.currentMoisture)}">${silo.currentMoisture}</span>%</td>
+                <td><span style="color:var(--text-primary); font-weight:600;">${getAverageConsumedMoisture(silo.name)}</span>%</td>
                 <td><span class="metric-value fan-toggle" id="tbl-fan-${silo.id}" title="Click to toggle" style="color:${silo.fanStatus==='On'?'var(--success-color)':'var(--text-secondary)'}">${silo.fanStatus}</span></td>
                 <td><span class="editable-value" id="tbl-fanon-${silo.id}" title="Click to edit">${silo.fanOnTime}</span></td>
                 <td><span class="editable-value" id="tbl-fanoff-${silo.id}" title="Click to edit">${silo.fanOffTime}</span></td>
@@ -2889,6 +2909,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                             <div class="progress-bar-bg">
                                 <div class="progress-bar-fill" id="mbar-${silo.id}" style="width:${mPct}%;background-color:${mc};"></div>
+                            </div>
+                        </div>
+
+                        <!-- Average Consumed Moisture -->
+                        <div class="metric">
+                            <div class="metric-label">
+                                <span>Avg Consumed Moisture</span>
+                                <span class="metric-value" style="color:#6366f1;font-weight:700;">${getAverageConsumedMoisture(silo.name)}%</span>
                             </div>
                         </div>
 
