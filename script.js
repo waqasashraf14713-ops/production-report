@@ -2239,13 +2239,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderSilos();
             });
 
-            makeEditable(document.getElementById(`tbl-fanon-${silo.id}`), 'text', () => silo.fanOnTime, (val, el) => {
+            makeEditable(document.getElementById(`tbl-fanon-${silo.id}`), 'time', () => silo.fanOnTime, (val, el) => {
                 silo.fanOnTime = val || silo.fanOnTime;
                 saveData(silo);
                 renderSilos();
             });
 
-            makeEditable(document.getElementById(`tbl-fanoff-${silo.id}`), 'text', () => silo.fanOffTime, (val, el) => {
+            makeEditable(document.getElementById(`tbl-fanoff-${silo.id}`), 'time', () => silo.fanOffTime, (val, el) => {
                 silo.fanOffTime = val || silo.fanOffTime;
                 saveData(silo);
                 renderSilos();
