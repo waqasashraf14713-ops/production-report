@@ -526,7 +526,10 @@ function renderDryerReportsTable(reports) {
             <td>${r.faults_and_causes || '-'}</td>
             <td class="no-print">
                 <button class="btn btn-secondary" onclick="viewDryerRecord(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;">View</button>
-                <button class="btn btn-secondary" onclick="editDryerRecord(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;margin-left:5px;">✏️ Edit</button>
+                ${!r.supervisor_approval ? 
+                    `<button class="btn btn-secondary" onclick="editDryerRecord(${idx})" style="padding:0.25rem 0.5rem;font-size:0.85rem;margin-left:5px;">✏️ Edit</button>` 
+                    : ''
+                }
                 ${r.supervisor_approval ? 
                     `<button class="btn btn-primary" disabled style="padding:0.25rem 0.5rem;font-size:0.85rem;background:#15803d;border-color:#15803d;color:white;margin-left:5px;cursor:default;">🟢 Approved</button>` 
                     : 
