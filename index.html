@@ -5227,21 +5227,22 @@ order by
         </div>
     </div>
     <div id="silo-backup-modal" class="modal-overlay">
-        <div class="modal-card" style="max-width: 900px;">
-            <div class="modal-header">
-                <h2>⏱️ Silo History / Backup</h2>
-                <button class="close-btn" id="silo-history-close">&times;</button>
+        <div class="modal-card" style="max-width:1000px;width:95%;background:linear-gradient(135deg,#0f172a 0%,#1a2744 50%,#0f2027 100%);border:1px solid rgba(99,102,241,0.3);border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.6),0 0 40px rgba(99,102,241,0.15);">
+            <div class="modal-header" style="background:linear-gradient(135deg,#6366f1,#4f46e5);border-radius:16px 16px 0 0;padding:1.25rem 1.5rem;">
+                <h2 style="color:#fff;margin:0;font-size:1.2rem;display:flex;align-items:center;gap:0.5rem;">⏱️ Silo History / Backup</h2>
+                <button class="close-btn" id="silo-history-close" style="color:#fff;background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:32px;height:32px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">&times;</button>
             </div>
-            <div class="modal-body">
-                <table class="report-table" id="silo-history-table">
+            <div class="modal-body" style="padding:1.5rem;overflow-x:auto;">
+                <table class="report-table" id="silo-history-table" style="width:100%;border-collapse:collapse;">
                     <thead>
-                        <tr>
-                            <th>Silo Name</th>
-                            <th>Material Type</th>
-                            <th>Filling Start Date</th>
-                            <th>Empty Date</th>
-                            <th>Days Stayed</th>
-                            <th>Total Fan Hrs</th>
+                        <tr style="background:linear-gradient(90deg,rgba(99,102,241,0.3),rgba(79,70,229,0.2));">
+                            <th style="padding:0.75rem 1rem;text-align:left;color:#a5b4fc;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(99,102,241,0.3);">🏭 Silo Name</th>
+                            <th style="padding:0.75rem 1rem;text-align:left;color:#a5b4fc;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(99,102,241,0.3);">📦 Material</th>
+                            <th style="padding:0.75rem 1rem;text-align:left;color:#a5b4fc;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(99,102,241,0.3);">📅 Fill Start</th>
+                            <th style="padding:0.75rem 1rem;text-align:left;color:#a5b4fc;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(99,102,241,0.3);">📅 Empty Date</th>
+                            <th style="padding:0.75rem 1rem;text-align:center;color:#a5b4fc;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(99,102,241,0.3);">⏳ Days Stayed</th>
+                            <th style="padding:0.75rem 1rem;text-align:center;color:#a5b4fc;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(99,102,241,0.3);">💨 Fan Hrs</th>
+                            <th style="padding:0.75rem 1rem;text-align:center;color:#a5b4fc;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(99,102,241,0.3);">💧 Avg Consumed Moisture</th>
                         </tr>
                     </thead>
                     <tbody>

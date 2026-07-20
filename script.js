@@ -1389,7 +1389,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.querySelector('#silo-history-table tbody');
         if (!modal || !tbody) return;
         
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading history...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#a5b4fc;">Loading history...</td></tr>';
         modal.classList.add('show');
 
         if (window.sbClient) {
@@ -1397,28 +1397,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { data, error } = await window.sbClient.from('silo_cycle_history').select('*').order('created_at', { ascending: false });
                 if (error) {
                     if (error.code === '42P01') {
-                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Table not created yet. Please run the SQL command in Supabase.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#f87171;">Table not created yet. Please run the SQL command in Supabase.</td></tr>';
                     } else {
                         throw error;
                     }
                 } else if (data && data.length > 0) {
                     tbody.innerHTML = '';
-                    data.forEach(row => {
+                    data.forEach((row, i) => {
                         const tr = document.createElement('tr');
+                        tr.style.background = i % 2 === 0 ? 'rgba(99,102,241,0.05)' : 'rgba(255,255,255,0.02)';
+                        tr.style.transition = 'background 0.2s';
+                        tr.onmouseover = () => tr.style.background = 'rgba(99,102,241,0.15)';
+                        tr.onmouseout = () => tr.style.background = i % 2 === 0 ? 'rgba(99,102,241,0.05)' : 'rgba(255,255,255,0.02)';
                         const formatDt = (iso) => iso ? new Date(iso).toLocaleDateString() + ' ' + new Date(iso).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '-';
+                        const cellStyle = 'padding:0.65rem 1rem;color:#e2e8f0;font-size:0.88rem;border-bottom:1px solid rgba(99,102,241,0.1);';
+                        const moistureVal = row.avg_consumed_moisture;
+                        const moistColor = moistureVal === null ? '#94a3b8' : moistureVal <= 14 ? '#4ade80' : moistureVal <= 16 ? '#fbbf24' : '#f87171';
                         tr.innerHTML = `
-                            <td>${row.silo_name}</td>
-                            <td>${row.material_type}</td>
-                            <td>${formatDt(row.filling_start_date)}</td>
-                            <td>${formatDt(row.empty_date)}</td>
-                            <td>${row.total_days_stayed} days</td>
-                            <td>${row.total_fan_running_hours} Hrs</td>
-                            <td>${row.avg_consumed_moisture !== null ? row.avg_consumed_moisture + '%' : '-'}</td>
+                            <td style="${cellStyle}font-weight:700;color:#a5b4fc;">${row.silo_name}</td>
+                            <td style="${cellStyle}">${row.material_type}</td>
+                            <td style="${cellStyle}font-size:0.8rem;">${formatDt(row.filling_start_date)}</td>
+                            <td style="${cellStyle}font-size:0.8rem;">${formatDt(row.empty_date)}</td>
+                            <td style="${cellStyle}text-align:center;"><span style="background:rgba(99,102,241,0.2);color:#a5b4fc;padding:2px 10px;border-radius:20px;font-weight:600;">${row.total_days_stayed} days</span></td>
+                            <td style="${cellStyle}text-align:center;"><span style="background:rgba(251,191,36,0.15);color:#fbbf24;padding:2px 10px;border-radius:20px;font-weight:600;">${row.total_fan_running_hours} Hrs</span></td>
+                            <td style="${cellStyle}text-align:center;"><span style="background:rgba(${moistureVal === null ? '148,163,184' : moistureVal <= 14 ? '74,222,128' : moistureVal <= 16 ? '251,191,36' : '248,113,113'},0.15);color:${moistColor};padding:2px 10px;border-radius:20px;font-weight:700;">${moistureVal !== null ? moistureVal + '%' : '-'}</span></td>
                         `;
                         tbody.appendChild(tr);
                     });
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No history records found.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8;">No history records found.</td></tr>';
                 }
             } catch (err) {
                 console.error(err);
