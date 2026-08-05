@@ -10,8 +10,20 @@
         var params = new URLSearchParams(window.location.search);
         var token  = params.get('t') || '';
         if (!isAuth && token !== SECRET_TOKEN) {
-            // Block everything immediately — show nothing
-            document.write('<html><head><style>*{display:none!important;}</style></head><body style="background:#000;margin:0;"></body></html>');
+            // Display standard 403 Forbidden / Access Denied Error Screen
+            var errHtml = '<!DOCTYPE html><html><head><title>403 Forbidden</title><style>'
+                + 'body { background: #0f172a; color: #f87171; font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }'
+                + '.err-card { background: #1e293b; padding: 2.5rem; border-radius: 16px; border: 1px solid #334155; text-align: center; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }'
+                + 'h1 { font-size: 3rem; margin: 0 0 0.5rem 0; color: #ef4444; }'
+                + 'h2 { font-size: 1.25rem; margin: 0 0 1rem 0; color: #f1f5f9; }'
+                + 'p { color: #94a3b8; font-size: 0.9rem; line-height: 1.5; margin: 0; }'
+                + '</style></head><body>'
+                + '<div class="err-card">'
+                + '<h1>🚫 403</h1>'
+                + '<h2>Access Denied</h2>'
+                + '<p>You do not have permission to access this report link directly. Please launch through official system portal.</p>'
+                + '</div></body></html>';
+            document.write(errHtml);
             document.close();
             window.stop && window.stop();
         }
