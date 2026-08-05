@@ -15,7 +15,9 @@ const gaugeNeedlePlugin = {
         const maxVal = data.datasets[0].data.reduce((a, b) => a + b, 0);
         
         const cx = width / 2 + left;
-        const cy = chart._metasets[0].data[0].y; // Get center Y from doughnut arc
+        const cy_meta = chart._metasets && chart._metasets[0] && chart._metasets[0].data && chart._metasets[0].data[0];
+        if (!cy_meta) return;
+        const cy = cy_meta.y; // Get center Y from doughnut arc
         
         const outerRadius = chart._metasets[0].data[0].outerRadius;
         const innerRadius = chart._metasets[0].data[0].innerRadius;
@@ -72,7 +74,11 @@ const gaugeNeedlePlugin = {
                 // Draw badge background
                 ctx.fillStyle = color;
                 ctx.beginPath();
-                ctx.roundRect(tx - 10, ty - 8, 20, 16, 4);
+                if (typeof ctx.roundRect === 'function') {
+                    ctx.roundRect(tx - 10, ty - 8, 20, 16, 4);
+                } else {
+                    ctx.rect(tx - 10, ty - 8, 20, 16);
+                }
                 ctx.fill();
 
                 ctx.font = 'bold 10px sans-serif';
@@ -148,6 +154,7 @@ function initExecutiveGauges() {
 function updateExecutiveDashboard() {
     // Get filter date or default to today
     const dateInput = document.getElementById('exec-filter-date');
+    if (!dateInput) return;
     if (!dateInput.value) {
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -323,8 +330,9 @@ function updateExecutiveDashboard() {
             // Try to match by the exact string format used in the filter
             const filterStr = document.getElementById('exec-filter-date').value;
             // Also try formatting to dd-MMM-yyyy as saved by silo moisture
-            const dt = new Date(filterStr);
-            const dateFmt = dt.getDate() + '-' + dt.toLocaleString('en-US', {month:'short'}) + '-' + dt.getFullYear();
+            const parts = filterStr.split('-');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const dateFmt = parts.length === 3 ? `${parseInt(parts[2])}-${months[parseInt(parts[1]) - 1]}-${parts[0]}` : filterStr;
             
             let formulaVal = formulas[dateFmt] !== undefined ? formulas[dateFmt] : formulas[filterStr];
             

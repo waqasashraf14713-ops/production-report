@@ -84,9 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeNav) activeNav.classList.add('active');
         if (activeView) activeView.style.display = 'block';
 
-        if (pushHistory && activeNav && activeNav.getAttribute('href')) {
-            window.history.pushState(null, null, activeNav.getAttribute('href'));
-        }
+        // URL hash update disabled
 
         const actionsDiv = document.querySelector('.actions');
         if (actionsDiv) {
@@ -107,23 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Handle Browser Back/Forward buttons
-    window.addEventListener('popstate', () => {
-        const hash = window.location.hash || '#dashboard';
-        const navId = 'nav-' + hash.substring(1);
-        const viewId = 'view-' + hash.substring(1);
-        
-        const navEl = document.getElementById(navId);
-        const viewEl = document.getElementById(viewId);
-        
-        if (navEl && viewEl) {
-            switchView(navEl, viewEl, false);
-            // Trigger any specific refresh logic if needed
-            if (navId === 'nav-executive-dashboard' && window.updateExecutiveDashboard) window.updateExecutiveDashboard();
-            if (navId === 'nav-dryer-records' && window.fetchDryerReports) window.fetchDryerReports();
-            if (navId === 'nav-silo-performa' && window.renderSiloPerformaDashboard) window.renderSiloPerformaDashboard();
-        }
-    });
+    // Browser Back/Forward hash navigation disabled
 
     if (navDashboard) {
         navDashboard.addEventListener('click', (e) => {
@@ -870,6 +852,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Auto-retry once after 3 seconds in case of transient network issue
             setTimeout(async () => {
                 try {
+                    if (!sbClient) return;
                     const { error } = await sbClient.from('materials').select('name').limit(1);
                     if (!error) {
                         isSbConnected = true;
@@ -1586,6 +1569,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ─── Toast notification ────────────────────────────────────────────────────
     const showToast = (msg) => {
         const t = document.getElementById('save-toast');
+        if (!t) return;
         t.textContent = msg;
         t.classList.add('show');
         clearTimeout(t._tid);
@@ -1750,7 +1734,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (inputTemperature) inputTemperature.value = silo.temperature || 15;
             };
 
-            selectSilo.addEventListener('change', loadSiloData);
+            if (selectSilo) selectSilo.addEventListener('change', loadSiloData);
 
             // Material selection custom add
             if (selectMaterial) {
@@ -2073,7 +2057,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const elMoist = document.getElementById('avg-moisture');
         const elRuntime = document.getElementById('total-runtime');
         if (elActive) elActive.textContent = active;
-        if (elMoist) elMoist.textContent = (moisture / silosData.length).toFixed(1) + '%';
+        if (elMoist) elMoist.textContent = (silosData.length > 0 ? (moisture / silosData.length).toFixed(1) : '0.0') + '%';
         if (elRuntime) elRuntime.textContent = runtime.toFixed(1) + 'h';
     };
 
@@ -2598,22 +2582,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             }
-            
             const tr = document.createElement('tr');
             const diffBags = log.productionBags - (log.batches * 100);
-            if (diffBags > 1) {
-                tr.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
-            } else if (diffBags < -1) {
-                tr.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+            
+            if (diffBags > 0) {
+                tr.classList.add('le-row-excess');
+            } else if (diffBags < 0) {
+                tr.classList.add('le-row-less');
             }
+
             tr.innerHTML = `
                 <td>${log.date || '-'}</td>
                 <td><span class="${log.locked ? '' : 'editable-value'}" id="le-feed-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.feedName}</span></td>
                 <td><span class="${log.locked ? '' : 'editable-value'}" id="le-batch-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.batches}</span></td>
-                <td><span class="${log.locked ? '' : 'editable-value'}" id="le-prod-${log.id}" title="${log.locked ? '' : 'Click to edit'}" style="font-weight: bold; color: #000;">${log.productionBags}</span></td>
+                <td><span class="${log.locked ? '' : 'editable-value'}" id="le-prod-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.productionBags}</span></td>
                 <td><span class="${log.locked ? '' : 'editable-value'}" id="le-water-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.waterAddition || 0}</span></td>
-                <td><span style="font-weight: bold; color: ${log._diffStr.toString().startsWith('+') ? '#10b981' : log._diffStr.toString().startsWith('-') ? '#ef4444' : 'inherit'};">${log._diffStr}</span></td>
-                <td><span style="font-weight: bold; color: ${log._pctStr.toString().startsWith('+') ? '#10b981' : log._pctStr.toString().startsWith('-') ? '#ef4444' : 'inherit'};">${log._pctStr}</span></td>
+                <td><span style="font-weight: bold;">${log._diffStr}</span></td>
+                <td><span style="font-weight: bold;">${log._pctStr}</span></td>
                 <td><span class="${log.locked ? '' : 'editable-value'}" id="le-remarks-${log.id}" title="${log.locked ? '' : 'Click to edit'}">${log.remarks || (log.locked ? '' : '<span style="color:var(--text-secondary); font-style:italic; font-size:0.85rem;">+ Add remark</span>')}</span></td>
                 <td>${log.locked ? '' : `<button class="btn btn-sm" style="background:transparent; border:none; color:var(--danger-color); cursor:pointer; font-size:1.1rem; padding:0;" id="le-del-${log.id}" title="Delete Entry">🗑️</button>`}</td>
             `;
@@ -4161,13 +4146,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     .from('shift_reports')
                     .upsert(shiftReports.map(mapShiftReportToDb));
                 if (error) throw error;
-                showToast('✓ Shift Report saved to Supabase');
+                showToast('✓ Production Officer Shift Report saved to Supabase');
             } catch (err) {
                 console.error('Supabase save failed for shift reports:', err);
                 showToast('✓ Saved locally (Supabase offline)');
             }
         } else {
-            showToast('✓ Shift Report saved');
+            showToast('✓ Production Officer Shift Report saved');
         }
     };
 
@@ -4220,17 +4205,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 const badgeTop = document.getElementById(elId + '-top');
                 
                 const hasReport = data.some(d => d.date === currentSrFilterDate);
+                const hasA = data.some(d => d.date === currentSrFilterDate && (String(d.shift).toUpperCase() === 'A' || String(d.shiftName).toUpperCase() === 'A'));
+                const hasB = data.some(d => d.date === currentSrFilterDate && (String(d.shift).toUpperCase() === 'B' || String(d.shiftName).toUpperCase() === 'B'));
+                const hasC = data.some(d => d.date === currentSrFilterDate && (String(d.shift).toUpperCase() === 'C' || String(d.shiftName).toUpperCase() === 'C'));
+                
+                const isShiftOver = (dateStr, shift) => {
+                    if (!dateStr) return false;
+                    const d = new Date(dateStr);
+                    if (isNaN(d.getTime())) return false;
+                    const now = new Date();
+                    let shiftEnd = new Date(d);
+                    if (shift === 'A') { shiftEnd.setHours(14, 0, 0, 0); }
+                    else if (shift === 'B') { shiftEnd.setHours(22, 0, 0, 0); }
+                    else if (shift === 'C') { shiftEnd.setDate(shiftEnd.getDate() + 1); shiftEnd.setHours(6, 0, 0, 0); }
+                    return now.getTime() > shiftEnd.getTime();
+                };
+
+                const getBoxHtml = (shiftName, isFilled) => {
+                    const over = isShiftOver(currentSrFilterDate, shiftName);
+                    let bgColor, color, border, shadow, titleState;
+                    if (isFilled) {
+                        bgColor = '#22c55e'; color = '#ffffff'; border = 'none'; shadow = '0 2px 6px rgba(34,197,94,0.4)'; titleState = 'Filled';
+                    } else if (over) {
+                        bgColor = '#ef4444'; color = '#ffffff'; border = 'none'; shadow = '0 2px 6px rgba(239,68,68,0.4)'; titleState = 'Missed';
+                    } else {
+                        bgColor = '#f1f5f9'; color = '#94a3b8'; border = '1px solid #cbd5e1'; shadow = 'inset 0 1px 3px rgba(0,0,0,0.05)'; titleState = 'Pending';
+                    }
+                    return `<div style="width:26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:6px; font-size:0.85rem; font-weight:800; background:${bgColor}; color:${color}; border:${border}; box-shadow: ${shadow}; cursor:default; transition: all 0.2s;" title="Shift ${shiftName} ${titleState}">${shiftName}</div>`;
+                };
+
+                const boxesHtml = `<div style="display:flex; gap:6px;">
+                    ${getBoxHtml('A', hasA)}
+                    ${getBoxHtml('B', hasB)}
+                    ${getBoxHtml('C', hasC)}
+                </div>`;
                 
                 if (badge) {
-                    badge.className = hasReport ? 'sr-submitted-badge' : 'sr-draft-badge';
-                    badge.style.display = 'inline-block';
-                    badge.innerHTML = hasReport ? '✅ Filled' : '⌛ Pending';
+                    badge.style.display = 'inline-flex'; badge.style.background = 'transparent'; badge.style.border = 'none'; badge.style.padding = '0'; badge.style.boxShadow = 'none';
+                    badge.innerHTML = boxesHtml; badge.className = '';
                 }
                 
                 if (badgeTop) {
-                    badgeTop.className = hasReport ? 'sr-submitted-badge' : 'sr-draft-badge';
-                    badgeTop.style.display = 'inline-block';
-                    badgeTop.innerHTML = hasReport ? '✅ Filled' : '⌛ Pending';
+                    // Find and remove any existing status span just in case of hot reload without refresh
+                    const heading = badgeTop.parentElement.previousElementSibling;
+                    if (heading && heading.tagName === 'H4') {
+                        const statusSpan = heading.querySelector('.sr-heading-status');
+                        if (statusSpan) statusSpan.remove();
+                    }
+                    
+                    badgeTop.style.display = 'inline-flex'; 
+                    badgeTop.style.background = 'transparent'; 
+                    badgeTop.style.border = 'none'; 
+                    badgeTop.style.padding = '0'; 
+                    badgeTop.style.boxShadow = 'none';
+                    badgeTop.innerHTML = boxesHtml; 
+                    badgeTop.className = '';
                 }
             };
             updateBadge('fm_standalone_rm_checks', 'badge-rm');
@@ -4356,7 +4385,7 @@ document.addEventListener('DOMContentLoaded', () => {
         set('sr-modal-general', r.generalRemarks);
         
         const title = document.getElementById('sr-modal-title');
-        if (title) title.textContent = `Edit Shift Report — ${r.date} Shift ${r.shift}`;
+        if (title) title.textContent = `Edit Production Officer Shift Report — ${r.date} Shift ${r.shift}`;
         const modal = document.getElementById('shift-report-modal');
         if (modal) modal.classList.add('show');
     };
@@ -4585,10 +4614,10 @@ document.addEventListener('DOMContentLoaded', () => {
         { cat: 'AUDITS', name: 'Daily Molasses checking by Batching Clerk', m:true, e:false, n:false },
         { cat: 'AUDITS', name: 'Premix Stock Audit', m:false, e:false, n:true },
         
-        { cat: 'PROCESS', name: "Receiving Clerk's Shift Report", m:true, e:true, n:true },
+        { cat: 'PROCESS', name: "Receiving Clerk's Performa Checklist", m:true, e:true, n:true },
         { cat: 'PROCESS', name: "Batching Clerk's working Sheet (Medicine Ticking Sheets)", m:true, e:true, n:true },
-        { cat: 'PROCESS', name: "Batching Clerk's Shift Report", m:true, e:true, n:true },
-        { cat: 'PROCESS', name: "Pellet Mill Operator's Shift Report", m:true, e:true, n:true },
+        { cat: 'PROCESS', name: "Batching Clerk's Performa Checklist", m:true, e:true, n:true },
+        { cat: 'PROCESS', name: "Pellet Mill Operator's Performa Checklist", m:true, e:true, n:true },
         { cat: 'PROCESS', name: 'Daily Packing Bardana Checking', m:true, e:true, n:true },
         { cat: 'PROCESS', name: 'On No Change, Bags less/Excess checking', m:true, e:true, n:true },
         { cat: 'PROCESS', name: 'Crumbler Powder checking Via Basement Worker', m:true, e:true, n:true },
@@ -4765,7 +4794,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             sbClient.from('performas_reports').upsert([dbRecord]).then(({error}) => {
                 if (error) console.error("Performa Supabase save error:", error);
-                else if (window.showToast) window.showToast('✓ Performa Checklist saved to Supabase');
+                else if (window.showToast) window.showToast('✓ Production Officer Shift Report saved to Supabase');
             });
         }
         
@@ -4805,7 +4834,7 @@ document.addEventListener('DOMContentLoaded', () => {
         set('sr-modal-quality', '');
         set('sr-modal-general', '');
         const title = document.getElementById('sr-modal-title');
-        if (title) title.textContent = 'New Shift Report';
+        if (title) title.textContent = 'New Production Officer Shift Report';
         const modal = document.getElementById('shift-report-modal');
         if (modal) modal.classList.add('show');
     };
@@ -5178,6 +5207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Reuse existing client if available
             if (!window._permSbClient) {
+                if (typeof window.supabase === 'undefined') return;
                 window._permSbClient = window.supabase.createClient(window.env.SUPABASE_URL, window.env.SUPABASE_KEY);
             }
             const { data, error } = await window._permSbClient
@@ -5245,6 +5275,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function initControlCenter() {
         if (!window.env || !window.env.SUPABASE_URL) return;
+        if (typeof window.supabase === 'undefined') return;
         ccSbClient = window.supabase.createClient(window.env.SUPABASE_URL, window.env.SUPABASE_KEY);
         
         try {
@@ -5619,9 +5650,76 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// Initialize Flatpickr for date inputs to show DD-MM-YYYY
+// Initialize Flatpickr for date inputs to show a calendar selector
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof flatpickr !== 'undefined') {
-        flatpickr('.flatpickr-date', { dateFormat: 'd-m-Y', allowInput: true });
+        flatpickr('input[id*="date"], input[id*="Date"], .flatpickr-date', { 
+            dateFormat: 'd-M-Y', 
+            allowInput: true 
+        });
     }
 });
+
+// ─── SAFE GLOBAL FALLBACK ──────────────────────────────────────────────────────
+// Re-define critical window functions outside the DOMContentLoaded try/catch
+// so they are always available even if earlier code throws a runtime error.
+// ──────────────────────────────────────────────────────────────────────────────
+if (typeof window.openSiloHistoryModal !== 'function') {
+    window.openSiloHistoryModal = async function() {
+        const modal = document.getElementById('silo-backup-modal');
+        const tbody = document.querySelector('#silo-history-table tbody');
+        if (!modal || !tbody) {
+            alert('Silo History modal not found. Please refresh the page.');
+            return;
+        }
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#a5b4fc;">Loading history...</td></tr>';
+        modal.classList.add('show');
+
+        if (window.sbClient) {
+            try {
+                const { data, error } = await window.sbClient
+                    .from('silo_cycle_history')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    if (error.code === '42P01') {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#f87171;">Table not created yet. Please run the SQL command in Supabase.</td></tr>';
+                    } else {
+                        throw error;
+                    }
+                } else if (data && data.length > 0) {
+                    tbody.innerHTML = '';
+                    data.forEach((row, i) => {
+                        const tr = document.createElement('tr');
+                        tr.style.background = i % 2 === 0 ? 'rgba(99,102,241,0.05)' : 'rgba(255,255,255,0.02)';
+                        tr.style.transition = 'background 0.2s';
+                        tr.onmouseover = () => tr.style.background = 'rgba(99,102,241,0.15)';
+                        tr.onmouseout  = () => tr.style.background = i % 2 === 0 ? 'rgba(99,102,241,0.05)' : 'rgba(255,255,255,0.02)';
+                        const formatDt = (iso) => iso ? new Date(iso).toLocaleDateString() + ' ' + new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '-';
+                        const cellStyle = 'padding:0.65rem 1rem;color:#e2e8f0;font-size:0.88rem;border-bottom:1px solid rgba(99,102,241,0.1);';
+                        const moistureVal = row.avg_consumed_moisture;
+                        const moistColor = moistureVal === null ? '#94a3b8' : moistureVal <= 14 ? '#4ade80' : moistureVal <= 16 ? '#fbbf24' : '#f87171';
+                        tr.innerHTML = `
+                            <td style="${cellStyle}font-weight:700;color:#a5b4fc;">${row.silo_name}</td>
+                            <td style="${cellStyle}">${row.material_type}</td>
+                            <td style="${cellStyle}font-size:0.8rem;">${formatDt(row.filling_start_date)}</td>
+                            <td style="${cellStyle}font-size:0.8rem;">${formatDt(row.empty_date)}</td>
+                            <td style="${cellStyle}text-align:center;"><span style="background:rgba(99,102,241,0.2);color:#a5b4fc;padding:2px 10px;border-radius:20px;font-weight:600;">${row.total_days_stayed} days</span></td>
+                            <td style="${cellStyle}text-align:center;"><span style="background:rgba(251,191,36,0.15);color:#fbbf24;padding:2px 10px;border-radius:20px;font-weight:600;">${row.total_fan_running_hours} Hrs</span></td>
+                            <td style="${cellStyle}text-align:center;"><span style="color:${moistColor};padding:2px 10px;border-radius:20px;font-weight:700;">${moistureVal !== null ? moistureVal + '%' : '-'}</span></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8;">No history records found.</td></tr>';
+                }
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Error fetching data: ' + err.message + '</td></tr>';
+            }
+        } else {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;">Database connection required.</td></tr>';
+        }
+    };
+}

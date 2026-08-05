@@ -314,7 +314,7 @@ try {
         let formulaVal = formulas[date];
         if (formulaVal === undefined) {
             const globalVal = localStorage.getItem('fm_global_formula_moisture');
-            if (globalVal !== null) {
+            if (globalVal !== null && globalVal.trim() !== '' && !isNaN(parseFloat(globalVal))) {
                 formulaVal = parseFloat(globalVal);
             }
         }
@@ -404,7 +404,7 @@ try {
             let sum = 0, count = 0;
             siloMoistData.filter(r => r.date === date).forEach(report => {
                 (report.rows || []).forEach(row => {
-                    const m = parseFloat(row.moisture);
+                    const m = parseFloat(row.ctrlMoisture || row.moistureUngrind || row.moisture);
                     if (!isNaN(m)) { sum += m; count++; }
                 });
             });

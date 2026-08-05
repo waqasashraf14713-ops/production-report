@@ -205,13 +205,18 @@ try {
             }
         });
 
-        document.getElementById('oa-form-chenab').value = sumChenab;
-        document.getElementById('oa-form-delta').value = sumDelta;
-        document.getElementById('oa-form-wanda').value = sumWanda;
-        document.getElementById('oa-form-breeder').value = sumBreeder;
+        const chenabEl = document.getElementById('oa-form-chenab');
+        const deltaEl = document.getElementById('oa-form-delta');
+        const wandaEl = document.getElementById('oa-form-wanda');
+        const breederEl = document.getElementById('oa-form-breeder');
+        const totalBatchesEl = document.getElementById('oa-modal-total-batches');
+        if (chenabEl) chenabEl.value = sumChenab;
+        if (deltaEl) deltaEl.value = sumDelta;
+        if (wandaEl) wandaEl.value = sumWanda;
+        if (breederEl) breederEl.value = sumBreeder;
 
         const totalBatches = sumChenab + sumDelta + sumWanda + sumBreeder;
-        document.getElementById('oa-modal-total-batches').value = totalBatches;
+        if (totalBatchesEl) totalBatchesEl.value = totalBatches;
 
         DEFAULT_ITEMS.forEach((it, i) => {
             const issuanceInput = document.getElementById(`oa-issuance-${i}`);
@@ -454,6 +459,7 @@ try {
         if (group === 'delta') finalCode = newCode + '-delta';
         if (group === 'breeder') finalCode = newCode + '-breeder';
 
+        if (!RECIPE_GROUPS[group]) RECIPE_GROUPS[group] = [];
         if (RECIPE_GROUPS[group].includes(finalCode)) {
             return alert('Code already exists in this group.');
         }
@@ -479,6 +485,7 @@ try {
 
         if (!confirm(`Delete recipe code "${code.replace('-delta', '').replace('-breeder', '')}"?`)) return;
 
+        if (!RECIPE_GROUPS[group]) RECIPE_GROUPS[group] = [];
         RECIPE_GROUPS[group] = RECIPE_GROUPS[group].filter(c => c !== code);
         delete RECIPES[code];
 
@@ -667,7 +674,7 @@ try {
                     try {
                         const dbRecord = {
                             id: report.id,
-                            date: date.includes('-') && date.split('-').length === 3 ? `${date.split('-')[2]}-${date.split('-')[1] === 'Jan'?'01':date.split('-')[1] === 'Feb'?'02':date.split('-')[1] === 'Mar'?'03':date.split('-')[1] === 'Apr'?'04':date.split('-')[1] === 'May'?'05':date.split('-')[1] === 'Jun'?'06':date.split('-')[1] === 'Jul'?'07':date.split('-')[1] === 'Aug'?'08':date.split('-')[1] === 'Sep'?'09':date.split('-')[1] === 'Oct'?'10':date.split('-')[1] === 'Nov'?'11':'12'}-${date.split('-')[0].padStart(2,'0')}` : new Date().toISOString().split('T')[0],
+                            date: /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : (date.includes('-') && date.split('-').length === 3 ? `${date.split('-')[2]}-${date.split('-')[1] === 'Jan'?'01':date.split('-')[1] === 'Feb'?'02':date.split('-')[1] === 'Mar'?'03':date.split('-')[1] === 'Apr'?'04':date.split('-')[1] === 'May'?'05':date.split('-')[1] === 'Jun'?'06':date.split('-')[1] === 'Jul'?'07':date.split('-')[1] === 'Aug'?'08':date.split('-')[1] === 'Sep'?'09':date.split('-')[1] === 'Oct'?'10':date.split('-')[1] === 'Nov'?'11':'12'}-${date.split('-')[0].padStart(2,'0')}` : new Date().toISOString().split('T')[0]),
                             shift: report.shift,
                             total_batches: report.totalBatches,
                             acceptable_limit: report.acceptableLimit,
@@ -707,7 +714,7 @@ try {
                 const { data, error } = await sbClient.from('oil_audits').select('*').order('date', { ascending: false });
                 if (!error && data) {
                     oilAudits = data.map(r => {
-                        const parts = r.date.split('-');
+                        const parts = (r.date || '').split('-');
                         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                         const localeDate = parts.length === 3 ? `${parseInt(parts[2])}-${months[parseInt(parts[1]) - 1]}-${parts[0]}` : r.date;
                         return {

@@ -57,8 +57,10 @@ function openDryerReportModal() {
     });
 
     // Clear dynamic tables
-    document.getElementById('dryer-dumping-tbody').innerHTML = '';
-    document.getElementById('dryer-discharge-tbody').innerHTML = '';
+    const dumpTbody = document.getElementById('dryer-dumping-tbody');
+    const dischTbody = document.getElementById('dryer-discharge-tbody');
+    if (dumpTbody) dumpTbody.innerHTML = '';
+    if (dischTbody) dischTbody.innerHTML = '';
     
     // Add one default row
     addDryerDumpingRow();
@@ -302,10 +304,10 @@ async function saveDryerReport() {
         return;
     }
 
+    let isNewReport = false;
     try {
         if (dryerSbClient) {
             let dbData = { ...data };
-            let isNewReport = false;
             if (!window.currentDryerEditId) {
                 delete dbData.id; // Let Supabase auto-generate the ID for new records
                 isNewReport = true;
@@ -388,7 +390,7 @@ async function saveDryerReport() {
                             const siloTarget = window.silosData.find(s => s.name === sMap[k]);
                             if (siloTarget) {
                                 siloTarget.runTime = parseFloat(siloTarget.runTime || 0) + diff;
-                                dryerSbClient.from('silos').update({ run_time: siloTarget.runTime }).eq('name', siloTarget.name).then();
+                                dryerSbClient.from('silos').update({ run_time: siloTarget.runTime }).eq('name', siloTarget.name).then(() => {}).catch(err => console.error('Silo update error:', err));
                             }
                         }
                     }
@@ -479,26 +481,47 @@ async function fetchDryerReports() {
     let reports = [];
     if (dryerSbClient) {
         try {
-            // Try correct table name first (dryer_side_report)
-            let res = await dryerSbClient.from('dryer_side_report').select('*').order('date', { ascending: false });
-            
-            // Fallback to plural if singular doesn't exist
-            if (res.error && (res.error.code === '42P01' || res.error.message?.includes('does not exist'))) {
-                res = await dryerSbClient.from('dryer_side_reports').select('*').order('date', { ascending: false });
+            // Fetch from BOTH table names in parallel so reports saved on any system are always visible
+            const [resSingular, resPlural] = await Promise.all([
+                dryerSbClient.from('dryer_side_report').select('*').order('date', { ascending: false }),
+                dryerSbClient.from('dryer_side_reports').select('*').order('date', { ascending: false })
+            ]);
+
+            let singularData = [];
+            let pluralData = [];
+
+            // Accept data from whichever table(s) exist
+            if (!resSingular.error) singularData = resSingular.data || [];
+            if (!resPlural.error) pluralData = resPlural.data || [];
+
+            // If both tables failed, throw the first real error
+            if (resSingular.error && resPlural.error) {
+                throw resSingular.error;
             }
-            
-            if (res.error) throw res.error;
-            reports = res.data || [];
-            
-            // Merge any offline/local reports that were saved before Supabase was fixed
+
+            // Merge both tables and deduplicate by id (prefer singular table record if duplicate)
+            const seen = new Set();
+            const merged = [];
+            for (const r of [...singularData, ...pluralData]) {
+                const key = String(r.id);
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    merged.push(r);
+                }
+            }
+            reports = merged;
+
+            // Also merge any offline/local reports that were saved when Supabase was unavailable
             let localReports = JSON.parse(localStorage.getItem('dryer_side_reports') || '[]');
             if (localReports.length > 0) {
                 let cloudIds = new Set(reports.map(r => String(r.id)));
                 let unsyncedLocal = localReports.filter(lr => !cloudIds.has(String(lr.id)));
                 reports = [...reports, ...unsyncedLocal];
-                reports.sort((a, b) => new Date(b.date) - new Date(a.date));
             }
-            
+
+            // Sort by date descending
+            reports.sort((a, b) => new Date(b.date) - new Date(a.date));
+
         } catch (err) {
             console.error('Error fetching dryer reports from Supabase:', err);
             reports = JSON.parse(localStorage.getItem('dryer_side_reports') || '[]');
@@ -598,7 +621,7 @@ function generateDryerReportHtml(record) {
             <table class="pdf-table">
                 <thead><tr><th>Conveyor #</th><th>Silo #</th><th>Gate #</th><th>Open</th></tr></thead>
                 <tbody>
-                    ${record.silos_discharge_gates.map(g => `<tr><td>${g.conveyor}</td><td>${g.silo}</td><td>${g.gate}</td><td>${g.open ? 'Yes' : 'No'}</td></tr>`).join('')}
+                    ${record.silos_discharge_gates.map(g => `<tr><td>${g.conveyor}</td><td>${g.silo}</td><td>${g.gate}</td><td>${(g.isOpen || g.open) ? 'Yes' : 'No'}</td></tr>`).join('')}
                 </tbody>
             </table>
         `;

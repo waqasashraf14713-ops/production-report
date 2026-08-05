@@ -55,7 +55,7 @@ try {
             const day = parseInt(parts[2]).toString();
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const monthName = months[parseInt(monthNum) - 1] || 'Jan';
-            return `${day}-${monthName}-${year.substring(2)}`;
+            return `${day}-${monthName}-${year}`;
         }
         return isoStr;
     };
@@ -115,9 +115,13 @@ try {
     };
 
     window.calcPeRow = (index) => {
-        const mill = document.getElementById(`pe-mill-${index}`).value;
-        const prod = parseFloat(document.getElementById(`pe-prod-${index}`).value) || 0;
-        const runTime = parseFloat(document.getElementById(`pe-run-time-${index}`).value) || 0;
+        const millEl = document.getElementById(`pe-mill-${index}`);
+        const prodEl = document.getElementById(`pe-prod-${index}`);
+        const runTimeEl = document.getElementById(`pe-run-time-${index}`);
+        if (!millEl || !prodEl || !runTimeEl) return;
+        const mill = millEl.value;
+        const prod = parseFloat(prodEl.value) || 0;
+        const runTime = parseFloat(runTimeEl.value) || 0;
         
         const avgEl = document.getElementById(`pe-average-${index}`);
         const effEl = document.getElementById(`pe-efficiency-${index}`);

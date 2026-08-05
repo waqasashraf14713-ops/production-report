@@ -29,6 +29,8 @@ const initBatchingScale = () => {
         tbody.innerHTML = '';
         if (batchingScaleData.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:2rem;">No records found.</td></tr>';
+            const badge = document.getElementById('badge-batching-scale');
+            if (badge) badge.style.display = 'none';
             return;
         }
         const badge = document.getElementById('badge-batching-scale');

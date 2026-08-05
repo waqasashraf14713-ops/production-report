@@ -526,7 +526,7 @@ function initOilScada3D(containerId) {
 
     const pump259 = createPump('(259)'); pump259.position.set(2, 2, 0); scadaGroup.add(pump259);
 
-    const v10 = createGlobeValve('(V10)', 'left'); v10.position.set(6, 11, 0);
+    const v10 = createGlobeValve('(V10)', 'left'); v10.position.set(6, 11, 0); scadaGroup.add(v10);
     const v251core = createButterflyValve('(V251.core)'); v251core.position.set(0, 10, -8); scadaGroup.add(v251core);
     const v251fine = createButterflyValve('(V251.fine)'); v251fine.position.set(0, 7, -8); scadaGroup.add(v251fine);
 

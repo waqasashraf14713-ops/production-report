@@ -137,7 +137,7 @@ const saveSd = () => {
     if (!date) return alert('Date is required!');
 
     const rows = [];
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 48; i++) {
         rows.push({
             mat: getVal(`sd-mat-${i}`),
             amois: getVal(`sd-amois-${i}`),

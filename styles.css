@@ -1815,6 +1815,29 @@ header h1 {
   background-color: rgba(255, 255, 255, 0.03);
 }
 
+/* Less / Excess row highlight classes */
+.le-row-excess td {
+  background-color: #dcfce7 !important;
+  color: #166534 !important;
+}
+.le-row-excess td span {
+  color: #166534 !important;
+}
+.le-row-excess:hover td {
+  background-color: #bbf7d0 !important;
+}
+
+.le-row-less td {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+}
+.le-row-less td span {
+  color: #991b1b !important;
+}
+.le-row-less:hover td {
+  background-color: #fecaca !important;
+}
+
 .report-table tbody tr:last-child td {
   border-bottom: none;
 }
